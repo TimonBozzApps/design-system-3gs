@@ -1,3 +1,9 @@
+/* ==========================================================================
+   StatusBar — the 20 px carrier / clock / battery strip
+   Themes: the black tint is --gs-statusbar-gradient (black glass; blue-gray
+   in the light theme) outlined with --gs-bar-border. Type and glyphs are
+   white in both themes; the translucent gray tint is the same everywhere.
+   ========================================================================== */
 .gs-statusbar {
   height: var(--gs-statusbar-height);
   display: grid;
@@ -9,14 +15,14 @@
   font-weight: 700;
   color: var(--gs-white);
   text-shadow: var(--gs-text-shadow-dark);
-  border-bottom: 1px solid var(--gs-black);
+  border-bottom: 1px solid var(--gs-bar-border);
   flex-shrink: 0;
   user-select: none;
   box-sizing: border-box;
 }
 
 .gs-statusbar--black {
-  background: linear-gradient(to bottom, #464649 0%, #2f2f32 49%, #1f1f21 50%, #0f0f10 100%);
+  background: var(--gs-statusbar-gradient);
 }
 
 .gs-statusbar--gray {

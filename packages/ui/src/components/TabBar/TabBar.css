@@ -2,6 +2,9 @@
    TabBar — the 49 px black-glass bottom bar (UITabBar, UIBarStyleBlack)
    Tab bars sat a shade darker than nav bars, so the gel is a local gradient
    rather than --gs-gradient-bar. The soft gloss on top gives the 50 % split.
+   The tab bar was black on iOS 3 in every app, so it is black in every theme:
+   nothing below reads a theme-switching token — the icon gradients and label
+   colours are pinned here, and the light theme cannot retint any of it.
    ========================================================================== */
 .gs-tabbar {
   --gs-tabbar-gradient: linear-gradient(
@@ -11,6 +14,13 @@
     #1c1c1f 50%,
     #0e0e10 100%
   );
+  --gs-tabbar-label: #8e8e93;
+  --gs-tabbar-label-selected: #ffffff;
+  /* <Icon> gel stops — the dark values, pinned */
+  --gs-icon-inactive-top: #b9b9be;
+  --gs-icon-inactive-bottom: #5f5f64;
+  --gs-icon-active-top: #a6d0ff;
+  --gs-icon-active-bottom: #2a70e0;
 
   display: flex;
   align-items: stretch;
@@ -21,7 +31,7 @@
   padding: 0;
 
   background: var(--gs-gloss-soft), var(--gs-tabbar-gradient);
-  border-top: 1px solid var(--gs-black);
+  border-top: 1px solid #000000;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 
   user-select: none;
@@ -46,7 +56,7 @@
   background: none;
   border: 0;
   border-radius: 0;
-  color: var(--gs-gray-400);
+  color: var(--gs-tabbar-label);
   text-shadow: var(--gs-text-shadow-dark);
 
   cursor: pointer;
@@ -100,7 +110,7 @@
 /* iOS 3 had no hover — nothing here on purpose. */
 
 .gs-tabbar-item--selected {
-  color: var(--gs-white);
+  color: var(--gs-tabbar-label-selected);
 }
 
 .gs-tabbar-item--selected::before {

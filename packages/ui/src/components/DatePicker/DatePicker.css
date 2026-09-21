@@ -1,0 +1,16 @@
+/* ==========================================================================
+   DatePicker — UIDatePicker presets on top of Picker
+   All chrome, drums and shading come from Picker.css; this only tunes the
+   column text so the preset-specific labels fit their drums.
+   ========================================================================== */
+
+/* "Wed Sep 23" beside three narrow drums: one step smaller so it never ellipsises */
+.gs-datepicker--datetime .gs-picker__row {
+  font-size: var(--gs-font-size-lg);
+}
+
+/* the narrow numeric drums hug their dividers less tightly than a text drum */
+.gs-datepicker--time .gs-picker__row,
+.gs-datepicker--datetime .gs-picker__column:not(:first-child) .gs-picker__row {
+  padding: 0 6px;
+}

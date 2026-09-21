@@ -39,7 +39,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
         style={{
           fontWeight: 700,
           color: "var(--gs-text)",
-          textShadow: "var(--gs-text-shadow-dark)",
+          textShadow: "var(--gs-text-emboss)",
         }}
       >
         {label}

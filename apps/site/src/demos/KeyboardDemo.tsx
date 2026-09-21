@@ -73,7 +73,7 @@ export default function KeyboardDemo() {
           padding: "0 10px",
           fontSize: 13,
           color: "var(--gs-text-secondary)",
-          textShadow: "var(--gs-text-shadow-dark)",
+          textShadow: "var(--gs-text-emboss)",
         }}
       >
         {message.length} {message.length === 1 ? "character" : "characters"} · layer: {layer}
@@ -83,7 +83,7 @@ export default function KeyboardDemo() {
           padding: "0 10px",
           fontSize: 13,
           color: "var(--gs-text-secondary)",
-          textShadow: "var(--gs-text-shadow-dark)",
+          textShadow: "var(--gs-text-emboss)",
         }}
       >
         {log}

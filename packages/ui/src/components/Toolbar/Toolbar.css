@@ -1,10 +1,21 @@
 /* ==========================================================================
    Toolbar — the 44 px black-glass bottom bar (UIToolbar, UIBarStyleBlack)
    Same gel as the nav bar: soft gloss over --gs-gradient-bar (hard 50 %
-   split), a 1 px black outline on the edge that faces the content and a 1 px
+   split), a 1 px outline on the edge that faces the content and a 1 px
    light rim just inside the top.
+   Themes: the bar reads the semantic bar tokens (--gs-gradient-bar,
+   --gs-bar-border, --gs-bar-rim, --gs-text-on-bar …), which the light theme
+   turns blue-gray. `tint="blue"` is that same blue-gray bar in either theme:
+   it re-points the bar tokens on itself, so its title, its ToolbarButtons and
+   any BarButtons inside (which read --gs-gradient-barbutton) follow.
    ========================================================================== */
 .gs-toolbar {
+  /* the title's gray status text: single line / stacked main line / sub-line */
+  --gs-toolbar-title: var(--gs-text-secondary);
+  --gs-toolbar-title-main: rgba(255, 255, 255, 0.85);
+  --gs-toolbar-title-sub: var(--gs-text-secondary);
+  --gs-toolbar-title-shadow: var(--gs-text-shadow-dark);
+
   position: relative;
   display: flex;
   align-items: center;
@@ -16,7 +27,7 @@
   margin: 0;
   padding: 0 8px;
   font-family: var(--gs-font);
-  color: var(--gs-text);
+  color: var(--gs-text-on-bar);
   background: var(--gs-gloss-soft), var(--gs-gradient-bar);
   -webkit-user-select: none;
   user-select: none;
@@ -24,14 +35,14 @@
 
 /* bottom (default): the outline is the top edge, against the content */
 .gs-toolbar--bottom {
-  border-top: 1px solid var(--gs-black);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  border-top: 1px solid var(--gs-bar-border);
+  box-shadow: inset 0 1px 0 var(--gs-bar-rim);
 }
 
 /* top: a nav-bar style bottom edge */
 .gs-toolbar--top {
-  border-bottom: 1px solid var(--gs-black);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border-bottom: 1px solid var(--gs-bar-border);
+  box-shadow: inset 0 1px 0 var(--gs-bar-rim);
 }
 
 /* ---- spacer: the "flexible space" bar item ------------------------------ */
@@ -54,9 +65,9 @@
   min-width: 0;
   padding: 1px 0; /* room for the text-shadow inside the overflow:hidden lines */
   font: 700 12px / var(--gs-line-height) var(--gs-font);
-  color: var(--gs-text-secondary);
+  color: var(--gs-toolbar-title);
   text-align: center;
-  text-shadow: var(--gs-text-shadow-dark);
+  text-shadow: var(--gs-toolbar-title-shadow);
   pointer-events: none;
 }
 
@@ -75,7 +86,11 @@
 
 /* two lines: the main line steps up to (near) white, the subtitle stays gray */
 .gs-toolbar__title--stacked .gs-toolbar__title-main {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--gs-toolbar-title-main);
+}
+
+.gs-toolbar__title--stacked .gs-toolbar__title-sub {
+  color: var(--gs-toolbar-title-sub);
 }
 
 /* ==========================================================================
@@ -96,7 +111,7 @@
   background: none;
   border: 0;
   border-radius: 6px;
-  color: var(--gs-text);
+  color: var(--gs-text-on-bar);
   cursor: pointer;
   outline: none;
   touch-action: manipulation;
@@ -145,33 +160,37 @@
   cursor: default;
 }
 
+/* a spinner placed in the bar stays white: the bar is dark in the dark theme
+   and blue-gray in light, never white (see Progress.css) */
+.gs-toolbar .gs-spinner {
+  --gs-spinner-white: var(--gs-white);
+}
+
 /* ==========================================================================
-   blue tint — the classic iOS 3 blue-gray bar (same gel as the nav bar)
+   the blue-gray bar: the light theme, and `tint="blue"` in either theme
+   Gray title text would vanish on the blue-gray gel, so all three title
+   lines go white (the sub-line a touch softer) with the lighter shadow.
    ========================================================================== */
+.gs-root[data-theme="light"] .gs-toolbar,
+.gs-theme-light .gs-toolbar,
 .gs-toolbar--blue {
-  background:
-    var(--gs-gloss-soft),
-    linear-gradient(to bottom, #b0bccd 0%, #8a9bb4 49%, #6d84a2 50%, #5b7397 100%);
+  --gs-toolbar-title: var(--gs-text-on-bar);
+  --gs-toolbar-title-main: var(--gs-text-on-bar);
+  --gs-toolbar-title-sub: rgba(255, 255, 255, 0.85);
+  --gs-toolbar-title-shadow: var(--gs-text-shadow-on-bar);
 }
 
-.gs-toolbar--blue.gs-toolbar--bottom {
-  border-top-color: #2d3642;
-}
-
-.gs-toolbar--blue.gs-toolbar--top {
-  border-bottom-color: #2d3642;
-}
-
-/* gray text would vanish on the blue-gray gel: white with the lighter shadow */
-.gs-toolbar--blue .gs-toolbar__title {
-  color: var(--gs-white);
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
-}
-
-/* bordered bar buttons take the blue-gray gel; "done" keeps its saturated
-   blue — that darker blue is what marks the primary action on the blue bar */
-.gs-toolbar--blue .gs-barbutton--default,
-.gs-toolbar--blue .gs-barbutton--back {
-  --gs-barbutton-gel: linear-gradient(to bottom, #8aa4c8 0%, #6684ad 49%, #51739f 50%, #45668f 100%);
-  --gs-barbutton-gel-pressed: linear-gradient(to bottom, #2c405f 0%, #3a5278 50%, #435f8b 100%);
+/* tint="blue": re-point the bar tokens on this bar to the light theme's
+   values (same numbers as tokens/theme-light.css), so the bar, its title and
+   the bar buttons inside look like the classic blue bar in the dark theme too */
+.gs-toolbar--blue {
+  --gs-gradient-bar: linear-gradient(to bottom, #b0bccd 0%, #8a9bb4 49%, #6d84a2 50%, #5b7397 100%);
+  --gs-bar-border: #2d3642;
+  --gs-bar-rim: rgba(255, 255, 255, 0.45);
+  --gs-gradient-barbutton: linear-gradient(to bottom, #8aa4c8 0%, #6684ad 49%, #51739f 50%, #45668f 100%);
+  --gs-gradient-barbutton-pressed: linear-gradient(to bottom, #2c4f82 0%, #35598e 50%, #3f6499 100%);
+  --gs-text-on-bar: #ffffff;
+  --gs-text-shadow-on-bar: 0 -1px 0 rgba(0, 0, 0, 0.4);
+  --gs-icon-inactive-top: #ffffff;
+  --gs-icon-inactive-bottom: #c9d3e0;
 }

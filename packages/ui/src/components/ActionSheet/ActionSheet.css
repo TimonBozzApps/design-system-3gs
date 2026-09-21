@@ -6,6 +6,9 @@
    dark "Cancel" at the bottom. Every button is 1 px black outlined with a
    light inner rim on top. The silver / cancel gels are sheet-specific (no
    system token fits), so they are defined locally on the panel.
+   Themes: the light theme's sheet was a translucent dark blue-gray; the
+   panel colours are local custom properties overridden below, the buttons
+   are the same in both themes.
    ========================================================================== */
 
 /* ---- backdrop ---------------------------------------------------------- */
@@ -55,6 +58,16 @@
     #141416 50%,
     #1c1c1f 100%
   );
+  /* the translucent glass slab and its top edge; the title sits on it */
+  --gs-actionsheet-bg: linear-gradient(
+    to bottom,
+    rgba(70, 70, 75, 0.92) 0%,
+    rgba(40, 40, 44, 0.94) 50%,
+    rgba(20, 20, 23, 0.96) 100%
+  );
+  --gs-actionsheet-edge: rgba(255, 255, 255, 0.25);
+  --gs-actionsheet-title: var(--gs-text-secondary);
+  --gs-actionsheet-title-shadow: var(--gs-text-shadow-dark);
 
   box-sizing: border-box;
   width: 100%;
@@ -66,20 +79,29 @@
   text-align: center;
   line-height: var(--gs-line-height);
 
-  background: linear-gradient(
-    to bottom,
-    rgba(70, 70, 75, 0.92) 0%,
-    rgba(40, 40, 44, 0.94) 50%,
-    rgba(20, 20, 23, 0.96) 100%
-  );
+  background: var(--gs-actionsheet-bg);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  border-top: 1px solid var(--gs-actionsheet-edge);
   box-shadow:
     0 -1px 0 rgba(0, 0, 0, 0.9),
     0 -8px 24px rgba(0, 0, 0, 0.5);
 
   animation: gs-actionsheet-slide 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* light theme: the iOS 3 blue-gray glass; a white title with a dark shadow */
+.gs-root[data-theme="light"] .gs-actionsheet,
+.gs-theme-light .gs-actionsheet {
+  --gs-actionsheet-bg: linear-gradient(
+    to bottom,
+    rgba(120, 132, 152, 0.92) 0%,
+    rgba(70, 82, 104, 0.95) 50%,
+    rgba(40, 50, 70, 0.96) 100%
+  );
+  --gs-actionsheet-edge: rgba(255, 255, 255, 0.5);
+  --gs-actionsheet-title: rgba(255, 255, 255, 0.92);
+  --gs-actionsheet-title-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
 }
 
 .gs-actionsheet:focus {
@@ -93,8 +115,8 @@
   font-family: var(--gs-font);
   font-size: var(--gs-font-size-sm);
   font-weight: 700;
-  color: var(--gs-text-secondary);
-  text-shadow: var(--gs-text-shadow-dark);
+  color: var(--gs-actionsheet-title);
+  text-shadow: var(--gs-actionsheet-title-shadow);
   overflow-wrap: break-word;
 }
 

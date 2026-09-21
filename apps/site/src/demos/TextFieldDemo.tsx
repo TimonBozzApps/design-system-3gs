@@ -36,7 +36,7 @@ function Caption({ children }: { children: ReactNode }) {
         textTransform: "uppercase",
         letterSpacing: 0.4,
         color: "var(--gs-text-secondary)",
-        textShadow: "var(--gs-text-shadow-dark)",
+        textShadow: "var(--gs-text-emboss)",
       }}
     >
       {children}

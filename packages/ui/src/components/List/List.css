@@ -1,9 +1,10 @@
 /* ==========================================================================
    List — iOS 3 grouped table view
-   Grouped: a rounded, black-outlined container on the pinstripe with a faint
-   light rim beneath it. Plain: full-bleed rows. Each cell is a raised dark
-   surface with a 1 px light inner highlight on top and a near-black separator
-   between rows; tapping floods the cell with the blue gel.
+   Grouped: a rounded, outlined container on the pinstripe with a faint light
+   rim beneath it. Plain: full-bleed rows. Each cell is a raised --gs-surface
+   (dark glass, or white with a faint sheen in the light theme) with a 1 px
+   light inner highlight on top and a separator between rows; tapping floods
+   the cell with the blue gel in either theme.
    ========================================================================== */
 .gs-list {
   display: flex;
@@ -19,16 +20,17 @@
   padding: 0 10px 6px;
   font-size: var(--gs-font-size-md);
   font-weight: 700;
-  color: var(--gs-text-secondary);
-  text-shadow: var(--gs-text-shadow-dark);
+  color: var(--gs-header-text);
+  text-shadow: var(--gs-text-emboss);
 }
 
 .gs-list__footer {
   padding: 6px 10px 0;
   font-size: var(--gs-font-size-sm);
-  color: var(--gs-text-secondary);
+  font-weight: 400;
+  color: var(--gs-header-text);
   text-align: center;
-  text-shadow: var(--gs-text-shadow-dark);
+  text-shadow: var(--gs-text-emboss);
 }
 
 /* ---- the group container ---------------------------------------------- */
@@ -56,6 +58,11 @@
    ListItem — one cell
    ========================================================================== */
 .gs-list-item {
+  /* In the light theme --gs-text-secondary is the blue-gray header colour;
+     iOS cell subtitles were the plain #8e8e93, and flat glyphs went black. */
+  --gs-list-subtitle: var(--gs-text-secondary);
+  --gs-list-glyph: var(--gs-text-secondary);
+
   display: flex;
   align-items: center;
   gap: 10px;
@@ -78,7 +85,7 @@
   -webkit-appearance: none;
   appearance: none;
 
-  background: var(--gs-surface);
+  background: var(--gs-surface-gloss), var(--gs-surface);
   box-shadow: inset 0 1px 0 var(--gs-separator-light);
   border-top: 1px solid var(--gs-separator);
 
@@ -86,6 +93,16 @@
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+.gs-root[data-theme="light"] .gs-list-item,
+.gs-theme-light .gs-list-item {
+  --gs-list-subtitle: var(--gs-text-tertiary);
+  --gs-list-glyph: var(--gs-text);
+  /* the light theme turns gloss icons white for the bars; on a white cell a
+     gel glyph needs the gray gel back */
+  --gs-icon-inactive-top: #b9b9be;
+  --gs-icon-inactive-bottom: #5f5f64;
 }
 
 .gs-list-item:first-child {
@@ -98,6 +115,7 @@
 }
 
 /* ---- icon slot / app-icon tile ----------------------------------------- */
+/* tiles are always coloured gel (dark / blue / red) with a white glyph */
 .gs-list-item__icon {
   display: inline-flex;
   align-items: center;
@@ -105,7 +123,7 @@
   flex-shrink: 0;
   width: 29px;
   height: 29px;
-  color: var(--gs-text-secondary);
+  color: var(--gs-list-glyph);
 }
 
 .gs-list-item__icon--tile {
@@ -148,13 +166,13 @@
 .gs-list-item__title {
   font-size: var(--gs-font-size-lg);
   font-weight: 700;
-  color: var(--gs-white);
-  text-shadow: var(--gs-text-shadow-dark);
+  color: var(--gs-text);
+  text-shadow: var(--gs-text-emboss);
 }
 
 .gs-list-item__subtitle {
   font-size: 14px;
-  color: var(--gs-text-secondary);
+  color: var(--gs-list-subtitle);
 }
 
 /* ---- detail text (right-aligned value) --------------------------------- */
@@ -163,7 +181,7 @@
   max-width: 50%;
   font-size: var(--gs-font-size-lg);
   color: var(--gs-text-link);
-  text-shadow: var(--gs-text-shadow-dark);
+  text-shadow: var(--gs-text-emboss);
   text-align: right;
 }
 
@@ -188,9 +206,11 @@
   box-shadow: inset var(--gs-focus-ring);
 }
 
-/* pressed / selected: the blue gel floods the cell, everything goes white */
+/* pressed / selected: the blue gel floods the cell, everything goes white
+   (with the dark emboss — the light theme's white text-shadow is replaced) */
 .gs-list-item--interactive:active:not(:disabled):not(.gs-list-item--disabled),
 .gs-list-item--selected {
+  --gs-text-emboss: var(--gs-text-shadow-dark);
   background: var(--gs-gloss-soft), var(--gs-gradient-blue);
 }
 

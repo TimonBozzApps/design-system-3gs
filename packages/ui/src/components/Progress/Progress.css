@@ -4,6 +4,10 @@
    holding a blue gel fill with its own hard 50 % highlight and a shaded
    leading edge. ActivityIndicator: 12 fading spokes, turned in 12 discrete
    30° steps per second.
+   Themes: the track reads --gs-surface-sunken / --gs-inset / --gs-border and
+   the readout --gs-text-emboss (all switch); the spinner's "white" tone is
+   the --gs-spinner-white custom property so the light theme can gray it on
+   white surfaces while always-dark hosts (HUD, bars) pin it back to white.
    ========================================================================== */
 .gs-progress {
   /* component-local: no token matches the silver iPod scrubber */
@@ -81,7 +85,7 @@
   font-variant-numeric: tabular-nums;
   color: var(--gs-text-secondary);
   text-align: right;
-  text-shadow: var(--gs-text-shadow-dark);
+  text-shadow: var(--gs-text-emboss);
   white-space: nowrap;
 }
 
@@ -97,8 +101,16 @@
   line-height: 0;
 }
 
-.gs-spinner--white { color: var(--gs-white); }
+.gs-spinner--white { color: var(--gs-spinner-white, var(--gs-white)); }
 .gs-spinner--gray  { color: var(--gs-gray-400); }
+
+/* light theme: white spokes would vanish on the white surfaces, so the
+   "white" tone turns mid-gray. :where() keeps this at single-class strength
+   so a host that is dark in both themes (`.gs-hud .gs-spinner`,
+   `.gs-toolbar .gs-spinner`) can pin --gs-spinner-white back to white. */
+:where(.gs-root[data-theme="light"], .gs-theme-light) .gs-spinner {
+  --gs-spinner-white: var(--gs-gray-400);
+}
 
 .gs-spinner__svg {
   display: block;

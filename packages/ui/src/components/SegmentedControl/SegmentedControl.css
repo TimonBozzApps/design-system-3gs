@@ -2,15 +2,18 @@
    SegmentedControl — the iOS 3 segmented control (UISegmentedControlStyleBar)
    One rounded gel bar cut into equal segments by 1 px black dividers. The
    selected segment is pressed in (sunken, blue-black gel); the others are
-   raised glass with the hard 50 % gloss. Each tint only sets the three gel
-   custom properties; the segment rules do the rest.
+   raised glass with the hard 50 % gloss. The unselected gel is the bar-button
+   gel of the current theme (dark glass / blue-gray in light); a tint only
+   re-points the semantic bar tokens on the control, the segment rules do
+   the rest.
    ========================================================================== */
 .gs-segmented {
-  --gs-segment-gel: var(--gs-gradient-dark);
-  --gs-segment-gel-pressed: var(--gs-gradient-dark-pressed);
+  --gs-segment-gel: var(--gs-gradient-barbutton);
+  --gs-segment-gel-pressed: var(--gs-gradient-barbutton-pressed);
   --gs-segment-gel-selected: var(--gs-gradient-blue-pressed);
   --gs-segment-sunk: inset 0 2px 4px rgba(0, 0, 0, 0.65), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
-  /* the light rim to the right of each divider */
+  /* the 1 px line between segments and the light rim to its right */
+  --gs-segment-divider: var(--gs-separator);
   --gs-segment-divider-rim: inset 1px 0 0 rgba(255, 255, 255, 0.12);
 
   display: inline-grid;
@@ -53,17 +56,30 @@
 }
 
 /* ---- tints ------------------------------------------------------------- */
+/* "dark" = the bar's own gel: dark glass in the dark theme, blue-gray in light */
 .gs-segmented--dark {
-  --gs-segment-gel: var(--gs-gradient-dark);
-  --gs-segment-gel-pressed: var(--gs-gradient-dark-pressed);
+  --gs-segment-gel: var(--gs-gradient-barbutton);
+  --gs-segment-gel-pressed: var(--gs-gradient-barbutton-pressed);
   --gs-segment-gel-selected: var(--gs-gradient-blue-pressed);
 }
 
-/* the blue-gray gel of a tint="blue" NavigationBar (same as its bar buttons) */
+/* the blue-gray gel of a tint="blue" NavigationBar (same as its bar buttons):
+   re-points the bar tokens on this control to the light theme's values, so
+   the control looks the same in both themes */
 .gs-segmented--blue {
-  --gs-segment-gel: linear-gradient(to bottom, #8aa4c8 0%, #6684ad 49%, #51739f 50%, #45668f 100%);
-  --gs-segment-gel-pressed: linear-gradient(to bottom, #2c405f 0%, #3a5278 50%, #435f8b 100%);
-  --gs-segment-gel-selected: linear-gradient(to bottom, #2c4f82 0%, #35598e 50%, #3f6499 100%);
+  --gs-gradient-barbutton: linear-gradient(to bottom, #8aa4c8 0%, #6684ad 49%, #51739f 50%, #45668f 100%);
+  --gs-gradient-barbutton-pressed: linear-gradient(to bottom, #2c4f82 0%, #35598e 50%, #3f6499 100%);
+  --gs-text-shadow-on-bar: 0 -1px 0 rgba(0, 0, 0, 0.4);
+  --gs-segment-divider: rgba(0, 0, 0, 0.45);
+  --gs-segment-divider-rim: inset 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+/* light theme: the blue-gray gel arrives through the bar tokens; only the
+   divider needs its own value (the theme's separator is too faint on gel) */
+.gs-root[data-theme="light"] .gs-segmented,
+.gs-theme-light .gs-segmented {
+  --gs-segment-divider: rgba(0, 0, 0, 0.45);
+  --gs-segment-divider-rim: inset 1px 0 0 rgba(255, 255, 255, 0.3);
 }
 
 /* ---- block ------------------------------------------------------------- */
@@ -87,8 +103,8 @@
   font-size: inherit;
   font-weight: 700;
   line-height: var(--gs-line-height); /* room for descenders inside the label's overflow: hidden */
-  color: var(--gs-white);
-  text-shadow: var(--gs-text-shadow-dark);
+  color: var(--gs-text-on-bar);
+  text-shadow: var(--gs-text-shadow-on-bar);
   white-space: nowrap;
 
   background: var(--gs-gloss), var(--gs-segment-gel);
@@ -107,7 +123,7 @@
    after the first. :where() keeps the selector at single-class specificity so
    the state rules below can replace the whole box-shadow stack. */
 :where(.gs-segment) + .gs-segment {
-  border-left: 1px solid var(--gs-separator);
+  border-left: 1px solid var(--gs-segment-divider);
   box-shadow: var(--gs-rim-light), var(--gs-segment-divider-rim);
 }
 
@@ -118,10 +134,10 @@
   text-overflow: ellipsis;
 }
 
-/* flat white stroke, etched like the text */
+/* flat stroke in the label colour, etched like the text */
 .gs-segment__icon {
   flex-shrink: 0;
-  color: var(--gs-white);
+  color: var(--gs-text-on-bar);
   filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.7));
 }
 

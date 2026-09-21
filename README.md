@@ -12,7 +12,7 @@ packages/ui     @3gs/ui — the component library (React 18/19, TypeScript, plai
 apps/site       the showcase site (Vite) — every component inside a 320×480 phone frame
 ```
 
-## Components (v0.3)
+## Components (v0.4)
 
 | Component | What it is |
 | --- | --- |
@@ -34,6 +34,8 @@ apps/site       the showcase site (Vite) — every component inside a 320×480 p
 | `Popover` | The iPad 3.2 dark bubble with an arrow; auto-flips and clamps, portal or contained |
 | `HUD` | Translucent black square: spinner / progress / check / error / text toast, auto-dismiss |
 | `Keyboard` | Dark alert-style QWERTY with letters / numbers / symbols, shift + caps, key popup, delete repeat, `value`/`onChange` binding |
+| `DatePicker` | UIDatePicker presets on the wheel: date / time / dateTime, minute intervals, 12/24 h |
+| `ModalSheet` | Full-screen modal that slides up with its own Cancel / title / Done bar |
 | `Icon`, `Badge` | Foundation: glossy lucide wrapper and the red gel badge |
 
 ## Use
@@ -58,6 +60,23 @@ import { Gamepad2 } from "lucide-react";
 Wrap your app (or any subtree) in `.gs-root` to get the font, colours and
 black background. Tokens are CSS custom properties prefixed `--gs-`
 (`packages/ui/src/tokens/tokens.css`); override them on `.gs-root` to retint.
+
+## Themes
+
+Dark (the default) is the black-glass take. `data-theme="light"` switches a
+subtree to the **classic iOS 3 look** — blue-gray bars, white cells on the
+pinstripe, black embossed text:
+
+```tsx
+<div className="gs-root" data-theme="light">…</div>
+```
+
+The tab bar, alerts, HUDs and popovers stay dark in both themes, as they did
+on the device. Under the hood the light theme only redefines tokens
+(`packages/ui/src/tokens/theme-light.css`); components read *semantic* tokens
+such as `--gs-gradient-bar`, `--gs-gradient-neutral`, `--gs-text-on-bar` and
+`--gs-text-emboss`, so a third theme is one more file of overrides. The
+showcase's sidebar switch flips every phone screen between the two.
 
 ## Develop
 

@@ -1,5 +1,5 @@
-import { useState, type CSSProperties } from "react";
-import { Alert } from "@3gs/ui";
+import { useState } from "react";
+import { Alert, Button } from "@3gs/ui";
 import { Screen } from "../shell/Screen";
 import type { DemoMeta } from "./types";
 
@@ -36,26 +36,13 @@ export const meta: DemoMeta = {
 
 type Which = "ok" | "two" | "three" | "classic";
 
-const triggerStyle: CSSProperties = {
-  background: "var(--gs-gloss), var(--gs-gradient-dark)",
-  border: "var(--gs-border)",
-  borderRadius: 8,
-  color: "#fff",
-  fontFamily: "var(--gs-font)",
-  fontSize: 17,
-  fontWeight: 700,
-  height: 44,
-  textShadow: "var(--gs-text-shadow-dark)",
-  boxShadow: "var(--gs-emboss)",
-  width: "100%",
-  cursor: "pointer",
-};
+
 
 function Trigger({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button type="button" style={triggerStyle} onClick={onClick}>
+    <Button block onClick={onClick}>
       {label}
-    </button>
+    </Button>
   );
 }
 

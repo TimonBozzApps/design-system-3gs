@@ -10,6 +10,8 @@
   --gs-switch-height: 27px;
   --gs-switch-knob: 27px;
   --gs-switch-off-gel: linear-gradient(to bottom, var(--gs-gray-600), var(--gs-gray-700));
+  --gs-switch-off-text: var(--gs-text-secondary);
+  --gs-switch-off-text-shadow: var(--gs-text-shadow-dark);
   --gs-switch-knob-gel: linear-gradient(
     to bottom,
     #fdfdfd 0%,
@@ -34,6 +36,21 @@
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Light theme: the OFF half is white glass with gray text (the ON half, track
+   rim and knob are the same in both themes). */
+.gs-root[data-theme="light"] .gs-switch,
+.gs-theme-light .gs-switch {
+  --gs-switch-off-gel: linear-gradient(
+    to bottom,
+    #fbfbfc 0%,
+    #ededf0 49%,
+    #e2e2e6 50%,
+    #d6d6db 100%
+  );
+  --gs-switch-off-text: #7d7d84;
+  --gs-switch-off-text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 /* Invisible hit-area extension to the 44 px touch-target height. */
@@ -89,19 +106,20 @@
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
-  text-shadow: var(--gs-text-shadow-dark);
   box-sizing: border-box;
 }
 
 .gs-switch__on {
   justify-content: flex-start;
   color: var(--gs-text-on-blue);
+  text-shadow: var(--gs-text-shadow-dark);
   background: var(--gs-gloss), var(--gs-gradient-blue);
 }
 
 .gs-switch__off {
   justify-content: flex-end;
-  color: var(--gs-text-secondary);
+  color: var(--gs-switch-off-text);
+  text-shadow: var(--gs-switch-off-text-shadow);
   background: var(--gs-gloss), var(--gs-switch-off-gel);
 }
 

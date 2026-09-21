@@ -5,6 +5,9 @@
    custom glyph plus a short bold white label. Non-modal: the backdrop is
    transparent and lets pointer events through unless `blocking`. HUDs never
    dimmed the screen. `kind="text"` shrinks it to a compact toast pill.
+   Themes: the HUD is black in both. Its colours are literal / non-switching
+   tokens, and the switching tokens its children read (the spinner's white
+   tone, the progress track) are pinned to their dark values on the box.
    ========================================================================== */
 
 /* ---- backdrop ---------------------------------------------------------- */
@@ -43,6 +46,13 @@
 
 /* ---- box --------------------------------------------------------------- */
 .gs-hud {
+  /* the progress bar's theme-switching tokens, pinned dark */
+  --gs-surface-sunken: #1a1a1c;
+  --gs-inset: inset 0 2px 5px rgba(0, 0, 0, 0.75), inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+  --gs-border: 1px solid rgba(0, 0, 0, 0.9);
+  --gs-text-secondary: #a1a1a6;
+  --gs-text-emboss: var(--gs-text-shadow-dark);
+
   box-sizing: border-box;
   pointer-events: auto;
   min-width: 140px;
@@ -70,6 +80,13 @@
     0 8px 24px rgba(0, 0, 0, 0.55);
 
   animation: gs-hud-pop 200ms var(--gs-ease) both;
+}
+
+/* the spinner's "white" tone stays white on the black glass — set on the
+   spinner itself so it beats the light theme's single-class override
+   (see Progress.css) */
+.gs-hud .gs-spinner {
+  --gs-spinner-white: var(--gs-white);
 }
 
 /* label-only toast: a compact pill-ish box ("Copied") */

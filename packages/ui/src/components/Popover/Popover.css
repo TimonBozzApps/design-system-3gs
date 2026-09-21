@@ -6,6 +6,9 @@
    at the anchor. The panel holds arbitrary content, usually a List. The navy
    gradient and rim colour are popover-specific (no system token fits), so
    they are defined locally.
+   Themes: the bubble is the same dark navy in both — iPad popovers held white
+   lists inside a dark frame — so its colours are literal and its own text is
+   pinned white; only the content (a List) follows the theme.
 
    Geometry shared with Popover.tsx — keep in sync:
      --gs-popover-gap  8px   anchor edge → arrow tip
@@ -41,6 +44,7 @@
   --gs-popover-bg: linear-gradient(to bottom, rgba(52, 60, 84, 0.97), rgba(22, 26, 40, 0.98));
   --gs-popover-rim: rgba(20, 24, 38, 0.92);
   --gs-popover-rim-light: rgba(255, 255, 255, 0.25);
+  --gs-popover-scrollbar: rgba(255, 255, 255, 0.22);
 
   position: fixed;
   z-index: 1000;
@@ -51,7 +55,7 @@
   flex-direction: column;
   pointer-events: auto;
 
-  color: var(--gs-text);
+  color: var(--gs-white); /* always-dark bubble: never the theme's text colour */
   font-family: var(--gs-font);
   font-size: var(--gs-font-size-lg);
   line-height: var(--gs-line-height);
@@ -173,8 +177,14 @@
   width: 5px;
 }
 .gs-popover__content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.22);
+  background: var(--gs-popover-scrollbar);
   border-radius: 3px;
+}
+
+/* light theme: the scrollbar runs over the (white) List, so it goes dark */
+.gs-root[data-theme="light"] .gs-popover,
+.gs-theme-light .gs-popover {
+  --gs-popover-scrollbar: rgba(0, 0, 0, 0.3);
 }
 
 /* a grouped List fills the bubble edge to edge */

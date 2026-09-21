@@ -67,9 +67,9 @@
   --gs-text-on-neutral: #1c1c1e;
   --gs-text-shadow-on-neutral: 0 1px 0 rgba(255, 255, 255, 0.8);
 
-  /* ---- gel keys the dark theme shares -------------------------------- */
-  --gs-gradient-dark: var(--gs-gradient-neutral);            /* anything still on "dark gel" turns white gel */
-  --gs-gradient-dark-pressed: var(--gs-gradient-neutral-pressed);
+  /* NOTE: --gs-gradient-dark is deliberately NOT remapped — it means "dark gel"
+     in both themes (icon tiles, always-black bars). Components that should go
+     light use --gs-gradient-neutral / --gs-gradient-barbutton instead. */
 
   /* ---- rims / shadows ------------------------------------------------- */
   --gs-border: 1px solid rgba(0, 0, 0, 0.32);

@@ -1,0 +1,122 @@
+/* ==========================================================================
+   ModalSheet — the iOS 3 modally presented screen
+   (UIModalTransitionStyleCoverVertical)
+   A full-size panel that slides up from the bottom edge over the current
+   screen. It IS a screen: black background, its own 44 px navigation bar
+   (Cancel / title / Done — the NavigationBar draws that chrome) and a
+   scrolling body on the pinstripe, plain black or the flat cell surface.
+   The dimmed backdrop only shows while the panel is still sliding in.
+   ========================================================================== */
+
+/* ---- backdrop ---------------------------------------------------------- */
+.gs-modalsheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.4);
+  font-family: var(--gs-font);
+  animation: gs-modalsheet-fade var(--gs-duration) var(--gs-ease) both;
+}
+
+/* in-place variant: fills the nearest positioned ancestor (a phone screen) */
+.gs-modalsheet-backdrop--contained {
+  position: absolute;
+}
+
+/* ---- panel: a whole screen --------------------------------------------- */
+.gs-modalsheet {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+
+  color: var(--gs-text);
+  font-size: var(--gs-font-size-lg);
+  line-height: var(--gs-line-height);
+  background: var(--gs-screen-bg);
+
+  animation: gs-modalsheet-slide 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.gs-modalsheet:focus {
+  outline: none;
+}
+
+.gs-modalsheet *,
+.gs-modalsheet *::before,
+.gs-modalsheet *::after {
+  box-sizing: border-box;
+}
+
+/* ---- bar ---------------------------------------------------------------- */
+.gs-modalsheet__bar {
+  flex-shrink: 0;
+}
+
+/* ---- body: the scrolling content --------------------------------------- */
+.gs-modalsheet__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 10px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  /* thin, dark scrollbar so the screen doesn't grow a light one */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+.gs-modalsheet__body::-webkit-scrollbar {
+  width: 5px;
+}
+.gs-modalsheet__body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 3px;
+}
+
+.gs-modalsheet__body--pinstripe {
+  background: var(--gs-pinstripe-bg);
+}
+
+.gs-modalsheet__body--black {
+  background: var(--gs-screen-bg);
+}
+
+.gs-modalsheet__body--surface {
+  background: var(--gs-surface);
+}
+
+/* ---- motion ------------------------------------------------------------ */
+@keyframes gs-modalsheet-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gs-modalsheet-slide {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gs-modalsheet-backdrop,
+  .gs-modalsheet {
+    animation: none;
+  }
+}

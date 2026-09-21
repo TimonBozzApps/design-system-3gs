@@ -1,5 +1,9 @@
 /* ==========================================================================
-   NavigationBar — the 44 px black-glass top bar (UIBarStyleBlack)
+   NavigationBar — the 44 px glass top bar
+   Black glass (UIBarStyleBlack) in the dark theme, the classic blue-gray
+   UIBarStyleDefault in the light theme: everything bar-coloured comes from
+   the `--gs-*-bar*` semantic tokens, and `tint="blue"` simply overrides those
+   same tokens locally so it looks the same in both themes.
    ========================================================================== */
 .gs-navbar {
   position: relative;
@@ -14,11 +18,11 @@
   height: var(--gs-bar-height);
   padding: 0 5px;
   font-family: var(--gs-font);
-  color: var(--gs-text);
+  color: var(--gs-text-on-bar);
   background: var(--gs-gloss-soft), var(--gs-gradient-bar);
-  border-bottom: 1px solid var(--gs-black);
+  border-bottom: 1px solid var(--gs-bar-border);
   /* the 1 px light rim along the top edge */
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 1px 0 var(--gs-bar-rim);
 }
 
 .gs-navbar__left,
@@ -46,33 +50,37 @@
   margin: 0 6px;
   padding: 2px 0; /* room for the text-shadow inside overflow:hidden */
   font: 700 var(--gs-font-size-xl) / var(--gs-line-height) var(--gs-font);
-  color: var(--gs-text);
+  color: var(--gs-text-on-bar);
   text-align: center;
-  text-shadow: var(--gs-text-shadow-dark);
+  text-shadow: var(--gs-text-shadow-on-bar);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   pointer-events: none;
 }
 
-/* --- blue tint: the classic iOS 3 blue-gray bar --------------------------- */
+/* --- blue tint: the classic iOS 3 blue-gray bar ---------------------------
+   Only the bar tokens are overridden, so the bar, its title and the bordered
+   bar buttons inside it retint together, in either theme. "done" keeps its
+   saturated blue — on iOS 3 the Done item on the blue bar was the darker
+   blue, which is what marks it as the primary action. */
 .gs-navbar--blue {
-  background:
-    var(--gs-gloss-soft),
-    linear-gradient(to bottom, #b0bccd 0%, #8a9bb4 49%, #6d84a2 50%, #5b7397 100%);
-  border-bottom-color: #2d3642;
-}
-
-.gs-navbar--blue .gs-navbar__title {
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+  --gs-gradient-bar: linear-gradient(to bottom, #b0bccd 0%, #8a9bb4 49%, #6d84a2 50%, #5b7397 100%);
+  --gs-bar-border: #2d3642;
+  --gs-text-shadow-on-bar: 0 -1px 0 rgba(0, 0, 0, 0.4);
+  --gs-gradient-barbutton: linear-gradient(to bottom, #8aa4c8 0%, #6684ad 49%, #51739f 50%, #45668f 100%);
+  --gs-gradient-barbutton-pressed: linear-gradient(to bottom, #2c405f 0%, #3a5278 50%, #435f8b 100%);
 }
 
 /* ==========================================================================
    BarButton — the 30 px gel button that sits inside bars
+   default / back take the bar-button gel of the surrounding bar (dark glass
+   on the black bar, blue-gray on the light one); done is always blue.
    ========================================================================== */
 .gs-barbutton {
-  --gs-barbutton-gel: var(--gs-gradient-dark);
-  --gs-barbutton-gel-pressed: var(--gs-gradient-dark-pressed);
+  --gs-barbutton-gel: var(--gs-gradient-barbutton);
+  --gs-barbutton-gel-pressed: var(--gs-gradient-barbutton-pressed);
+  --gs-barbutton-text-shadow: var(--gs-text-shadow-on-bar);
   /* how far the back button's arrow sticks out to the left */
   --gs-barbutton-point: 9px;
 
@@ -86,8 +94,8 @@
   height: 30px;
   padding: 0 10px;
   font: 700 12px / 1 var(--gs-font);
-  color: var(--gs-white);
-  text-shadow: var(--gs-text-shadow-dark);
+  color: var(--gs-text-on-bar);
+  text-shadow: var(--gs-barbutton-text-shadow);
   white-space: nowrap;
   border: var(--gs-border);
   border-radius: var(--gs-radius-sm);
@@ -105,6 +113,8 @@
 .gs-barbutton--done {
   --gs-barbutton-gel: var(--gs-gradient-blue);
   --gs-barbutton-gel-pressed: var(--gs-gradient-blue-pressed);
+  --gs-barbutton-text-shadow: var(--gs-text-shadow-dark);
+  color: var(--gs-white);
 }
 
 .gs-barbutton__label {
@@ -112,9 +122,10 @@
 }
 
 .gs-barbutton__icon {
-  color: var(--gs-white);
-  /* same etched look as the label's text-shadow */
-  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.7));
+  color: inherit;
+  /* same etched look as the label's text-shadow (a single text-shadow value
+     is also a valid drop-shadow() argument) */
+  filter: drop-shadow(var(--gs-barbutton-text-shadow));
 }
 
 /* pressed: gloss gone, gel sinks */
@@ -139,14 +150,24 @@
      ::after   the gel, inset 1 px, clipped to a polygon whose point and
                diagonals are shrunk so they stay ~1 px inside the silhouette
    The button itself has no background, so its filter: drop-shadow() traces
-   the arrow shape for the bottom drop edge (box-shadow would stay rectangular). */
+   the arrow shape for the bottom drop edge (box-shadow would stay rectangular;
+   --gs-rim-dark is that edge, and a single shadow value is a valid argument). */
 .gs-barbutton--back {
+  /* the silhouette stands in for --gs-border (a shorthand, so its colour can't
+     be reused): black on the black bar, the bar's own outline colour in light */
+  --gs-barbutton-outline: var(--gs-black);
+
   padding-left: 16px;
   border: 0;
   background: none;
   box-shadow: none;
   isolation: isolate;
-  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.75));
+  filter: drop-shadow(var(--gs-rim-dark));
+}
+
+.gs-root[data-theme="light"] .gs-barbutton--back,
+.gs-theme-light .gs-barbutton--back {
+  --gs-barbutton-outline: var(--gs-bar-border);
 }
 
 .gs-barbutton--back::before,
@@ -160,7 +181,7 @@
 .gs-barbutton--back::before {
   inset: 0;
   border-radius: var(--gs-radius-sm);
-  background: var(--gs-black);
+  background: var(--gs-barbutton-outline);
   clip-path: polygon(
     var(--gs-barbutton-point) 0,
     100% 0,
@@ -196,13 +217,4 @@
 
 .gs-barbutton--back:focus-visible {
   box-shadow: var(--gs-focus-ring);
-}
-
-/* --- inside a blue bar: bordered buttons take the blue-gray gel ----------
-   "done" keeps its saturated blue — on iOS 3 the Done item on the blue bar
-   was the darker blue, which is what marks it as the primary action. */
-.gs-navbar--blue .gs-barbutton--default,
-.gs-navbar--blue .gs-barbutton--back {
-  --gs-barbutton-gel: linear-gradient(to bottom, #8aa4c8 0%, #6684ad 49%, #51739f 50%, #45668f 100%);
-  --gs-barbutton-gel-pressed: linear-gradient(to bottom, #2c405f 0%, #3a5278 50%, #435f8b 100%);
 }

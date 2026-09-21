@@ -4,6 +4,9 @@
    scroll container (snap points, hidden scrollbar) whose rows are shaded
    into darkness toward the top and bottom edges to fake a cylinder; a
    translucent blue-glass bar is overlaid across the middle row.
+   Themes: every colour is a --gs-picker-* custom property with the dark
+   value here and the light one (blue-gray chrome, white drums, black type)
+   in the block at the end — the rules themselves are theme-agnostic.
    ========================================================================== */
 .gs-picker {
   --gs-picker-rows: 5;
@@ -15,6 +18,25 @@
     var(--gs-gray-600) 50%,
     var(--gs-gray-700)
   );
+  --gs-picker-drum-outline: rgba(0, 0, 0, 0.8);
+  /* row type: the selected row is full strength, the others sit back */
+  --gs-picker-text: rgba(255, 255, 255, 0.75);
+  --gs-picker-text-selected: var(--gs-white);
+  --gs-picker-text-shadow: var(--gs-text-shadow-dark);
+  /* cylinder shading at the drum's top and bottom */
+  --gs-picker-shade: rgba(0, 0, 0, 0.85);
+  /* the blue-glass selection bar and its edges */
+  --gs-picker-selection: linear-gradient(to bottom, rgba(110, 150, 220, 0.35), rgba(60, 100, 190, 0.4));
+  --gs-picker-selection-edge-top: rgba(255, 255, 255, 0.35);
+  --gs-picker-selection-edge-bottom: rgba(0, 0, 0, 0.7);
+  --gs-picker-selection-rim: rgba(255, 255, 255, 0.2);
+  /* the chrome frame around the drums */
+  --gs-picker-frame: linear-gradient(to bottom, #5a5a5f, var(--gs-gray-700) 8%, #1b1b1e 92%, #0c0c0d);
+  --gs-picker-frame-edge-top: rgba(255, 255, 255, 0.2);
+  --gs-picker-frame-edge-bottom: var(--gs-black);
+  /* the 2 px column divider: dark line, light rim */
+  --gs-picker-divider: rgba(0, 0, 0, 0.9);
+  --gs-picker-divider-rim: rgba(255, 255, 255, 0.08);
 
   display: flex;
   flex-direction: column;
@@ -28,15 +50,15 @@
 .gs-picker--rows-5 { --gs-picker-rows: 5; }
 .gs-picker--rows-7 { --gs-picker-rows: 7; }
 
-/* ---- the black chrome frame ------------------------------------------- */
+/* ---- the chrome frame ------------------------------------------------- */
 .gs-picker__frame {
   display: flex;
   gap: 0;
   min-width: 0;
   padding: 8px 6px;
-  background: linear-gradient(to bottom, #5a5a5f, var(--gs-gray-700) 8%, #1b1b1e 92%, #0c0c0d);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  border-bottom: 1px solid var(--gs-black);
+  background: var(--gs-picker-frame);
+  border-top: 1px solid var(--gs-picker-frame-edge-top);
+  border-bottom: 1px solid var(--gs-picker-frame-edge-bottom);
 }
 
 /* ---- one column -------------------------------------------------------- */
@@ -46,7 +68,7 @@
   min-width: 0;
   overflow: hidden;
   background: var(--gs-picker-drum);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 0 0 1px var(--gs-picker-drum-outline);
 }
 
 .gs-picker__column:first-child {
@@ -79,7 +101,7 @@
 .gs-picker__divider {
   flex: 0 0 2px;
   width: 2px;
-  background: linear-gradient(to right, rgba(0, 0, 0, 0.9) 50%, rgba(255, 255, 255, 0.08) 50%);
+  background: linear-gradient(to right, var(--gs-picker-divider) 50%, var(--gs-picker-divider-rim) 50%);
 }
 
 /* ---- the drum (scroll container) -------------------------------------- */
@@ -118,9 +140,9 @@
   font-size: var(--gs-font-size-xl);
   font-weight: 700;
   line-height: var(--gs-picker-row-height);
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--gs-picker-text);
   text-align: center;
-  text-shadow: var(--gs-text-shadow-dark);
+  text-shadow: var(--gs-picker-text-shadow);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -135,7 +157,7 @@
 .gs-picker__column--right .gs-picker__row { text-align: right; }
 
 .gs-picker__row--selected {
-  color: var(--gs-white);
+  color: var(--gs-picker-text-selected);
 }
 
 .gs-picker__row--disabled {
@@ -155,12 +177,12 @@
 
 .gs-picker__shade-top {
   top: 0;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
+  background: linear-gradient(to bottom, var(--gs-picker-shade), rgba(0, 0, 0, 0));
 }
 
 .gs-picker__shade-bottom {
   bottom: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
+  background: linear-gradient(to top, var(--gs-picker-shade), rgba(0, 0, 0, 0));
 }
 
 /* ---- the blue-glass selection bar ------------------------------------- */
@@ -173,12 +195,10 @@
   transform: translateY(-50%);
   z-index: 2;
   pointer-events: none;
-  background:
-    var(--gs-gloss),
-    linear-gradient(to bottom, rgba(110, 150, 220, 0.35), rgba(60, 100, 190, 0.4));
-  border-top: 1px solid rgba(255, 255, 255, 0.35);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.7);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  background: var(--gs-gloss), var(--gs-picker-selection);
+  border-top: 1px solid var(--gs-picker-selection-edge-top);
+  border-bottom: 1px solid var(--gs-picker-selection-edge-bottom);
+  box-shadow: inset 0 1px 0 var(--gs-picker-selection-rim);
 }
 
 /* ---- states ------------------------------------------------------------ */
@@ -192,4 +212,27 @@
 
 .gs-picker--disabled .gs-picker__selection {
   opacity: 0.6;
+}
+
+/* ==========================================================================
+   light theme — blue-gray chrome, white drums, black embossed type, softer
+   cylinder shading and a paler selection glass with a white rim
+   ========================================================================== */
+.gs-root[data-theme="light"] .gs-picker,
+.gs-theme-light .gs-picker {
+  --gs-picker-drum: linear-gradient(to bottom, #e9e9ec, #ffffff 50%, #e9e9ec);
+  --gs-picker-drum-outline: rgba(0, 0, 0, 0.35);
+  --gs-picker-text: rgba(0, 0, 0, 0.65);
+  --gs-picker-text-selected: var(--gs-text);
+  --gs-picker-text-shadow: var(--gs-text-emboss);
+  --gs-picker-shade: rgba(0, 0, 0, 0.35);
+  --gs-picker-selection: linear-gradient(to bottom, rgba(110, 150, 220, 0.28), rgba(60, 100, 190, 0.35));
+  --gs-picker-selection-edge-top: rgba(255, 255, 255, 0.85);
+  --gs-picker-selection-edge-bottom: rgba(0, 0, 0, 0.35);
+  --gs-picker-selection-rim: rgba(255, 255, 255, 0.6);
+  --gs-picker-frame: linear-gradient(to bottom, #9aa9be, #6d84a2 8%, #5b7397 92%, #3e5170);
+  --gs-picker-frame-edge-top: rgba(255, 255, 255, 0.5);
+  --gs-picker-frame-edge-bottom: var(--gs-bar-border);
+  --gs-picker-divider: rgba(0, 0, 0, 0.35);
+  --gs-picker-divider-rim: rgba(255, 255, 255, 0.6);
 }

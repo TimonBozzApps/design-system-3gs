@@ -10,6 +10,9 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 type Theme = "dark" | "light";
 
 function readTheme(): Theme {
+  // ?theme=light|dark wins (handy for screenshots), then the remembered choice.
+  const fromUrl = new URLSearchParams(window.location.search).get("theme");
+  if (fromUrl === "light" || fromUrl === "dark") return fromUrl;
   try {
     return localStorage.getItem("gs-theme") === "light" ? "light" : "dark";
   } catch {

@@ -1,16 +1,25 @@
 /* ==========================================================================
    TextField / SearchField — sunken iOS 3 text wells
-   Inputs are pressed INTO the surface: dark well, inset shadow, hairline
-   black edge. Text is white with the dark shadow, like everything else.
+   Inputs are pressed INTO the surface: a --gs-surface-sunken well with the
+   --gs-inset shadow and a hairline edge. Text is --gs-text with the surface
+   emboss (dark shadow on the black glass, white shadow on the light cells).
    ========================================================================== */
 
 .gs-textfield {
+  /* red-300 reads on black glass; the light pinstripe needs the deeper red */
+  --gs-textfield-error-text: var(--gs-red-300);
+
   display: flex;
   flex-direction: column;
   gap: var(--gs-space-1);
   min-width: 0;
   font-family: var(--gs-font);
   color: var(--gs-text);
+}
+
+.gs-root[data-theme="light"] .gs-textfield,
+.gs-theme-light .gs-textfield {
+  --gs-textfield-error-text: var(--gs-red-500);
 }
 
 /* the well ---------------------------------------------------------------- */
@@ -64,13 +73,13 @@
   font-weight: 700;
   line-height: var(--gs-line-height);
   color: var(--gs-text);
-  text-shadow: var(--gs-text-shadow-dark);
+  text-shadow: var(--gs-text-emboss);
   white-space: nowrap;
   overflow: hidden;
   cursor: default;
 }
 
-/* etched divider between label and value (dark line + light rim) */
+/* etched divider between label and value (separator line + light rim) */
 .gs-textfield__label::after {
   content: "";
   position: absolute;
@@ -78,8 +87,8 @@
   bottom: 9px;
   right: 0;
   width: 1px;
-  background: rgba(0, 0, 0, 0.7);
-  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.08);
+  background: var(--gs-separator);
+  box-shadow: 1px 0 0 var(--gs-separator-light);
 }
 
 /* leading icon ------------------------------------------------------------ */
@@ -172,7 +181,7 @@
   padding: 0 10px;
   font-size: var(--gs-font-size-sm);
   line-height: 1.3;
-  text-shadow: var(--gs-text-shadow-dark);
+  text-shadow: var(--gs-text-emboss);
 }
 
 .gs-textfield__helper {
@@ -180,7 +189,7 @@
 }
 
 .gs-textfield__error {
-  color: var(--gs-red-300);
+  color: var(--gs-textfield-error-text);
 }
 
 /* ==========================================================================
@@ -210,7 +219,8 @@
   font-size: var(--gs-font-size-md);
 }
 
-/* the dark gel Cancel button (deliberately local — no Button import) */
+/* the gel Cancel button, in the bar-button gel of the current theme
+   (deliberately local — no Button import) */
 .gs-searchfield__cancel {
   display: inline-flex;
   align-items: center;
@@ -220,21 +230,21 @@
   padding: 0 10px;
   border: var(--gs-border);
   border-radius: var(--gs-radius-sm);
-  background: var(--gs-gloss), var(--gs-gradient-dark);
+  background: var(--gs-gloss), var(--gs-gradient-barbutton);
   box-shadow: var(--gs-emboss);
-  color: var(--gs-text);
+  color: var(--gs-text-on-bar);
   font-family: var(--gs-font);
   font-size: var(--gs-font-size-sm);
   font-weight: 700;
   line-height: 1;
-  text-shadow: var(--gs-text-shadow-dark);
+  text-shadow: var(--gs-text-shadow-on-bar);
   white-space: nowrap;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 
 .gs-searchfield__cancel:active {
-  background: var(--gs-gradient-dark-pressed);
+  background: var(--gs-gradient-barbutton-pressed);
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
 }
 

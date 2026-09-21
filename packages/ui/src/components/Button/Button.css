@@ -1,12 +1,17 @@
 /* ==========================================================================
    Button — iOS 3 gel push button
    Layered background: --gs-gloss (hard 50 % highlight) over the variant gel.
-   Each variant only sets the two gel custom properties; the base rule does
+   Each variant only sets the gel + text custom properties; the base rule does
    the rest, so a host can retint a button by overriding them.
+   `default` reads the theme's neutral gel (dark glass in dark, white glass
+   with dark text in light); `primary` / `destructive` are the same blue / red
+   gel with white text in both themes.
    ========================================================================== */
 .gs-button {
-  --gs-button-gel: var(--gs-gradient-dark);
-  --gs-button-gel-pressed: var(--gs-gradient-dark-pressed);
+  --gs-button-gel: var(--gs-gradient-neutral);
+  --gs-button-gel-pressed: var(--gs-gradient-neutral-pressed);
+  --gs-button-text: var(--gs-text-on-neutral);
+  --gs-button-text-shadow: var(--gs-text-shadow-on-neutral);
 
   display: inline-flex;
   align-items: center;
@@ -22,8 +27,8 @@
   font-size: var(--gs-font-size-lg);
   font-weight: 700;
   line-height: 1;
-  color: var(--gs-white);
-  text-shadow: var(--gs-text-shadow-dark);
+  color: var(--gs-button-text);
+  text-shadow: var(--gs-button-text-shadow);
   text-decoration: none;
   white-space: nowrap;
 
@@ -41,18 +46,25 @@
 
 /* ---- variants ---------------------------------------------------------- */
 .gs-button--default {
-  --gs-button-gel: var(--gs-gradient-dark);
-  --gs-button-gel-pressed: var(--gs-gradient-dark-pressed);
+  --gs-button-gel: var(--gs-gradient-neutral);
+  --gs-button-gel-pressed: var(--gs-gradient-neutral-pressed);
+  --gs-button-text: var(--gs-text-on-neutral);
+  --gs-button-text-shadow: var(--gs-text-shadow-on-neutral);
 }
 
+/* coloured gels keep white text + dark shadow whatever the theme */
 .gs-button--primary {
   --gs-button-gel: var(--gs-gradient-blue);
   --gs-button-gel-pressed: var(--gs-gradient-blue-pressed);
+  --gs-button-text: var(--gs-white);
+  --gs-button-text-shadow: var(--gs-text-shadow-dark);
 }
 
 .gs-button--destructive {
   --gs-button-gel: var(--gs-gradient-red);
   --gs-button-gel-pressed: var(--gs-gradient-red-pressed);
+  --gs-button-text: var(--gs-white);
+  --gs-button-text-shadow: var(--gs-text-shadow-dark);
 }
 
 /* ---- sizes ------------------------------------------------------------- */
@@ -88,11 +100,12 @@
   text-overflow: ellipsis;
 }
 
-/* flat white stroke, etched like the text */
+/* flat stroke in the label colour, etched like the text (a single text-shadow
+   value is also a valid drop-shadow() argument) */
 .gs-button__icon {
   flex-shrink: 0;
-  color: var(--gs-white);
-  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.7));
+  color: inherit;
+  filter: drop-shadow(var(--gs-button-text-shadow));
 }
 
 /* ---- states ------------------------------------------------------------ */

@@ -96,7 +96,7 @@ const caption: CSSProperties = {
   fontSize: "var(--gs-font-size-md)",
   fontWeight: 700,
   color: "var(--gs-text-secondary)",
-  textShadow: "var(--gs-text-shadow-dark)",
+  textShadow: "var(--gs-text-emboss)",
 };
 
 export default function PickerDemo() {

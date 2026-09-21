@@ -49,7 +49,7 @@ const captionStyle = {
   margin: 0,
   fontSize: "var(--gs-font-size-sm)",
   color: "var(--gs-text-secondary)",
-  textShadow: "var(--gs-text-shadow-dark)",
+  textShadow: "var(--gs-text-emboss)",
 } as const;
 
 export default function TabBarDemo() {
@@ -71,8 +71,8 @@ export default function TabBarDemo() {
         style={{
           margin: 0,
           fontWeight: 700,
-          color: "var(--gs-white)",
-          textShadow: "var(--gs-text-shadow-dark)",
+          color: "var(--gs-text)",
+          textShadow: "var(--gs-text-emboss)",
         }}
       >
         Selected: {tab}

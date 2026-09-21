@@ -104,8 +104,8 @@ const labelStyle = {
   fontSize: 11,
   fontWeight: 700,
   lineHeight: 1.2,
-  color: "var(--gs-white)",
-  textShadow: "var(--gs-text-shadow-dark)",
+  color: "var(--gs-text)",
+  textShadow: "var(--gs-text-emboss)",
   textAlign: "center",
   overflow: "hidden",
   textOverflow: "ellipsis",
@@ -138,7 +138,7 @@ const captionStyle = {
   margin: 0,
   fontSize: "var(--gs-font-size-sm)",
   color: "var(--gs-text-secondary)",
-  textShadow: "var(--gs-text-shadow-dark)",
+  textShadow: "var(--gs-text-emboss)",
   textAlign: "center",
 } as const;
 

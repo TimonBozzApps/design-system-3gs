@@ -7,6 +7,9 @@
    wrapper; it is painted as a clipped background layer of the track.
    WebKit and Gecko style the track/thumb through different pseudo-elements,
    so every track/thumb rule is written twice — keep the pairs in sync.
+   Themes: the track reads --gs-surface-sunken / --gs-inset / --gs-border and
+   the readout --gs-text-emboss, all of which switch in the light theme; the
+   silver knob and the blue fill are the same in both.
    ========================================================================== */
 .gs-slider {
   --gs-slider-pct: 0;
@@ -155,7 +158,7 @@
   font-variant-numeric: tabular-nums;
   color: var(--gs-text-secondary);
   text-align: right;
-  text-shadow: var(--gs-text-shadow-dark);
+  text-shadow: var(--gs-text-emboss);
 }
 
 /* ---- states ------------------------------------------------------------ */

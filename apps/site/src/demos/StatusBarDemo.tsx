@@ -29,7 +29,7 @@ const caption: React.CSSProperties = {
   textTransform: "uppercase",
   letterSpacing: 0.4,
   margin: "0 0 4px",
-  textShadow: "var(--gs-text-shadow-dark)",
+  textShadow: "var(--gs-text-emboss)",
 };
 
 export default function StatusBarDemo() {
