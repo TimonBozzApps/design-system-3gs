@@ -13,7 +13,7 @@
  */
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
-import type { PreviewErrorCode } from "./spec";
+import type { PreviewErrorCode } from "./spec.js";
 
 export const USER_AGENT =
   "Mozilla/5.0 (compatible; 3GS-UI-Preview/1.0; +https://design-system-3gs.vercel.app)";

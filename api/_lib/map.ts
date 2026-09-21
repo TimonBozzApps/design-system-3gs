@@ -3,8 +3,8 @@
  * I/O, so an AI-backed mapper can replace it behind the same signature.
  * It must never throw: every input is optional and every list is clamped.
  */
-import type { Extracted, ExtractedLink } from "./extract";
-import type { IconName, ScreenSpec, SpecAction, SpecGroup, SpecRow, SpecTab } from "./spec";
+import type { Extracted, ExtractedLink } from "./extract.js";
+import type { IconName, ScreenSpec, SpecAction, SpecGroup, SpecRow, SpecTab } from "./spec.js";
 
 export interface MapContext {
   /** Site icon as a data: URI, when it could be fetched. */

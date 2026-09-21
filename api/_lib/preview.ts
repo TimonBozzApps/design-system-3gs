@@ -5,11 +5,11 @@
  * with a `PreviewErrorCode` so the handler and the dev middleware can map it
  * to an HTTP status.
  */
-import { LruCache } from "./cache";
-import { extract } from "./extract";
-import { fetchHtml, fetchImageDataUri, isPreviewError, normalizeUrl } from "./fetch";
-import { mapToSpec } from "./map";
-import type { PreviewResult, ScreenSpec } from "./spec";
+import { LruCache } from "./cache.js";
+import { extract } from "./extract.js";
+import { fetchHtml, fetchImageDataUri, isPreviewError, normalizeUrl } from "./fetch.js";
+import { mapToSpec } from "./map.js";
+import type { PreviewResult, ScreenSpec } from "./spec.js";
 
 const CACHE_ENTRIES = 200;
 const CACHE_TTL_MS = 60 * 60 * 1000;

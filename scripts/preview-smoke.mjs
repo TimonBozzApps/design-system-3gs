@@ -7,7 +7,8 @@
  *
  * Runs the TypeScript sources directly through Node's native type stripping.
  * The api/ modules use extensionless relative imports (what Vite and Vercel
- * resolve), so a resolve hook retries `./x` as `./x.ts` for Node's ESM loader.
+ * resolve) written with `.js` extensions (what Node ESM on Vercel needs); a
+ * resolve hook maps `./x.js` → `./x.ts` for Node's native type stripping.
  * No build step, no dependencies.
  */
 import { registerHooks } from "node:module";
@@ -17,8 +18,9 @@ registerHooks({
     try {
       return next(specifier, context);
     } catch (err) {
-      if (err?.code === "ERR_MODULE_NOT_FOUND" && /^\.\.?\//.test(specifier) && !/\.[a-z]+$/i.test(specifier)) {
-        return next(`${specifier}.ts`, context);
+      if (err?.code === "ERR_MODULE_NOT_FOUND" && /^\.\.?\//.test(specifier)) {
+        if (/\.js$/.test(specifier)) return next(specifier.replace(/\.js$/, ".ts"), context);
+        if (!/\.[a-z]+$/i.test(specifier)) return next(`${specifier}.ts`, context);
       }
       throw err;
     }

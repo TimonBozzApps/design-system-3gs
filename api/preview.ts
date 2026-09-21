@@ -3,8 +3,8 @@
  * Turns a website into a `ScreenSpec` for the 3GS renderer. Read-only, CORS-open,
  * CDN-cacheable on success, rate-limited per IP.
  */
-import { generatePreview } from "./_lib/preview";
-import type { PreviewErrorCode, PreviewResult } from "./_lib/spec";
+import { generatePreview } from "./_lib/preview.js";
+import type { PreviewErrorCode, PreviewResult } from "./_lib/spec.js";
 
 export const config = { maxDuration: 20 };
 
