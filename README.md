@@ -109,7 +109,9 @@ descriptions and defaults, so they can't drift from the code.
 
 Releases use [changesets](https://github.com/changesets/changesets): add one
 with `pnpm changeset`, and the Release workflow opens a "Version Packages" PR
-that publishes `@3gs/ui` on merge (needs an `NPM_TOKEN` secret). Locally:
+that publishes `@3gs/ui` on merge. The workflow is skipped until the repository
+variable `ENABLE_NPM_RELEASE` is `true` and an `NPM_TOKEN` secret exists (and
+the `@3gs` npm scope is yours — otherwise rename the package first). Locally:
 `pnpm version && pnpm release`. `pnpm pack:check` lists exactly what ships.
 
 ## Develop
