@@ -118,6 +118,8 @@ The job runs only while the repository variable `ENABLE_NPM_RELEASE` is `true`. 
 
 ## Develop
 
+Pushes to `main` deploy the showcase to Vercel automatically; the Release workflow publishes `@3gs/ui` when a Version Packages PR is merged.
+
 ```bash
 pnpm install
 pnpm dev          # showcase at http://localhost:5173, consumes the lib from source
