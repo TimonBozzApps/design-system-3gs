@@ -112,7 +112,7 @@ with `pnpm changeset`, and the Release workflow opens a "Version Packages" PR
 that publishes `@3gs/ui` on merge via npm **trusted publishing** (OIDC — no
 token; the publisher is `TimonBozzApps/design-system-3gs` / `release.yml`).
 The job runs only while the repository variable `ENABLE_NPM_RELEASE` is `true`. Locally:
-`pnpm version && pnpm release`. `pnpm pack:check` lists exactly what ships.
+`pnpm changeset:version && pnpm release`. `pnpm pack:check` lists exactly what ships.
 
 ## Develop
 
