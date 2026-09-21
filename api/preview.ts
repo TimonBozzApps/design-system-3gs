@@ -1,8 +1,9 @@
 /**
- * GET /api/preview?url=<site> — Vercel Function (Node runtime, Web API signature).
+ * GET /api/preview?url=<site> — Vercel Function (Node runtime, `(req, res)` signature).
  * Turns a website into a `ScreenSpec` for the 3GS renderer. Read-only, CORS-open,
  * CDN-cacheable on success, rate-limited per IP.
  */
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { generatePreview } from "./_lib/preview.js";
 import type { PreviewErrorCode, PreviewResult } from "./_lib/spec.js";
 
@@ -24,10 +25,14 @@ const RATE_WINDOW_MS = 60_000;
 const hits = new Map<string, number[]>();
 let lastSweep = 0;
 
-function clientIp(req: Request): string {
-  const forwarded = req.headers.get("x-forwarded-for");
-  const first = forwarded?.split(",")[0]?.trim();
-  return first || req.headers.get("x-real-ip")?.trim() || "unknown";
+function header(req: IncomingMessage, name: string): string | undefined {
+  const v = req.headers[name];
+  return Array.isArray(v) ? v[0] : v;
+}
+
+function clientIp(req: IncomingMessage): string {
+  const first = header(req, "x-forwarded-for")?.split(",")[0]?.trim();
+  return first || header(req, "x-real-ip")?.trim() || req.socket?.remoteAddress || "unknown";
 }
 
 /** Returns the seconds to wait when the caller is over the limit, else 0. */
@@ -48,38 +53,41 @@ function rateLimited(ip: string, now = Date.now()): number {
 
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-methods": "GET, HEAD, OPTIONS" };
 
-function json(body: PreviewResult, status: number, extra: Record<string, string> = {}, includeBody = true): Response {
-  return new Response(includeBody ? JSON.stringify(body) : null, {
-    status,
-    headers: {
-      "content-type": "application/json; charset=utf-8",
-      "cache-control": status === 200 ? "public, s-maxage=3600, stale-while-revalidate=86400" : "no-store",
-      "x-content-type-options": "nosniff",
-      ...CORS,
-      ...extra,
-    },
-  });
+function send(res: ServerResponse, body: PreviewResult, status: number, extra: Record<string, string> = {}, includeBody = true): void {
+  res.statusCode = status;
+  const headers: Record<string, string> = {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": status === 200 ? "public, s-maxage=3600, stale-while-revalidate=86400" : "no-store",
+    "x-content-type-options": "nosniff",
+    ...CORS,
+    ...extra,
+  };
+  for (const [k, v] of Object.entries(headers)) res.setHeader(k, v);
+  res.end(includeBody ? JSON.stringify(body) : undefined);
 }
 
-export default async function handler(req: Request): Promise<Response> {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
-  if (req.method !== "GET" && req.method !== "HEAD") {
-    return json({ ok: false, code: "invalid_url", error: "Method not allowed. Use GET /api/preview?url=…" }, 405, { allow: "GET, HEAD, OPTIONS" });
+export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const method = req.method ?? "GET";
+  if (method === "OPTIONS") {
+    res.statusCode = 204;
+    for (const [k, v] of Object.entries(CORS)) res.setHeader(k, v);
+    res.end();
+    return;
   }
-  const withBody = req.method === "GET";
+  if (method !== "GET" && method !== "HEAD") {
+    send(res, { ok: false, code: "invalid_url", error: "Method not allowed. Use GET /api/preview?url=…" }, 405, { allow: "GET, HEAD, OPTIONS" });
+    return;
+  }
+  const withBody = method === "GET";
 
   const retryAfter = rateLimited(clientIp(req));
   if (retryAfter) {
-    return json(
-      { ok: false, code: "rate_limited", error: "Too many previews — try again in a minute." },
-      429,
-      { "retry-after": String(retryAfter) },
-      withBody,
-    );
+    send(res, { ok: false, code: "rate_limited", error: "Too many previews — try again in a minute." }, 429, { "retry-after": String(retryAfter) }, withBody);
+    return;
   }
 
-  const url = new URL(req.url).searchParams.get("url") ?? "";
+  const url = new URL(req.url ?? "/", "http://localhost").searchParams.get("url") ?? "";
   const result = await generatePreview(url);
   const status = result.ok ? 200 : ERROR_STATUS[result.code] ?? 500;
-  return json(result, status, result.ok ? { "x-preview-cache": result.cached ? "hit" : "miss" } : {}, withBody);
+  send(res, result, status, result.ok ? { "x-preview-cache": result.cached ? "hit" : "miss" } : {}, withBody);
 }
