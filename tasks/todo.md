@@ -93,3 +93,9 @@ Library `@3gs/ui` (packages/ui) + showcase site (apps/site). Icons via lucide-re
   (ESM+CJS+CSS+SSR+GsProvider) green; light+RTL verified visually; `changeset version` → 0.1.0 +
   CHANGELOG. Open: portaled overlays inherit document dir (documented); Figma import drops filters
   (documented in design/README.md).
+
+## Batch 6 (2026-09-21) — "3GS-ify a website" preview
+- [x] Contract `api/_lib/spec.ts` (ScreenSpec), Vite dev middleware for /api/preview, placeholder section
+- [x] Server: safe fetcher (SSRF guard, redirects, limits), extractor, heuristic mapper, LRU cache, Vercel function with rate limit — agent
+- [x] Client: SpecScreen renderer, section UI (input, chips, HUD/Alert states), PNG export, Copy JSX, ?url= deep link, analytics — agent
+- [ ] Integrate: typecheck, local end-to-end, deploy, verify /api/preview on Vercel, README

@@ -116,6 +116,19 @@ token; the publisher is `TimonBozzApps/design-system-3gs` / `release.yml`).
 The job runs only while the repository variable `ENABLE_NPM_RELEASE` is `true`. Locally:
 `pnpm changeset:version && pnpm release`. `pnpm pack:check` lists exactly what ships.
 
+## "Try it on your site"
+
+The showcase can rebuild any public website as a 2009 iPhone app:
+`/api/preview?url=<site>` (a Vercel Function in `api/`) fetches the page with an
+SSRF-guarded fetcher (private / link-local / metadata addresses rejected on every
+redirect hop, 8 s timeout, 4 MB read cap), extracts title, icons, OG image, nav
+links, headings, CTAs and search forms, and maps them to a `ScreenSpec`
+(`api/_lib/spec.ts`) that the site renders with the library — with PNG export and
+the generated JSX to copy. Results are cached (1 h) and rate-limited (12/min/IP).
+Deep link: `?site=vercel.com`. The mapper is a pure function so an AI-designed one
+can drop in later. Locally, `pnpm dev` serves the same endpoint through a Vite
+middleware; `node scripts/preview-smoke.mjs` runs the positive/negative cases.
+
 ## Analytics (opt-in)
 
 The showcase can report anonymous usage to PostHog — cookieless, DNT-respected,

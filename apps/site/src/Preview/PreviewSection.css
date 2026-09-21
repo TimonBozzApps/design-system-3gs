@@ -1,0 +1,257 @@
+/* ==========================================================================
+   "Try it on your site" — site chrome for the preview generator.
+   Inherits the .demo two-column grid; the generated-code panel spans both.
+   ========================================================================== */
+
+/* ---- form ---------------------------------------------------------------- */
+.preview__form {
+  margin: 4px 0 16px;
+  max-width: 520px;
+}
+
+.preview__label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--site-muted);
+}
+
+.preview__row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.preview__input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--site-border);
+  background: #0a0a0b;
+  color: var(--site-text);
+  font-family: var(--site-mono);
+  font-size: 14px;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+  transition: border-color 120ms, box-shadow 120ms;
+}
+
+.preview__input::placeholder {
+  color: #55555c;
+}
+
+.preview__input:focus {
+  border-color: rgba(143, 184, 245, 0.55);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.6),
+    0 0 0 3px rgba(143, 184, 245, 0.16);
+}
+
+.preview__input[aria-invalid="true"] {
+  border-color: rgba(230, 90, 90, 0.6);
+}
+
+.preview__row .gs-button {
+  flex-shrink: 0;
+}
+
+/* ---- example chips ------------------------------------------------------- */
+.preview__chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  max-width: 520px;
+}
+
+.preview__chips-label {
+  font-size: 13px;
+  color: var(--site-muted);
+  margin-inline-end: 2px;
+}
+
+.preview__chip {
+  appearance: none;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--site-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--site-muted);
+  font: inherit;
+  font-family: var(--site-mono);
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+
+.preview__chip:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--site-text);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.preview__chip:focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: 1px;
+}
+
+.preview__chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---- phone column -------------------------------------------------------- */
+.preview__phone {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  /* exactly the phone's width so the rows underneath line up with its edges */
+  width: calc(320px + 18px * 2);
+}
+
+/* the node html-to-image rasterises; kept bare so the PNG is just the phone */
+.preview__capture {
+  display: block;
+  width: 100%;
+}
+
+.preview__notes {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--site-muted);
+  text-align: center;
+}
+
+.preview__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* <a> dressed as the library button, so "Open site" is a real link */
+.preview__actions a.gs-button {
+  text-decoration: none;
+}
+
+.preview__action-error {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  color: #e88;
+}
+
+/* ---- generated code ------------------------------------------------------ */
+.preview__code {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  min-width: 0;
+}
+
+.preview__code summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--site-muted);
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview__code summary::-webkit-details-marker {
+  display: none;
+}
+
+.preview__code summary::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 6px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 120ms;
+}
+
+.preview__code[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.preview__code summary:hover {
+  color: var(--site-text);
+}
+
+.preview__code .demo__usage {
+  margin-top: 8px;
+  max-height: 480px;
+  overflow: auto;
+}
+
+/* ---- inside the phone (SpecScreen) --------------------------------------- */
+
+/* hero card: the OG image as a glossy 300×150 tile above the first group */
+.spec-hero {
+  position: relative;
+  width: 300px;
+  height: 150px;
+  flex-shrink: 0;
+  margin: 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+  border: var(--gs-border);
+  box-shadow: var(--gs-emboss);
+  background: var(--gs-gradient-dark);
+}
+
+.spec-hero__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.spec-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gs-gloss-soft);
+  pointer-events: none;
+}
+
+.spec-actions {
+  display: grid;
+  gap: 8px;
+}
+
+/* the contract's `green` tile — the library ships gray/blue/red, so retint via its custom property */
+.spec-row--green .gs-list-item__icon--tile {
+  --gs-list-tile-gel: linear-gradient(to bottom, #8fe09a 0%, #4bbb5e 49%, #2f9c43 50%, #237a33 100%);
+}
+
+/* ---- narrow screens ------------------------------------------------------ */
+@media (max-width: 960px) {
+  .preview__phone {
+    justify-self: center;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .preview__row {
+    flex-direction: column;
+  }
+
+  .preview__row .gs-button {
+    width: 100%;
+  }
+}
