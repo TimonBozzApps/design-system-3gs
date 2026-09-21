@@ -79,3 +79,13 @@ Library `@3gs/ui` (packages/ui) + showcase site (apps/site). Icons via lucide-re
 - Batch 4 review: light theme verified on all 20 screens (grid captures), dark spot-checked unchanged;
   DatePicker time mode + ModalSheet focus/Escape + tokens gallery (64 cards) verified. Lib 71 kB JS /
   72 kB CSS, 32 exports. Repo initialised; 3 commits.
+
+## Batch 5 (2026-09-21) — "do all that"
+- [x] Publish setup: package metadata (MIT, repo, keywords, files, publishConfig), package README, LICENSE,
+      changesets (config + initial minor changeset), `pnpm release` / `pack:check`, CI + Release workflows
+- [ ] Props docs generated from TS types (scripts/extract-props.mjs → generated/props.json → PropsTable)
+- [ ] RTL pass (logical properties, mirrored back button / chevrons / switch / slider; RTL demo; sidebar toggle done)
+- [ ] i18n: GsProvider + GsStrings, all built-in strings overridable; Localization demo
+- [ ] Figma export: DTCG token JSON (dark/light) + SVG gel sticker sheets, `pnpm design:export`
+- [ ] Stepper, SearchBar (scopes), NotificationBanner
+- [ ] Integrate: typecheck, build, browser verification (both themes + RTL), tarball smoke test, changeset version → CHANGELOG, commit

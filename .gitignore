@@ -6,3 +6,4 @@ dist
 .playwright-mcp
 *.png
 !apps/site/public/**
+.packs

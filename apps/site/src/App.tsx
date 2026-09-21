@@ -22,6 +22,9 @@ function readTheme(): Theme {
 
 export function App() {
   const [theme, setTheme] = useState<Theme>(readTheme);
+  const [dir, setDir] = useState<"ltr" | "rtl">(() =>
+    new URLSearchParams(window.location.search).get("dir") === "rtl" ? "rtl" : "ltr",
+  );
   useEffect(() => {
     try {
       localStorage.setItem("gs-theme", theme);
@@ -45,6 +48,16 @@ export function App() {
             label="Light theme"
             onLabel="ON"
             offLabel="OFF"
+          />
+        </label>
+        <label className="site__theme">
+          <span>Right-to-left</span>
+          <Switch
+            checked={dir === "rtl"}
+            onChange={(on) => setDir(on ? "rtl" : "ltr")}
+            label="Right-to-left"
+            onLabel="RTL"
+            offLabel="LTR"
           />
         </label>
         <nav>
@@ -85,7 +98,7 @@ export function App() {
             </p>
           </div>
           <div className="hero__phone">
-            <PhoneFrame theme={theme}>
+            <PhoneFrame theme={theme} dir={dir}>
               <AppStoreScreen />
             </PhoneFrame>
           </div>
@@ -116,7 +129,7 @@ export function App() {
               )}
             </div>
             <div className="demo__phone">
-              <PhoneFrame theme={theme}>
+              <PhoneFrame theme={theme} dir={dir}>
                 <Demo />
               </PhoneFrame>
             </div>

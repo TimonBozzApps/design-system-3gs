@@ -19,6 +19,11 @@ import * as HUD from "./HUDDemo";
 import * as Keyboard from "./KeyboardDemo";
 import * as DatePicker from "./DatePickerDemo";
 import * as ModalSheet from "./ModalSheetDemo";
+import * as Stepper from "./StepperDemo";
+import * as SearchBar from "./SearchBarDemo";
+import * as NotificationBanner from "./NotificationBannerDemo";
+import * as I18n from "./I18nDemo";
+import * as Rtl from "./RtlDemo";
 
 export const demos: DemoModule[] = [
   Button,
@@ -41,4 +46,9 @@ export const demos: DemoModule[] = [
   Keyboard,
   DatePicker,
   ModalSheet,
+  Stepper,
+  SearchBar,
+  NotificationBanner,
+  I18n,
+  Rtl,
 ];

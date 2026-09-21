@@ -8,17 +8,19 @@ export interface PhoneFrameProps {
   statusBar?: StatusBarProps;
   /** Theme applied to the screen's `.gs-root`. */
   theme?: "dark" | "light";
+  /** Writing direction of the screen. */
+  dir?: "ltr" | "rtl";
 }
 
 /**
  * A stylised iPhone 3GS bezel with a 320×480 screen. The screen root carries
  * `.gs-root` so components render on the system's black background.
  */
-export function PhoneFrame({ children, statusBar, theme = "dark" }: PhoneFrameProps) {
+export function PhoneFrame({ children, statusBar, theme = "dark", dir = "ltr" }: PhoneFrameProps) {
   return (
     <div className="phone">
       <div className="phone__speaker" />
-      <div className="phone__screen gs-root" data-theme={theme}>
+      <div className="phone__screen gs-root" data-theme={theme} dir={dir}>
         <StatusBar {...statusBar} />
         <div className="phone__content">{children}</div>
       </div>
