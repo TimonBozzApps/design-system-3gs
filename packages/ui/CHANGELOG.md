@@ -1,5 +1,11 @@
 # @3gs/ui
 
+## 0.1.1
+
+### Patch Changes
+
+- c4ecdd0: Expose `./package.json` through the package `exports` map so bundlers and tooling can read it.
+
 ## 0.1.0
 
 ### Minor Changes
