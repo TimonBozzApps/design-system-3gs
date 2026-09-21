@@ -17,6 +17,8 @@ import * as PageControl from "./PageControlDemo";
 import * as Popover from "./PopoverDemo";
 import * as HUD from "./HUDDemo";
 import * as Keyboard from "./KeyboardDemo";
+import * as DatePicker from "./DatePickerDemo";
+import * as ModalSheet from "./ModalSheetDemo";
 
 export const demos: DemoModule[] = [
   Button,
@@ -37,4 +39,6 @@ export const demos: DemoModule[] = [
   Popover,
   HUD,
   Keyboard,
+  DatePicker,
+  ModalSheet,
 ];

@@ -162,6 +162,25 @@
   --gs-tabbar-height: 49px;
   --gs-statusbar-height: 20px;
 
+
+  /* ---- semantic (theme-switching) tokens ------------------------------
+     Components should prefer these over the raw palette so the light theme
+     (tokens/theme-light.css) can retint them. Dark defaults here. */
+  --gs-bar-border: #000000;                          /* outline of nav/tool bars */
+  --gs-bar-rim: rgba(255, 255, 255, 0.25);           /* light rim inside a bar's top edge */
+  --gs-gradient-barbutton: var(--gs-gradient-dark);  /* BarButton / SegmentedControl gel inside bars */
+  --gs-gradient-barbutton-pressed: var(--gs-gradient-dark-pressed);
+  --gs-gradient-neutral: var(--gs-gradient-dark);    /* default Button / standalone neutral gel */
+  --gs-gradient-neutral-pressed: var(--gs-gradient-dark-pressed);
+  --gs-text-on-neutral: #ffffff;                     /* text on the neutral gel */
+  --gs-text-shadow-on-neutral: var(--gs-text-shadow-dark);
+  --gs-text-on-bar: #ffffff;                         /* bar titles / bar-button labels */
+  --gs-text-shadow-on-bar: var(--gs-text-shadow-dark);
+  --gs-text-emboss: var(--gs-text-shadow-dark);      /* text sitting on --gs-surface (cells, labels) */
+  --gs-header-text: var(--gs-text-secondary);        /* grouped-list section headers */
+  --gs-surface-gloss: none;                          /* extra highlight over cells (light: subtle) */
+  --gs-statusbar-gradient: linear-gradient(to bottom, #464649 0%, #2f2f32 49%, #1f1f21 50%, #0f0f10 100%);
+
   /* ---- motion ---------------------------------------------------------- */
   --gs-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
   --gs-duration: 160ms;

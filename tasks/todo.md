@@ -65,3 +65,14 @@ Library `@3gs/ui` (packages/ui) + showcase site (apps/site). Icons via lucide-re
   outside dismiss, HUD 4 kinds (captured in one Playwright script — auto-dismiss is shorter than the
   MCP screenshot round trip), keyboard typing/shift/popup/layers/delete-repeat/Send.
   Site: prop tables are now one shared grid (`display: contents` rows) so columns align.
+
+## Batch 4 (2026-09-21)
+- [x] git init + initial commit
+- [ ] Light theme tokens (`tokens/theme-light.css`, semantic tokens) — main agent
+- [ ] Light theme: core components adopt semantic tokens (Button, Switch, TextField, NavigationBar, TabBar, List, Alert, Badge, Icon) — agent A
+- [ ] Light theme: extended components (SegmentedControl, Slider, ActionSheet, Picker, Progress, StatusBar, Toolbar, PageControl, Popover, HUD, Keyboard) — agent B
+- [ ] DatePicker — date / time / dateTime presets on Picker
+- [ ] ModalSheet — full-screen modal that slides up with its own nav bar
+- [ ] Tokens docs section on the site
+- [ ] Site theme toggle (sidebar switch → data-theme on every phone screen) — main agent
+- [ ] Integrate, verify both themes, commit

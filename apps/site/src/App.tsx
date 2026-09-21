@@ -1,10 +1,32 @@
+import { useEffect, useState } from "react";
+import { Switch } from "@3gs/ui";
 import { PhoneFrame } from "./shell/PhoneFrame";
+import { TokensSection } from "./TokensSection";
 import { AppStoreScreen } from "./shell/AppStoreScreen";
 import { demos } from "./demos";
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
+type Theme = "dark" | "light";
+
+function readTheme(): Theme {
+  try {
+    return localStorage.getItem("gs-theme") === "light" ? "light" : "dark";
+  } catch {
+    return "dark";
+  }
+}
+
 export function App() {
+  const [theme, setTheme] = useState<Theme>(readTheme);
+  useEffect(() => {
+    try {
+      localStorage.setItem("gs-theme", theme);
+    } catch {
+      /* private mode etc. */
+    }
+  }, [theme]);
+
   return (
     <div className="site">
       <aside className="site__nav">
@@ -12,8 +34,21 @@ export function App() {
           <span className="site__brand-mark">3GS</span>
           <span className="site__brand-text">UI</span>
         </a>
+        <label className="site__theme">
+          <span>Light theme</span>
+          <Switch
+            checked={theme === "light"}
+            onChange={(on) => setTheme(on ? "light" : "dark")}
+            label="Light theme"
+            onLabel="ON"
+            offLabel="OFF"
+          />
+        </label>
         <nav>
           <ul>
+            <li>
+              <a href="#tokens">Tokens</a>
+            </li>
             {demos.map(({ meta }) => (
               <li key={meta.title}>
                 <a href={`#${slug(meta.title)}`}>{meta.title}</a>
@@ -47,11 +82,13 @@ export function App() {
             </p>
           </div>
           <div className="hero__phone">
-            <PhoneFrame>
+            <PhoneFrame theme={theme}>
               <AppStoreScreen />
             </PhoneFrame>
           </div>
         </header>
+
+        <TokensSection theme={theme} />
 
         {demos.map(({ meta, default: Demo }) => (
           <section className="demo" id={slug(meta.title)} key={meta.title}>
@@ -76,7 +113,7 @@ export function App() {
               )}
             </div>
             <div className="demo__phone">
-              <PhoneFrame>
+              <PhoneFrame theme={theme}>
                 <Demo />
               </PhoneFrame>
             </div>
