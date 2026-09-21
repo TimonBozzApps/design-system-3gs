@@ -98,4 +98,8 @@ Library `@3gs/ui` (packages/ui) + showcase site (apps/site). Icons via lucide-re
 - [x] Contract `api/_lib/spec.ts` (ScreenSpec), Vite dev middleware for /api/preview, placeholder section
 - [x] Server: safe fetcher (SSRF guard, redirects, limits), extractor, heuristic mapper, LRU cache, Vercel function with rate limit — agent
 - [x] Client: SpecScreen renderer, section UI (input, chips, HUD/Alert states), PNG export, Copy JSX, ?url= deep link, analytics — agent
-- [ ] Integrate: typecheck, local end-to-end, deploy, verify /api/preview on Vercel, README
+- [x] Integrate: typecheck, local end-to-end, deploy, verify /api/preview on Vercel, README
+- Batch 6 review: prod /api/preview → vercel.com 0.7 s, posthog.com 1.0 s (OG image), github.com 0.6 s;
+  SSRF/invalid cases 400; in-function cache hit on repeat. Both agents were cut off by the session
+  limit mid-verification; I finished: truncating 4 MB read cap (posthog.com was too_large), mega-menu
+  link labels (first text chunk), title from <title> head, ?site= deep link (Vite reserves ?url).

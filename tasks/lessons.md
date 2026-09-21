@@ -21,3 +21,13 @@
   file written up front so nobody edits it concurrently.
 - Demo inline styles are part of the theme surface too — grep demos for hard-coded `#fff` /
   `--gs-text-shadow-dark` after adding a theme.
+- **Vercel `api/` functions in a pnpm monorepo, three gotchas in a row:** (1) the nearest
+  package.json needs `"type": "module"` or the compiled ESM fails with "Cannot use import statement";
+  (2) Vercel compiles TS per file, so relative imports need explicit `.js` extensions (TS `bundler`
+  resolution and Vite both map `./x.js` → `x.ts`); (3) the Web `Request`/`Response` signature is NOT
+  applied to a default export on the Node runtime — use `(req: IncomingMessage, res: ServerResponse)`.
+  Test the deployed function with curl right after the first deploy; `vercel logs <url>` shows the stack.
+- **Vite dev reserves the `?url` query key** (asset import suffix) — a page URL like `/?url=x` 403s in
+  dev. Pick another param name for deep links.
+- **Headless Chrome is a "bot" to posthog-js** (UA contains HeadlessChrome) — it drops events. Verify
+  analytics with a normal UA (`--user-agent=…`) over CDP, and keep the page open long enough to flush.
