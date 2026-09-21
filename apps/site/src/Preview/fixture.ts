@@ -27,8 +27,9 @@ const HERO = svgUri(`
 `);
 
 /**
- * What the generator produces for vercel.com — the screen shown before the
- * visitor submits anything, and the fixture used while the API is stubbed.
+ * What the generator produces for vercel.com's front page — the screen shown
+ * before the visitor submits anything, in the server's shape: hero row, content
+ * sections, link groups, gel buttons, and tabs that open real vercel.com pages.
  */
 export const FIXTURE: ScreenSpec = {
   url: "https://vercel.com/",
@@ -41,12 +42,46 @@ export const FIXTURE: ScreenSpec = {
   themeColor: "#000000",
   tabs: [
     { label: "Home", icon: "home" },
-    { label: "Products", icon: "layout-grid" },
-    { label: "Docs", icon: "book" },
-    { label: "Blog", icon: "newspaper", badge: 3 },
-    { label: "Account", icon: "log-in" },
+    { label: "Products", icon: "layout-grid", href: "https://vercel.com/products" },
+    { label: "Docs", icon: "book", href: "https://vercel.com/docs" },
+    { label: "Blog", icon: "newspaper", badge: 3, href: "https://vercel.com/blog" },
+    { label: "Account", icon: "log-in", href: "https://vercel.com/login" },
+  ],
+  sections: [
+    {
+      heading: "Build and deploy on the AI Cloud",
+      text: "Vercel provides the developer tools and cloud infrastructure to build, scale, and secure a faster, more personalized web.",
+    },
+    {
+      heading: "Git-connected deploys",
+      text: "From localhost to https, in seconds. Deploy from git or your CLI — every push gets a preview URL.",
+      href: "https://vercel.com/docs/deployments",
+    },
+    {
+      heading: "Collaborative pre-production",
+      text: "Every deploy is remarkable. Chat with your team on real, production-grade UI, not just designs.",
+      href: "https://vercel.com/docs/comments",
+    },
+    {
+      heading: "Scale your enterprise without compromising security",
+      text: "Turbocharge your teams with a platform built for the unique needs of the enterprise.",
+      href: "https://vercel.com/enterprise",
+    },
   ],
   groups: [
+    {
+      header: "Vercel",
+      rows: [
+        {
+          title: "Vercel: Build and deploy the best web experiences",
+          subtitle: "Vercel is the platform for frontend developers, providing the speed and reliability innovators need to create at the moment of inspiration.",
+          href: "https://vercel.com/",
+          imageDataUri: HERO,
+          tile: "blue",
+          accessory: "chevron",
+        },
+      ],
+    },
     {
       header: "Products",
       rows: [

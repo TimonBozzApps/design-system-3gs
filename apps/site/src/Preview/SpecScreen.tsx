@@ -10,7 +10,7 @@ import {
   TabBar,
   TabBarItem,
 } from "@3gs/ui";
-import type { ScreenSpec, SpecAction, SpecRow } from "../../../../api/_lib/spec";
+import type { ScreenSpec, SpecAction, SpecRow, SpecSection, SpecTab } from "../../../../api/_lib/spec";
 import { Screen } from "../shell/Screen";
 import { iconFor } from "./icons";
 
@@ -24,6 +24,8 @@ import { iconFor } from "./icons";
 export const MAX_TABS = 5;
 export const MAX_ACTIONS = 3;
 export const MAX_SCOPES = 3;
+/** The Back button shows the previous title, cut to this many characters. */
+export const MAX_BACK_LABEL = 10;
 
 /** Tile colours the library ships; `green` from the contract is painted via CSS (see PreviewSection.css). */
 export type LibraryTint = "gray" | "blue" | "red";
@@ -48,12 +50,20 @@ export interface NormalizedGroup {
   rows: NormalizedRow[];
 }
 
+export interface NormalizedSection {
+  heading: string;
+  text?: string;
+  href?: string;
+}
+
 export interface NormalizedTab {
   /** Unique per bar — labels can repeat, values can't. */
   value: string;
   label: string;
   icon: string;
   badge?: number | string;
+  /** The page the tab opens; the first tab defaults to the site's front page. */
+  href?: string;
 }
 
 export interface NormalizedAction {
@@ -63,10 +73,12 @@ export interface NormalizedAction {
 }
 
 export interface NormalizedSpec {
+  url: string;
   title: string;
   iconDataUri?: string;
   imageDataUri?: string;
   search?: { placeholder: string; scopes: string[] };
+  sections: NormalizedSection[];
   groups: NormalizedGroup[];
   actions: NormalizedAction[];
   tabs: NormalizedTab[];
@@ -113,16 +125,27 @@ function normalizeRow(row: SpecRow | undefined): NormalizedRow | null {
 }
 
 export function normalizeSpec(spec: ScreenSpec): NormalizedSpec {
+  const url = httpUrl(spec.url) ?? (str(spec.host) ? `https://${str(spec.host)}/` : "");
+
   const seen = new Set<string>();
   const tabs: NormalizedTab[] = [];
-  for (const tab of list<ScreenSpec["tabs"][number]>(spec.tabs)) {
+  for (const tab of list<SpecTab>(spec.tabs)) {
     const label = str(tab?.label);
     if (!label) continue;
     let value = label;
     for (let i = 2; seen.has(value); i++) value = `${label} ${i}`;
     seen.add(value);
-    tabs.push({ value, label, icon: str(tab.icon) ?? "globe", badge: tab.badge });
+    // The server's first tab is always "Home" without an href: it means the front page.
+    const href = httpUrl(tab.href) ?? (tabs.length === 0 && url ? url : undefined);
+    tabs.push({ value, label, icon: str(tab.icon) ?? "globe", badge: tab.badge, href });
     if (tabs.length === MAX_TABS) break;
+  }
+
+  const sections: NormalizedSection[] = [];
+  for (const section of list<SpecSection>(spec.sections)) {
+    const heading = str(section?.heading);
+    if (!heading) continue;
+    sections.push({ heading, text: str(section.text), href: httpUrl(section.href) });
   }
 
   const groups: NormalizedGroup[] = [];
@@ -153,14 +176,85 @@ export function normalizeSpec(spec: ScreenSpec): NormalizedSpec {
     : undefined;
 
   return {
+    url,
     title: str(spec.title) ?? str(spec.siteName) ?? str(spec.host) ?? "Untitled",
     iconDataUri: dataUri(spec.iconDataUri),
     imageDataUri: dataUri(spec.imageDataUri),
     search,
+    sections,
     groups,
     actions,
     tabs,
   };
+}
+
+/**
+ * The server's first group is the page's own hero row (one row linking to the
+ * page itself, headed by the site name); content sections render right after
+ * it, before the link groups.
+ */
+export function heroGroupCount(s: NormalizedSpec): number {
+  const first = s.groups[0];
+  if (!first || first.rows.length !== 1) return 0;
+  const href = first.rows[0].href;
+  return !href || urlKey(href) === urlKey(s.url) ? 1 : 0;
+}
+
+/* ==========================================================================
+   URL rules — what a link does inside the phone
+   ========================================================================== */
+
+/** Host without `www.`, or "" when the URL can't be parsed. */
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * The registrable part of a host (`docs.stripe.com` → `stripe.com`,
+ * `bbc.co.uk` → `bbc.co.uk`): a naive eTLD+1 that knows the common two-label
+ * public suffixes — enough to tell "same site" from "elsewhere".
+ */
+export function siteKey(url: string): string {
+  const parts = hostOf(url).split(".").filter(Boolean);
+  if (parts.length < 2) return parts.join(".");
+  const [sld, tld] = parts.slice(-2);
+  const keep = parts.length > 2 && tld.length === 2 && /^(co|com|org|net|gov|edu|ac|or|ne)$/.test(sld) ? 3 : 2;
+  return parts.slice(-keep).join(".");
+}
+
+/** The URL without hash, `www.` and trailing slash — "is this the page I'm on". */
+export function urlKey(url: string): string {
+  try {
+    const u = new URL(url);
+    u.hash = "";
+    u.hostname = u.hostname.replace(/^www\./, "");
+    return u.href.replace(/\/$/, "");
+  } catch {
+    return url.trim();
+  }
+}
+
+export type LinkKind =
+  /** the page currently shown — a dead end, rendered as a plain row */
+  | "self"
+  /** same site — pushed onto the phone's navigation stack */
+  | "internal"
+  /** somewhere else — opens in a new browser tab */
+  | "external";
+
+export function linkKind(href: string, siteUrl: string, pageUrl: string): LinkKind {
+  if (urlKey(href) === urlKey(pageUrl)) return "self";
+  const site = siteKey(siteUrl);
+  return site !== "" && siteKey(href) === site ? "internal" : "external";
+}
+
+/** "PostHog pricing" → "PostHog p…" — the Back button's label. */
+export function backLabel(title: string): string {
+  return title.length > MAX_BACK_LABEL ? `${title.slice(0, MAX_BACK_LABEL - 1).trimEnd()}…` : title;
 }
 
 /* ==========================================================================
@@ -194,17 +288,76 @@ function openInNewTab(href: string) {
 }
 
 export interface SpecScreenProps {
+  /** The screen to draw: the top of the navigation stack. */
   spec: ScreenSpec;
+  /** The site's front page — links on the same registrable host navigate inside the phone. */
+  siteUrl: string;
+  /** Tabs of the site's front page: the same bar on every screen of the stack. */
+  tabs: NormalizedTab[];
+  /** Selected tab value. */
+  tab?: string;
+  /** A tab was tapped; `again` when it was already selected (iOS pops that tab to its root). */
+  onTab: (value: string, again: boolean) => void;
+  /** Title of the screen underneath — present when this one was pushed. */
+  previousTitle?: string;
+  onBack: () => void;
+  /** An internal link (row, section heading, gel button) was tapped. */
+  onNavigate: (href: string) => void;
 }
 
 /**
  * A `ScreenSpec` rendered with the library inside the phone's `<Screen>`:
- * nav bar (+ search bar) on top, hero card + grouped lists + gel buttons in
- * the pinstripe body, tab bar pinned to the bottom. Stateless apart from the
- * library's own uncontrolled widgets.
+ * nav bar (+ search bar) on top, hero card + content sections + grouped
+ * lists + gel buttons in the pinstripe body, the site's tab bar pinned to
+ * the bottom. Links on the same site are navigation (chevron, pushed by the
+ * owner); links elsewhere are detail rows that open a new browser tab.
  */
-export function SpecScreen({ spec }: SpecScreenProps) {
+export function SpecScreen({ spec, siteUrl, tabs, tab, onTab, previousTitle, onBack, onNavigate }: SpecScreenProps) {
   const s = normalizeSpec(spec);
+  const heroGroups = heroGroupCount(s);
+  const empty = s.sections.length === 0 && s.groups.length <= heroGroups && s.actions.length === 0;
+
+  /** Row props for a link: how it looks and what tapping it does. */
+  const link = (href: string | undefined, fallback: RowAccessory) => {
+    if (!href) return { accessory: fallback };
+    switch (linkKind(href, siteUrl, s.url)) {
+      case "self":
+        return { accessory: "none" as const };
+      case "internal":
+        return { accessory: "chevron" as const, onClick: () => onNavigate(href) };
+      case "external":
+        return { accessory: "detail" as const, href, ...NEW_TAB };
+    }
+  };
+
+  const open = (href: string) => {
+    if (linkKind(href, siteUrl, s.url) === "internal") onNavigate(href);
+    else openInNewTab(href);
+  };
+
+  const renderGroup = (group: NormalizedGroup, gi: number) => (
+    <List key={gi} header={group.header} footer={group.footer}>
+      {group.rows.map((row, ri) => (
+        <ListItem
+          key={ri}
+          className={row.green ? "spec-row--green" : undefined}
+          icon={
+            row.imageDataUri ? (
+              <img src={row.imageDataUri} alt="" style={rowImageStyle} />
+            ) : (
+              <Icon icon={iconFor(row.icon)} variant="flat" size={18} />
+            )
+          }
+          iconTile={!row.imageDataUri}
+          iconTint={row.tint}
+          title={row.title}
+          subtitle={row.subtitle}
+          detail={row.detail}
+          {...link(row.href, row.accessory)}
+        />
+      ))}
+    </List>
+  );
 
   return (
     <Screen
@@ -212,8 +365,16 @@ export function SpecScreen({ spec }: SpecScreenProps) {
         <>
           <NavigationBar
             title={s.title}
-            left={s.iconDataUri ? <img src={s.iconDataUri} alt="" style={navIconStyle} /> : undefined}
-            right={<BarButton variant="done">Done</BarButton>}
+            left={
+              previousTitle !== undefined ? (
+                <BarButton variant="back" onClick={onBack}>
+                  {backLabel(previousTitle)}
+                </BarButton>
+              ) : s.iconDataUri ? (
+                <img src={s.iconDataUri} alt="" style={navIconStyle} />
+              ) : undefined
+            }
+            right={previousTitle === undefined ? <BarButton variant="done">Done</BarButton> : undefined}
           />
           {s.search && (
             <SearchBar
@@ -224,10 +385,17 @@ export function SpecScreen({ spec }: SpecScreenProps) {
         </>
       }
       bottom={
-        s.tabs.length > 0 ? (
-          <TabBar defaultValue={s.tabs[0].value} label={`${s.title} tabs`}>
-            {s.tabs.map((tab) => (
-              <TabBarItem key={tab.value} value={tab.value} icon={iconFor(tab.icon)} label={tab.label} badge={tab.badge} />
+        tabs.length > 0 ? (
+          <TabBar value={tab ?? tabs[0].value} label={`${s.title} tabs`}>
+            {tabs.map((t) => (
+              <TabBarItem
+                key={t.value}
+                value={t.value}
+                icon={iconFor(t.icon)}
+                label={t.label}
+                badge={t.badge}
+                onClick={() => onTab(t.value, t.value === tab)}
+              />
             ))}
           </TabBar>
         ) : undefined
@@ -239,36 +407,30 @@ export function SpecScreen({ spec }: SpecScreenProps) {
         </div>
       )}
 
-      {s.groups.map((group, gi) => (
-        <List key={gi} header={group.header} footer={group.footer}>
-          {group.rows.map((row, ri) => (
+      {s.groups.slice(0, heroGroups).map(renderGroup)}
+
+      {s.sections.length > 0 && (
+        <List className="spec-sections">
+          {s.sections.map((section, i) => (
             <ListItem
-              key={ri}
-              className={row.green ? "spec-row--green" : undefined}
-              icon={
-                row.imageDataUri ? (
-                  <img src={row.imageDataUri} alt="" style={rowImageStyle} />
-                ) : (
-                  <Icon icon={iconFor(row.icon)} variant="flat" size={18} />
-                )
-              }
-              iconTile={!row.imageDataUri}
-              iconTint={row.tint}
-              title={row.title}
-              subtitle={row.subtitle}
-              detail={row.detail}
-              accessory={row.accessory}
-              href={row.href}
-              {...(row.href ? NEW_TAB : undefined)}
+              key={i}
+              className="spec-section"
+              title={section.heading}
+              subtitle={section.text}
+              {...link(section.href, "none")}
             />
           ))}
         </List>
-      ))}
+      )}
+
+      {empty && <p className="spec-empty">Nothing else on this page.</p>}
+
+      {s.groups.slice(heroGroups).map((group, i) => renderGroup(group, heroGroups + i))}
 
       {s.actions.length > 0 && (
         <div className="spec-actions">
           {s.actions.map(({ label, variant, href }, i) => (
-            <Button key={i} block variant={variant} onClick={href ? () => openInNewTab(href) : undefined}>
+            <Button key={i} block variant={variant} onClick={href ? () => open(href) : undefined}>
               {label}
             </Button>
           ))}

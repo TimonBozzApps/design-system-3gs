@@ -103,3 +103,5 @@ Library `@3gs/ui` (packages/ui) + showcase site (apps/site). Icons via lucide-re
   SSRF/invalid cases 400; in-function cache hit on repeat. Both agents were cut off by the session
   limit mid-verification; I finished: truncating 4 MB read cap (posthog.com was too_large), mega-menu
   link labels (first text chunk), title from <title> head, ?site= deep link (Vite reserves ?url).
+- [x] Navigable phone: tabs replace the root page, rows push screens with Back, pages render
+      `sections` (heading + lead copy); subpage hero image deduped against the site's; "Open original ↗"

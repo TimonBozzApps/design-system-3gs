@@ -228,6 +228,34 @@
   pointer-events: none;
 }
 
+/* content sections: heading + lead copy as text cells — these wrap (the library's cells ellipsise) */
+.spec-section .gs-list-item__title,
+.spec-section .gs-list-item__subtitle {
+  white-space: normal;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.spec-section .gs-list-item__title {
+  -webkit-line-clamp: 2;
+}
+
+.spec-section .gs-list-item__subtitle {
+  -webkit-line-clamp: 3;
+  line-height: 1.3;
+}
+
+/* a page with nothing but its hero */
+.spec-empty {
+  margin: 0;
+  padding: 6px 10px 0;
+  font-size: var(--gs-font-size-sm);
+  color: var(--gs-header-text);
+  text-align: center;
+  text-shadow: var(--gs-text-emboss);
+}
+
 .spec-actions {
   display: grid;
   gap: 8px;

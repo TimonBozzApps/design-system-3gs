@@ -5,7 +5,7 @@ import { capture } from "../analytics";
 import { PhoneFrame } from "../shell/PhoneFrame";
 import { downloadPng } from "./exportPng";
 import { FIXTURE } from "./fixture";
-import { SpecScreen, normalizeSpec } from "./SpecScreen";
+import { SpecScreen, normalizeSpec, urlKey } from "./SpecScreen";
 import { specToJsx } from "./specToJsx";
 import "./PreviewSection.css";
 
@@ -15,6 +15,16 @@ export interface PreviewSectionProps {
 }
 
 const EXAMPLES = ["vercel.com", "posthog.com", "github.com", "stripe.com", "news.ycombinator.com"];
+
+/** Deepest the phone's navigation stack goes; beyond it the oldest pushed screen is dropped. */
+const MAX_STACK = 8;
+
+/**
+ * `root`: a new site — the stack restarts with its front page.
+ * `push`: a link on the current screen — appended, reachable with Back.
+ * `replaceRoot`: a tab — swaps the whole stack for that page (the tab bar stays).
+ */
+type NavMode = "root" | "push" | "replaceRoot";
 
 const ERROR_MESSAGES: Record<PreviewErrorCode, string> = {
   invalid_url: "That doesn't look like a URL.",
@@ -63,7 +73,11 @@ function writeShareParam(url: string) {
 }
 
 export function PreviewSection({ theme, dir }: PreviewSectionProps) {
-  const [spec, setSpec] = useState<ScreenSpec>(FIXTURE);
+  /** The site's front page: its tabs stay on every screen, its URL decides what "internal" means. */
+  const [home, setHome] = useState<ScreenSpec>(FIXTURE);
+  /** The navigation stack; `stack[0]` is the tab's root, the last entry is on screen. */
+  const [stack, setStack] = useState<ScreenSpec[]>([FIXTURE]);
+  const [tab, setTab] = useState<string | undefined>(() => normalizeSpec(FIXTURE).tabs[0]?.value);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<PreviewErrorCode | null>(null);
@@ -74,63 +88,119 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const copiedTimer = useRef<number | undefined>(undefined);
+  /** Pages already fetched for this site, so tabs and Back-and-forth are instant. Reset per site. */
+  const cacheRef = useRef(new Map<string, ScreenSpec>([[urlKey(FIXTURE.url), FIXTURE]]));
 
+  const spec = stack[stack.length - 1];
+  const previousTitle = stack.length > 1 ? normalizeSpec(stack[stack.length - 2]).title : undefined;
+  const rootTabs = useMemo(() => normalizeSpec(home).tabs, [home]);
   const jsx = useMemo(() => specToJsx(spec), [spec]);
   const carrier = useMemo(() => {
-    const host = (spec.host || "").replace(/^www\./, "");
+    const host = (home.host || "").replace(/^www\./, "");
     return host.length > 18 ? `${host.slice(0, 17)}…` : host || "3GS";
-  }, [spec.host]);
+  }, [home.host]);
 
-  const submit = useCallback(async (raw: string) => {
-    const input = raw.trim();
-    if (!input) return;
-    const host = hostOf(input);
-    capture("preview_requested", { host });
-
+  /** Drop an in-flight fetch — a newer navigation supersedes it. */
+  const cancel = useCallback(() => {
     abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-    setLoading(true);
-    setError(null);
-    setActionError(null);
-
-    let result: PreviewResult;
-    try {
-      const res = await fetch(`/api/preview?url=${encodeURIComponent(input)}`, { signal: controller.signal });
-      result = (await res.json()) as PreviewResult;
-    } catch (cause) {
-      if (controller.signal.aborted) return; // superseded by a newer submit
-      result = { ok: false, code: "fetch_failed", error: cause instanceof Error ? cause.message : String(cause) };
-    }
-    if (controller.signal.aborted) return;
     abortRef.current = null;
     setLoading(false);
-
-    if (result && result.ok === true && result.spec && typeof result.spec === "object") {
-      setSpec(result.spec);
-      writeShareParam(input);
-      const n = normalizeSpec(result.spec);
-      capture("preview_generated", {
-        host: result.spec.host || host,
-        generator: result.spec.generator,
-        ms: result.ms,
-        cached: result.cached,
-        tabs: n.tabs.length,
-        rows: n.groups.reduce((sum, g) => sum + g.rows.length, 0),
-      });
-    } else {
-      const code: PreviewErrorCode = result && !result.ok && isErrorCode(result.code) ? result.code : "fetch_failed";
-      setError(code);
-      capture("preview_failed", { code, host });
-    }
   }, []);
+
+  const show = useCallback(
+    (fetched: ScreenSpec, mode: NavMode) => {
+      if (mode === "root") {
+        setHome(fetched);
+        setStack([fetched]);
+        setTab(normalizeSpec(fetched).tabs[0]?.value);
+        return;
+      }
+      // Sub-pages usually reuse the site-wide og:image; don't repeat the home hero on every screen.
+      const next = fetched.imageDataUri && fetched.imageDataUri === home.imageDataUri ? { ...fetched, imageDataUri: undefined } : fetched;
+      if (mode === "replaceRoot") setStack([next]);
+      else setStack((s) => (s.length >= MAX_STACK ? [s[0], ...s.slice(2), next] : [...s, next]));
+    },
+    [home.imageDataUri],
+  );
+
+  const load = useCallback(
+    async (input: string, mode: NavMode) => {
+      const host = hostOf(input);
+      cancel();
+      setError(null);
+      setActionError(null);
+
+      const key = urlKey(input);
+      const cached = mode === "root" ? undefined : cacheRef.current.get(key);
+      if (cached) {
+        show(cached, mode);
+        capture("preview_navigated", { host, mode, cached: true });
+        return;
+      }
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+      setLoading(true);
+
+      let result: PreviewResult;
+      try {
+        const res = await fetch(`/api/preview?url=${encodeURIComponent(input)}`, { signal: controller.signal });
+        result = (await res.json()) as PreviewResult;
+      } catch (cause) {
+        if (controller.signal.aborted) return; // superseded by a newer navigation
+        result = { ok: false, code: "fetch_failed", error: cause instanceof Error ? cause.message : String(cause) };
+      }
+      if (controller.signal.aborted) return;
+      abortRef.current = null;
+      setLoading(false);
+
+      if (result && result.ok === true && result.spec && typeof result.spec === "object") {
+        const next = result.spec;
+        if (mode === "root") cacheRef.current.clear(); // a new site: forget the old one's pages
+        cacheRef.current.set(key, next);
+        if (typeof next.url === "string") cacheRef.current.set(urlKey(next.url), next);
+        show(next, mode);
+
+        if (mode === "root") {
+          writeShareParam(input);
+          const n = normalizeSpec(next);
+          capture("preview_generated", {
+            host: next.host || host,
+            generator: next.generator,
+            ms: result.ms,
+            cached: result.cached,
+            tabs: n.tabs.length,
+            sections: n.sections.length,
+            rows: n.groups.reduce((sum, g) => sum + g.rows.length, 0),
+          });
+        } else {
+          capture("preview_navigated", { host: next.host || host, mode, cached: false });
+        }
+      } else {
+        const code: PreviewErrorCode = result && !result.ok && isErrorCode(result.code) ? result.code : "fetch_failed";
+        setError(code);
+        capture("preview_failed", { code, host, mode });
+      }
+    },
+    [cancel, show],
+  );
+
+  const submit = useCallback(
+    (raw: string) => {
+      const input = raw.trim();
+      if (!input) return;
+      capture("preview_requested", { host: hostOf(input) });
+      void load(input, "root");
+    },
+    [load],
+  );
 
   // A shared link (`?site=` / `?url=`) previews itself on load.
   useEffect(() => {
     const initial = readShareParam();
     if (initial) {
       setUrl(initial);
-      void submit(initial);
+      submit(initial);
     }
     return () => {
       abortRef.current?.abort();
@@ -144,14 +214,42 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
       inputRef.current?.focus();
       return;
     }
-    void submit(url);
+    submit(url);
   };
 
   const onExample = (host: string) => {
     capture("preview_example_clicked", { host });
     setUrl(host);
-    void submit(host);
+    submit(host);
   };
+
+  /* ---- in-phone navigation ---------------------------------------------- */
+
+  const onNavigate = (href: string) => void load(href, "push");
+
+  const onBack = () => {
+    if (stack.length < 2) return;
+    cancel();
+    setStack((s) => s.slice(0, -1));
+    capture("preview_navigated", { host: hostOf(stack[stack.length - 2].url || home.url), mode: "back" });
+  };
+
+  const onTab = (value: string, again: boolean) => {
+    if (again) {
+      // Tapping the selected tab pops its stack to the root, like iOS.
+      if (stack.length > 1) {
+        cancel();
+        setStack((s) => [s[0]]);
+        capture("preview_navigated", { host: hostOf(stack[0].url || home.url), mode: "popToRoot" });
+      }
+      return;
+    }
+    setTab(value);
+    const target = rootTabs.find((t) => t.value === value);
+    if (target?.href) void load(target.href, "replaceRoot");
+  };
+
+  /* ---- actions under the phone ------------------------------------------ */
 
   const onDownload = async () => {
     const el = phoneRef.current;
@@ -178,7 +276,7 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
     }
   };
 
-  const siteHref = /^https?:\/\//i.test(spec.url || "") ? spec.url : `https://${spec.host || "vercel.com"}/`;
+  const originalHref = /^https?:\/\//i.test(spec.url || "") ? spec.url : `https://${spec.host || home.host || "vercel.com"}/`;
   const notes = Array.isArray(spec.notes) ? spec.notes.filter((n) => typeof n === "string" && n.trim()) : [];
 
   return (
@@ -187,7 +285,7 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
         <h2>Try it on your site</h2>
         <p>
           Paste a URL and we rebuild it as a 2009 iPhone app from these components — a caricature, not
-          a port.
+          a port. Tap tabs and rows to browse the real site inside the phone.
         </p>
 
         <form className="preview__form" onSubmit={onSubmit}>
@@ -234,7 +332,17 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
       <div className="preview__phone">
         <div ref={phoneRef} className="preview__capture">
           <PhoneFrame theme={theme} dir={dir} statusBar={{ carrier, time: "9:41 AM", network: "3G" }}>
-            <SpecScreen key={spec.url || spec.host} spec={spec} />
+            <SpecScreen
+              key={`${stack.length}:${spec.url || spec.host}`}
+              spec={spec}
+              siteUrl={home.url}
+              tabs={rootTabs}
+              tab={tab}
+              onTab={onTab}
+              previousTitle={previousTitle}
+              onBack={onBack}
+              onNavigate={onNavigate}
+            />
             <HUD contained open={loading} kind="loading" title="Loading…" />
             <Alert
               contained
@@ -256,8 +364,8 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
           <Button size="sm" onClick={onCopy} disabled={loading} aria-live="polite">
             {copied ? "Copied" : "Copy JSX"}
           </Button>
-          <a className="gs-button gs-button--default gs-button--sm" href={siteHref} target="_blank" rel="noopener noreferrer">
-            <span className="gs-button__label">Open site ↗</span>
+          <a className="gs-button gs-button--default gs-button--sm" href={originalHref} target="_blank" rel="noopener noreferrer">
+            <span className="gs-button__label">Open original ↗</span>
           </a>
         </div>
         {actionError && (

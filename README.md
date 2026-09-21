@@ -123,8 +123,10 @@ The showcase can rebuild any public website as a 2009 iPhone app:
 SSRF-guarded fetcher (private / link-local / metadata addresses rejected on every
 redirect hop, 8 s timeout, 4 MB read cap), extracts title, icons, OG image, nav
 links, headings, CTAs and search forms, and maps them to a `ScreenSpec`
-(`api/_lib/spec.ts`) that the site renders with the library — with PNG export and
-the generated JSX to copy. Results are cached (1 h) and rate-limited (12/min/IP).
+(`api/_lib/spec.ts`) that the site renders with the library. The phone is
+navigable: tabs and rows fetch that page and push real screens (with a Back
+button), and pages show their own copy (headline + lead text sections), hero
+image, buttons and search — plus PNG export and the generated JSX to copy. Results are cached (1 h) and rate-limited (12/min/IP).
 Deep link: `?site=vercel.com`. The mapper is a pure function so an AI-designed one
 can drop in later. Locally, `pnpm dev` serves the same endpoint through a Vite
 middleware; `node scripts/preview-smoke.mjs` runs the positive/negative cases.
