@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Switch } from "@3gs/ui";
 import { PhoneFrame } from "./shell/PhoneFrame";
 import { TokensSection } from "./TokensSection";
+import { capture, trackOutboundClicks, trackSectionViews } from "./analytics";
 import { AppStoreScreen } from "./shell/AppStoreScreen";
 import { PropsTable } from "./PropsTable";
 import { demos } from "./demos";
@@ -34,6 +35,16 @@ export function App() {
     }
   }, [theme]);
 
+  // Analytics (no-ops unless VITE_POSTHOG_KEY is set — see analytics.ts).
+  useEffect(() => {
+    const stopSections = trackSectionViews();
+    const stopOutbound = trackOutboundClicks();
+    return () => {
+      stopSections();
+      stopOutbound();
+    };
+  }, []);
+
   return (
     <div className="site">
       <aside className="site__nav">
@@ -45,7 +56,11 @@ export function App() {
           <span>Light theme</span>
           <Switch
             checked={theme === "light"}
-            onChange={(on) => setTheme(on ? "light" : "dark")}
+            onChange={(on) => {
+              const next = on ? "light" : "dark";
+              setTheme(next);
+              capture("theme_changed", { theme: next });
+            }}
             label="Light theme"
             onLabel="ON"
             offLabel="OFF"
@@ -55,7 +70,11 @@ export function App() {
           <span>Right-to-left</span>
           <Switch
             checked={dir === "rtl"}
-            onChange={(on) => setDir(on ? "rtl" : "ltr")}
+            onChange={(on) => {
+              const next = on ? "rtl" : "ltr";
+              setDir(next);
+              capture("direction_changed", { dir: next });
+            }}
             label="Right-to-left"
             onLabel="RTL"
             offLabel="LTR"

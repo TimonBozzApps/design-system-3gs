@@ -116,6 +116,15 @@ token; the publisher is `TimonBozzApps/design-system-3gs` / `release.yml`).
 The job runs only while the repository variable `ENABLE_NPM_RELEASE` is `true`. Locally:
 `pnpm changeset:version && pnpm release`. `pnpm pack:check` lists exactly what ships.
 
+## Analytics (opt-in)
+
+The showcase can report anonymous usage to PostHog — cookieless, DNT-respected,
+no session recording. It is **off unless `VITE_POSTHOG_KEY` is set** at build
+time (Vercel → Environment Variables); without it the SDK isn't even bundled.
+The key is PostHog's public, write-only project token (`phc_…`), which is
+designed to ship in browsers; nothing secret is needed or committed —
+see `apps/site/.env.example`.
+
 ## Develop
 
 Pushes to `main` deploy the showcase to Vercel automatically; the Release workflow publishes `@3gs/ui` when a Version Packages PR is merged.
