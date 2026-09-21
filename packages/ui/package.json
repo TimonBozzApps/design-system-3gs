@@ -38,7 +38,8 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./styles.css": "./dist/ui.css"
+    "./styles.css": "./dist/ui.css",
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
