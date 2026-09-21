@@ -1,0 +1,244 @@
+/* ==========================================================================
+   TextField / SearchField — sunken iOS 3 text wells
+   Inputs are pressed INTO the surface: dark well, inset shadow, hairline
+   black edge. Text is white with the dark shadow, like everything else.
+   ========================================================================== */
+
+.gs-textfield {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gs-space-1);
+  min-width: 0;
+  font-family: var(--gs-font);
+  color: var(--gs-text);
+}
+
+/* the well ---------------------------------------------------------------- */
+.gs-textfield__field {
+  display: flex;
+  align-items: center;
+  gap: var(--gs-space-2);
+  height: var(--gs-control-height);
+  padding: 0 10px;
+  background: var(--gs-surface-sunken);
+  border: var(--gs-border);
+  border-radius: var(--gs-radius-md);
+  box-shadow: var(--gs-inset);
+  cursor: text;
+  transition: box-shadow var(--gs-duration) var(--gs-ease);
+}
+
+.gs-textfield--lg .gs-textfield__field {
+  height: 50px;
+}
+
+.gs-textfield__field:focus-within {
+  box-shadow: var(--gs-inset), var(--gs-focus-ring);
+}
+
+/* error: red hairline rim; focus ring turns red too so the state stays visible */
+.gs-textfield--error .gs-textfield__field {
+  box-shadow: var(--gs-inset), 0 0 0 1px var(--gs-red-500);
+}
+.gs-textfield--error .gs-textfield__field:focus-within {
+  box-shadow: var(--gs-inset), 0 0 0 2px color-mix(in srgb, var(--gs-red-500) 85%, transparent);
+}
+
+.gs-textfield--disabled {
+  opacity: 0.5;
+}
+.gs-textfield--disabled .gs-textfield__field {
+  cursor: not-allowed;
+}
+
+/* inline label: "Name  |  value" ---------------------------------------- */
+.gs-textfield__label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  align-self: stretch; /* full height, so the whole column is a click target */
+  flex: 0 0 90px;
+  width: 90px;
+  padding-right: var(--gs-space-2);
+  font-size: var(--gs-font-size-md);
+  font-weight: 700;
+  line-height: var(--gs-line-height);
+  color: var(--gs-text);
+  text-shadow: var(--gs-text-shadow-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: default;
+}
+
+/* etched divider between label and value (dark line + light rim) */
+.gs-textfield__label::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  right: 0;
+  width: 1px;
+  background: rgba(0, 0, 0, 0.7);
+  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.08);
+}
+
+/* leading icon ------------------------------------------------------------ */
+.gs-textfield__icon {
+  flex-shrink: 0;
+  color: var(--gs-gray-400);
+  pointer-events: none; /* clicks fall through to the well → focus the input */
+}
+
+/* the input itself ------------------------------------------------------- */
+.gs-textfield__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--gs-text);
+  font-family: var(--gs-font);
+  font-size: var(--gs-font-size-lg);
+  line-height: var(--gs-line-height);
+  caret-color: var(--gs-blue-300);
+}
+
+.gs-textfield__input::placeholder {
+  color: var(--gs-text-tertiary);
+  opacity: 1;
+}
+
+.gs-textfield__input:disabled {
+  cursor: not-allowed;
+  color: var(--gs-text);
+  -webkit-text-fill-color: var(--gs-text);
+}
+
+/* keep the well dark when the browser autofills */
+.gs-textfield__input:-webkit-autofill,
+.gs-textfield__input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--gs-text);
+  -webkit-box-shadow: 0 0 0 1000px var(--gs-surface-sunken) inset;
+  caret-color: var(--gs-text);
+}
+
+/* type="search": drop WebKit's own decorations, we draw our own ⓧ */
+.gs-textfield__input::-webkit-search-decoration,
+.gs-textfield__input::-webkit-search-cancel-button,
+.gs-textfield__input::-webkit-search-results-button,
+.gs-textfield__input::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+/* clear button: the gray filled disc with a dark × ------------------------ */
+.gs-textfield__clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin-right: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--gs-gray-400);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gs-textfield__clear .gs-icon {
+  fill: currentColor;
+  stroke: var(--gs-surface-sunken);
+}
+
+.gs-textfield__clear:active {
+  color: var(--gs-gray-300);
+}
+
+.gs-textfield__clear:focus-visible {
+  outline: none;
+  box-shadow: var(--gs-focus-ring);
+}
+
+/* text under the well ---------------------------------------------------- */
+.gs-textfield__helper,
+.gs-textfield__error {
+  padding: 0 10px;
+  font-size: var(--gs-font-size-sm);
+  line-height: 1.3;
+  text-shadow: var(--gs-text-shadow-dark);
+}
+
+.gs-textfield__helper {
+  color: var(--gs-text-secondary);
+}
+
+.gs-textfield__error {
+  color: var(--gs-red-300);
+}
+
+/* ==========================================================================
+   SearchField — short pill well + optional gel "Cancel"
+   ========================================================================== */
+.gs-searchfield {
+  display: flex;
+  align-items: center;
+  gap: var(--gs-space-2);
+  min-width: 0;
+  font-family: var(--gs-font);
+}
+
+.gs-searchfield__field {
+  flex: 1 1 auto;
+}
+
+/* iOS search bars were shorter and rounder than form fields */
+.gs-searchfield__field .gs-textfield__field {
+  height: 32px;
+  gap: 6px;
+  padding: 0 8px 0 10px;
+  border-radius: var(--gs-radius-pill);
+}
+
+.gs-searchfield__field .gs-textfield__input {
+  font-size: var(--gs-font-size-md);
+}
+
+/* the dark gel Cancel button (deliberately local — no Button import) */
+.gs-searchfield__cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 10px;
+  border: var(--gs-border);
+  border-radius: var(--gs-radius-sm);
+  background: var(--gs-gloss), var(--gs-gradient-dark);
+  box-shadow: var(--gs-emboss);
+  color: var(--gs-text);
+  font-family: var(--gs-font);
+  font-size: var(--gs-font-size-sm);
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: var(--gs-text-shadow-dark);
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gs-searchfield__cancel:active {
+  background: var(--gs-gradient-dark-pressed);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.gs-searchfield__cancel:focus-visible {
+  outline: none;
+  box-shadow: var(--gs-emboss), var(--gs-focus-ring);
+}

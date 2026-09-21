@@ -1,0 +1,46 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.screen__top,
+.screen__bottom {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.screen__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 10px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.screen__body--pinstripe {
+  background: var(--gs-pinstripe-bg);
+}
+
+.screen__body--black {
+  background: var(--gs-screen-bg);
+}
+
+.screen__body--flush {
+  padding: 0;
+  gap: 0;
+}
+
+/* thin, dark scrollbar so the fake screen doesn't grow a light one */
+.screen__body::-webkit-scrollbar {
+  width: 5px;
+}
+.screen__body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 3px;
+}

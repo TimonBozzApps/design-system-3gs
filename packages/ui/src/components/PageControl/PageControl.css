@@ -1,0 +1,90 @@
+/* ==========================================================================
+   PageControl — the row of dots under the home screen (UIPageControl)
+   A 36 px strip; each page is a full-height button so the 6 px dot gets a
+   16 × 36 px hit area. The current dot is solid white gel with a faint gloss
+   split at 50 % and a dark outline; the others are translucent white sunk
+   into the surface with a dark inner rim and a hairline light drop edge.
+   ========================================================================== */
+.gs-pagecontrol {
+  --gs-pagecontrol-dot: 6px;
+  --gs-pagecontrol-current: linear-gradient(
+    to bottom,
+    var(--gs-white) 0%,
+    var(--gs-gray-100) 50%,
+    var(--gs-gray-200) 51%,
+    #c9c9cf 100%
+  );
+  --gs-pagecontrol-current-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.5);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-sizing: border-box;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gs-pagecontrol--md {
+  --gs-pagecontrol-dot: 8px;
+}
+
+/* ---- page (hit area) --------------------------------------------------- */
+.gs-pagecontrol__page {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  margin: 0;
+  padding: 0 5px;
+
+  background: none;
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+
+  cursor: pointer;
+  outline: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---- dot --------------------------------------------------------------- */
+.gs-pagecontrol__dot {
+  display: block;
+  width: var(--gs-pagecontrol-dot);
+  height: var(--gs-pagecontrol-dot);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    inset 0 1px 1px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.08);
+  transition:
+    background var(--gs-duration) var(--gs-ease),
+    box-shadow var(--gs-duration) var(--gs-ease);
+}
+
+/* ---- states ------------------------------------------------------------ */
+/* iOS 3 had no hover — nothing here on purpose. */
+
+.gs-pagecontrol__page--current .gs-pagecontrol__dot {
+  background: var(--gs-pagecontrol-current);
+  box-shadow: var(--gs-pagecontrol-current-shadow);
+}
+
+/* pressing an inactive dot brightens it faintly until it becomes current */
+.gs-pagecontrol__page:active:not(.gs-pagecontrol__page--current) .gs-pagecontrol__dot {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.gs-pagecontrol__page:focus-visible .gs-pagecontrol__dot {
+  box-shadow: var(--gs-focus-ring);
+}
+
+.gs-pagecontrol__page--current:focus-visible .gs-pagecontrol__dot {
+  box-shadow: var(--gs-focus-ring), var(--gs-pagecontrol-current-shadow);
+}

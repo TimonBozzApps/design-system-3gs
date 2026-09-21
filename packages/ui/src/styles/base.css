@@ -1,0 +1,44 @@
+/* Base rules every 3GS component relies on. Scoped to the `.gs-root` class
+   (and to components themselves) so the library doesn't reset the host page. */
+.gs-root {
+  font-family: var(--gs-font);
+  font-size: var(--gs-font-size-lg);
+  line-height: var(--gs-line-height);
+  color: var(--gs-text);
+  background: var(--gs-screen-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gs-root *,
+.gs-root *::before,
+.gs-root *::after {
+  box-sizing: border-box;
+}
+
+/* Reset native control chrome once, for everything in the system.
+   Wrapped in :where() so the reset has ZERO specificity and any single-class
+   component rule (e.g. `.gs-button--sm { font-size: 13px }`) wins. */
+:where([class^="gs-"], [class*=" gs-"]) :where(button, input, textarea, select),
+:where(button, input, textarea, select):where([class^="gs-"], [class*=" gs-"]) {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.gs-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

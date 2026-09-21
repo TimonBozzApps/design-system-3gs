@@ -1,0 +1,4 @@
+/* Tokens + base only. Each component imports its own stylesheet; the lib
+   build concatenates everything into dist/ui.css. */
+@import "./tokens/tokens.css";
+@import "./styles/base.css";

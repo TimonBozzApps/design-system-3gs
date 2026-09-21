@@ -1,0 +1,208 @@
+/* ==========================================================================
+   Popover — iOS 3.2 popover (UIPopoverController)
+   A dark navy-black bubble: a rounded panel wrapped in a thick translucent
+   rim (painted as box-shadow rings outside the panel box, so `width` is the
+   panel itself) with a triangular arrow that grows out of the rim and points
+   at the anchor. The panel holds arbitrary content, usually a List. The navy
+   gradient and rim colour are popover-specific (no system token fits), so
+   they are defined locally.
+
+   Geometry shared with Popover.tsx — keep in sync:
+     --gs-popover-gap  8px   anchor edge → arrow tip
+     rim               8px   1 px light line + 6 px dark ring + 1 px faint line
+     arrow             17 px square rotated 45° = 24 × 12 px triangle, its
+                             centre sitting on the rim's outer edge
+   ========================================================================== */
+
+/* ---- backdrop ---------------------------------------------------------- */
+/* transparent; exists to catch the outside click that dismisses the popover */
+.gs-popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  box-sizing: border-box;
+  background: transparent;
+  font-family: var(--gs-font);
+}
+
+/* in-place variant: fills the nearest positioned ancestor (a phone screen) */
+.gs-popover-backdrop--contained {
+  position: absolute;
+}
+
+/* `dismissOnOutside={false}`: let clicks through to the page */
+.gs-popover-backdrop--passthrough {
+  pointer-events: none;
+}
+
+/* ---- panel ------------------------------------------------------------- */
+.gs-popover {
+  --gs-popover-gap: 8px;
+  --gs-popover-bg: linear-gradient(to bottom, rgba(52, 60, 84, 0.97), rgba(22, 26, 40, 0.98));
+  --gs-popover-rim: rgba(20, 24, 38, 0.92);
+  --gs-popover-rim-light: rgba(255, 255, 255, 0.25);
+
+  position: fixed;
+  z-index: 1000;
+  isolation: isolate; /* the arrow's z-index: -1 stays inside the panel */
+  box-sizing: border-box;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+
+  color: var(--gs-text);
+  font-family: var(--gs-font);
+  font-size: var(--gs-font-size-lg);
+  line-height: var(--gs-line-height);
+  text-align: left;
+
+  border-radius: var(--gs-radius-md);
+  /* the rim: 6 px dark ring (1..7 px), a faint light line outside it, drop shadow */
+  box-shadow:
+    0 0 0 7px var(--gs-popover-rim),
+    0 0 0 8px rgba(255, 255, 255, 0.12),
+    0 12px 30px rgba(0, 0, 0, 0.6);
+
+  /* invisible until measured */
+  visibility: hidden;
+}
+
+.gs-popover-backdrop--contained .gs-popover {
+  position: absolute;
+}
+
+/* The panel face is a layer of its own so it paints ABOVE the arrow (which
+   sits at z-index -1, over the rim rings) and hides the arrow's inner half.
+   It also carries the 1 px light line between panel and rim. */
+.gs-popover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: var(--gs-popover-bg);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+.gs-popover--ready {
+  visibility: visible;
+  animation: gs-popover-pop 180ms var(--gs-ease) both;
+}
+
+.gs-popover:focus {
+  outline: none;
+}
+
+.gs-popover:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 7px var(--gs-popover-rim),
+    0 0 0 8px rgba(255, 255, 255, 0.12),
+    0 0 0 10px rgba(143, 184, 245, 0.85),
+    0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* grow from the arrow */
+.gs-popover--bottom { transform-origin: var(--gs-popover-arrow-offset, 50%) top; }
+.gs-popover--top    { transform-origin: var(--gs-popover-arrow-offset, 50%) bottom; }
+.gs-popover--right  { transform-origin: left var(--gs-popover-arrow-offset, 50%); }
+.gs-popover--left   { transform-origin: right var(--gs-popover-arrow-offset, 50%); }
+
+/* ---- arrow ------------------------------------------------------------- */
+/* A 17 px square rotated 45°. Its centre sits on the rim's outer edge, so the
+   outer half is the 24 × 12 px triangle and the inner half merges with the
+   rim (and slides under the panel face). `-8px - 8.5px` = rim + half side. */
+.gs-popover__arrow {
+  position: absolute;
+  z-index: -1;
+  width: 17px;
+  height: 17px;
+  background: var(--gs-popover-rim);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+/* panel below the anchor → arrow on the top edge, pointing up */
+.gs-popover--bottom .gs-popover__arrow {
+  top: -16.5px;
+  left: calc(var(--gs-popover-arrow-offset, 50%) - 8.5px);
+  box-shadow: -1px -1px 0 var(--gs-popover-rim-light);
+}
+
+/* panel above → arrow on the bottom edge, pointing down */
+.gs-popover--top .gs-popover__arrow {
+  bottom: -16.5px;
+  left: calc(var(--gs-popover-arrow-offset, 50%) - 8.5px);
+  box-shadow: 1px 1px 0 var(--gs-popover-rim-light);
+}
+
+/* panel right of the anchor → arrow on the left edge, pointing left */
+.gs-popover--right .gs-popover__arrow {
+  left: -16.5px;
+  top: calc(var(--gs-popover-arrow-offset, 50%) - 8.5px);
+  box-shadow: -1px 1px 0 var(--gs-popover-rim-light);
+}
+
+/* panel left of the anchor → arrow on the right edge, pointing right */
+.gs-popover--left .gs-popover__arrow {
+  right: -16.5px;
+  top: calc(var(--gs-popover-arrow-offset, 50%) - 8.5px);
+  box-shadow: 1px -1px 0 var(--gs-popover-rim-light);
+}
+
+/* ---- content ----------------------------------------------------------- */
+.gs-popover__content {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  border-radius: var(--gs-radius-sm);
+  overflow: hidden;
+  overflow-y: auto;
+  max-height: 60vh;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* thin dark scrollbar, like the phone screen */
+.gs-popover__content::-webkit-scrollbar {
+  width: 5px;
+}
+.gs-popover__content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 3px;
+}
+
+/* a grouped List fills the bubble edge to edge */
+.gs-popover__content > .gs-list .gs-list__group {
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  box-shadow: none;
+}
+
+.gs-popover__content > .gs-list > .gs-list__header {
+  padding-top: 8px;
+}
+
+/* ---- motion ------------------------------------------------------------ */
+@keyframes gs-popover-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gs-popover--ready {
+    animation: none;
+  }
+}

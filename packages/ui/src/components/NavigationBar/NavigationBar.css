@@ -1,0 +1,208 @@
+/* ==========================================================================
+   NavigationBar — the 44 px black-glass top bar (UIBarStyleBlack)
+   ========================================================================== */
+.gs-navbar {
+  position: relative;
+  display: grid;
+  /* Side columns never shrink below their buttons and share the leftover
+     space equally, so the title is truly centred whenever it fits and only
+     drifts (like iOS) when one button is too wide to allow that. */
+  grid-template-columns: minmax(max-content, 1fr) minmax(0, max-content) minmax(max-content, 1fr);
+  align-items: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  height: var(--gs-bar-height);
+  padding: 0 5px;
+  font-family: var(--gs-font);
+  color: var(--gs-text);
+  background: var(--gs-gloss-soft), var(--gs-gradient-bar);
+  border-bottom: 1px solid var(--gs-black);
+  /* the 1 px light rim along the top edge */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.gs-navbar__left,
+.gs-navbar__right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.gs-navbar__left {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.gs-navbar__right {
+  grid-column: 3;
+  justify-self: end;
+}
+
+/* Sits in the middle column; ellipsises when the side columns leave no room. */
+.gs-navbar__title {
+  grid-column: 2;
+  min-width: 0;
+  margin: 0 6px;
+  padding: 2px 0; /* room for the text-shadow inside overflow:hidden */
+  font: 700 var(--gs-font-size-xl) / var(--gs-line-height) var(--gs-font);
+  color: var(--gs-text);
+  text-align: center;
+  text-shadow: var(--gs-text-shadow-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+/* --- blue tint: the classic iOS 3 blue-gray bar --------------------------- */
+.gs-navbar--blue {
+  background:
+    var(--gs-gloss-soft),
+    linear-gradient(to bottom, #b0bccd 0%, #8a9bb4 49%, #6d84a2 50%, #5b7397 100%);
+  border-bottom-color: #2d3642;
+}
+
+.gs-navbar--blue .gs-navbar__title {
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================================================
+   BarButton — the 30 px gel button that sits inside bars
+   ========================================================================== */
+.gs-barbutton {
+  --gs-barbutton-gel: var(--gs-gradient-dark);
+  --gs-barbutton-gel-pressed: var(--gs-gradient-dark-pressed);
+  /* how far the back button's arrow sticks out to the left */
+  --gs-barbutton-point: 9px;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 10px;
+  font: 700 12px / 1 var(--gs-font);
+  color: var(--gs-white);
+  text-shadow: var(--gs-text-shadow-dark);
+  white-space: nowrap;
+  border: var(--gs-border);
+  border-radius: var(--gs-radius-sm);
+  background: var(--gs-gloss), var(--gs-barbutton-gel);
+  box-shadow: var(--gs-emboss);
+  outline: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.gs-barbutton--icon-only {
+  padding: 0 7px;
+}
+
+.gs-barbutton--done {
+  --gs-barbutton-gel: var(--gs-gradient-blue);
+  --gs-barbutton-gel-pressed: var(--gs-gradient-blue-pressed);
+}
+
+.gs-barbutton__label {
+  display: inline-block;
+}
+
+.gs-barbutton__icon {
+  color: var(--gs-white);
+  /* same etched look as the label's text-shadow */
+  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.7));
+}
+
+/* pressed: gloss gone, gel sinks */
+.gs-barbutton:active:not(:disabled),
+.gs-barbutton--pressed {
+  background: var(--gs-barbutton-gel-pressed);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), var(--gs-rim-dark);
+}
+
+.gs-barbutton:focus-visible {
+  box-shadow: var(--gs-focus-ring), var(--gs-emboss);
+}
+
+.gs-barbutton:disabled {
+  opacity: 0.5;
+}
+
+/* --- back: the pointed pill ----------------------------------------------
+   clip-path strips the border along with everything else, so the outline is
+   built from two clipped layers instead:
+     ::before  black silhouette, full size            = the 1 px outline
+     ::after   the gel, inset 1 px, clipped to a polygon whose point and
+               diagonals are shrunk so they stay ~1 px inside the silhouette
+   The button itself has no background, so its filter: drop-shadow() traces
+   the arrow shape for the bottom drop edge (box-shadow would stay rectangular). */
+.gs-barbutton--back {
+  padding-left: 16px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  isolation: isolate;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.75));
+}
+
+.gs-barbutton--back::before,
+.gs-barbutton--back::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.gs-barbutton--back::before {
+  inset: 0;
+  border-radius: var(--gs-radius-sm);
+  background: var(--gs-black);
+  clip-path: polygon(
+    var(--gs-barbutton-point) 0,
+    100% 0,
+    100% 100%,
+    var(--gs-barbutton-point) 100%,
+    0 50%
+  );
+}
+
+/* Inset 1 px on every side. For a 9 px point on a 30 px button the diagonals
+   land exactly 1 px inside the silhouette's when the inner polygon starts at
+   8.6 px and its tip sits 0.2 px in — a plain "9px … 0 50%" copy would give a
+   ~1.4 px outline along the slants and ~0.9 px at the tip. */
+.gs-barbutton--back::after {
+  inset: 1px;
+  border-radius: calc(var(--gs-radius-sm) - 1px);
+  background: var(--gs-gloss), var(--gs-barbutton-gel);
+  box-shadow: var(--gs-rim-light);
+  clip-path: polygon(8.6px 0, 100% 0, 100% 100%, 8.6px 100%, 0.2px 50%);
+}
+
+.gs-barbutton--back:active:not(:disabled),
+.gs-barbutton--back.gs-barbutton--pressed {
+  background: none;
+  box-shadow: none;
+}
+
+.gs-barbutton--back:active:not(:disabled)::after,
+.gs-barbutton--back.gs-barbutton--pressed::after {
+  background: var(--gs-barbutton-gel-pressed);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.gs-barbutton--back:focus-visible {
+  box-shadow: var(--gs-focus-ring);
+}
+
+/* --- inside a blue bar: bordered buttons take the blue-gray gel ----------
+   "done" keeps its saturated blue — on iOS 3 the Done item on the blue bar
+   was the darker blue, which is what marks it as the primary action. */
+.gs-navbar--blue .gs-barbutton--default,
+.gs-navbar--blue .gs-barbutton--back {
+  --gs-barbutton-gel: linear-gradient(to bottom, #8aa4c8 0%, #6684ad 49%, #51739f 50%, #45668f 100%);
+  --gs-barbutton-gel-pressed: linear-gradient(to bottom, #2c405f 0%, #3a5278 50%, #435f8b 100%);
+}

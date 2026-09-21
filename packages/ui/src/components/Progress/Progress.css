@@ -1,0 +1,131 @@
+/* ==========================================================================
+   Progress — the App Store / iPod download bar + UIActivityIndicatorView.
+   ProgressBar: a thin sunken pill track (inset shadow, 1 px black outline)
+   holding a blue gel fill with its own hard 50 % highlight and a shaded
+   leading edge. ActivityIndicator: 12 fading spokes, turned in 12 discrete
+   30° steps per second.
+   ========================================================================== */
+.gs-progress {
+  /* component-local: no token matches the silver iPod scrubber */
+  --gs-progress-height: 9px;
+  --gs-progress-gel: var(--gs-gradient-blue);
+
+  display: flex;
+  align-items: center;
+  gap: var(--gs-space-2);
+  width: 100%;
+  min-width: 0;
+  font-family: var(--gs-font);
+  line-height: var(--gs-line-height);
+}
+
+.gs-progress--sm { --gs-progress-height: 9px; }
+.gs-progress--md { --gs-progress-height: 12px; }
+
+.gs-progress--blue { --gs-progress-gel: var(--gs-gradient-blue); }
+.gs-progress--gray {
+  --gs-progress-gel: linear-gradient(
+    to bottom,
+    #e9e9ee 0%,
+    #dcdce1 49%,
+    #c6c6cd 50%,
+    #b8b8c0 100%
+  );
+}
+
+/* ---- track ------------------------------------------------------------ */
+.gs-progress__track {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  height: var(--gs-progress-height);
+  overflow: hidden;
+  border: var(--gs-border);
+  border-radius: var(--gs-radius-pill);
+  background: var(--gs-surface-sunken);
+  box-shadow: var(--gs-inset);
+  box-sizing: border-box;
+}
+
+/* ---- fill -------------------------------------------------------------- */
+.gs-progress__fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gs-gloss), var(--gs-progress-gel);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    1px 0 1px rgba(0, 0, 0, 0.5);
+  transition: width 240ms var(--gs-ease);
+}
+
+/* ---- indeterminate: a 35 % gel segment sliding left ↔ right ------------ */
+.gs-progress--indeterminate .gs-progress__fill {
+  width: 35%;
+  transition: none;
+  animation: gs-progress-slide 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes gs-progress-slide {
+  from { transform: translateX(0); }
+  /* percentages are of the fill's own width: (100 − 35) / 35 = 185.7 % */
+  to   { transform: translateX(185.7%); }
+}
+
+/* ---- value text -------------------------------------------------------- */
+.gs-progress__value {
+  flex-shrink: 0;
+  min-width: 4ch;
+  font-size: var(--gs-font-size-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--gs-text-secondary);
+  text-align: right;
+  text-shadow: var(--gs-text-shadow-dark);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   ActivityIndicator
+   ========================================================================== */
+.gs-spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+  line-height: 0;
+}
+
+.gs-spinner--white { color: var(--gs-white); }
+.gs-spinner--gray  { color: var(--gs-gray-400); }
+
+.gs-spinner__svg {
+  display: block;
+  transform-origin: 50% 50%;
+  animation: gs-spinner-step 1s steps(12, end) infinite;
+}
+
+.gs-spinner__spoke {
+  fill: currentColor;
+}
+
+@keyframes gs-spinner-step {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ---- reduced motion: keep the loading cue, just slow it down ----------- */
+@media (prefers-reduced-motion: reduce) {
+  .gs-progress__fill {
+    transition: none;
+  }
+
+  .gs-progress--indeterminate .gs-progress__fill {
+    animation-duration: 2.8s;
+  }
+
+  .gs-spinner__svg {
+    animation-duration: 3s;
+  }
+}

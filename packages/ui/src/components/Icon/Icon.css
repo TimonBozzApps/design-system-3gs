@@ -1,0 +1,21 @@
+.gs-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* gradient stops are driven by tokens so themes can retint icons */
+.gs-icon--gloss .gs-icon__stop-top        { stop-color: var(--gs-icon-inactive-top); }
+.gs-icon--gloss .gs-icon__stop-mid-top    { stop-color: color-mix(in srgb, var(--gs-icon-inactive-top) 70%, var(--gs-icon-inactive-bottom)); }
+.gs-icon--gloss .gs-icon__stop-mid-bottom { stop-color: color-mix(in srgb, var(--gs-icon-inactive-bottom) 80%, var(--gs-icon-inactive-top)); }
+.gs-icon--gloss .gs-icon__stop-bottom     { stop-color: var(--gs-icon-inactive-bottom); }
+
+.gs-icon--active .gs-icon__stop-top        { stop-color: var(--gs-icon-active-top); }
+.gs-icon--active .gs-icon__stop-mid-top    { stop-color: color-mix(in srgb, var(--gs-icon-active-top) 65%, var(--gs-icon-active-bottom)); }
+.gs-icon--active .gs-icon__stop-mid-bottom { stop-color: color-mix(in srgb, var(--gs-icon-active-bottom) 85%, var(--gs-icon-active-top)); }
+.gs-icon--active .gs-icon__stop-bottom     { stop-color: var(--gs-icon-active-bottom); }
+
+/* etched into the bar: dark shadow above, faint light rim below */
+.gs-icon--embossed {
+  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.6)) drop-shadow(0 1px 0 rgba(255, 255, 255, 0.07));
+}

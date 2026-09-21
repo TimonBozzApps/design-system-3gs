@@ -1,0 +1,69 @@
+.phone {
+  --bezel: 18px;
+  position: relative;
+  width: calc(320px + var(--bezel) * 2);
+  padding: 74px var(--bezel) 78px;
+  border-radius: 46px;
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 30%),
+    linear-gradient(to bottom, #1a1a1c, #0a0a0b);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    inset 0 0 0 3px #3a3a3d,
+    inset 0 0 0 4px #0b0b0c,
+    0 30px 60px rgba(0, 0, 0, 0.7),
+    0 2px 6px rgba(0, 0, 0, 0.6);
+  flex-shrink: 0;
+}
+
+.phone__speaker {
+  position: absolute;
+  top: 34px;
+  left: 50%;
+  width: 64px;
+  height: 8px;
+  transform: translateX(-50%);
+  border-radius: 4px;
+  background: linear-gradient(to bottom, #050505, #232326);
+  box-shadow: inset 0 1px 2px #000, 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.phone__screen {
+  width: 320px;
+  height: 480px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px #000, inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  position: relative;
+}
+
+.phone__content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.phone__home {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  width: 52px;
+  height: 52px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #2a2a2d, #0a0a0b 70%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12), inset 0 -1px 2px #000, 0 0 0 1px #000;
+  display: grid;
+  place-items: center;
+}
+
+.phone__home-square {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+}

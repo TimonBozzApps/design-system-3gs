@@ -1,0 +1,127 @@
+/* ==========================================================================
+   TabBar — the 49 px black-glass bottom bar (UITabBar, UIBarStyleBlack)
+   Tab bars sat a shade darker than nav bars, so the gel is a local gradient
+   rather than --gs-gradient-bar. The soft gloss on top gives the 50 % split.
+   ========================================================================== */
+.gs-tabbar {
+  --gs-tabbar-gradient: linear-gradient(
+    to bottom,
+    #3c3c40 0%,
+    #2a2a2e 49%,
+    #1c1c1f 50%,
+    #0e0e10 100%
+  );
+
+  display: flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--gs-tabbar-height);
+  margin: 0;
+  padding: 0;
+
+  background: var(--gs-gloss-soft), var(--gs-tabbar-gradient);
+  border-top: 1px solid var(--gs-black);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ---- item -------------------------------------------------------------- */
+.gs-tabbar-item {
+  --gs-tabbar-item-sunk: inset 0 1px 1px rgba(0, 0, 0, 0.45);
+
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  margin: 0;
+  padding: 3px 2px 2px;
+
+  background: none;
+  border: 0;
+  border-radius: 0;
+  color: var(--gs-gray-400);
+  text-shadow: var(--gs-text-shadow-dark);
+
+  cursor: pointer;
+  outline: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* the rounded "well" behind the selected (or pressed) item */
+.gs-tabbar-item::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 4px;
+  background: transparent;
+  pointer-events: none;
+}
+
+/* ---- elements ---------------------------------------------------------- */
+/* both sit above the ::before well */
+.gs-tabbar-item__icon,
+.gs-tabbar-item__label {
+  position: relative;
+}
+
+.gs-tabbar-item__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+/* font lives on the span: base.css forces `font-size: inherit` on gs- buttons */
+.gs-tabbar-item__label {
+  max-width: 100%;
+  font: 700 10px/1.2 var(--gs-font);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* red gel count, hanging off the icon's top-right corner like the "43" on Updates */
+.gs-tabbar-item__badge {
+  position: absolute;
+  top: -3px;
+  right: -11px;
+  transform: scale(0.85);
+  transform-origin: 100% 0;
+}
+
+/* ---- states ------------------------------------------------------------ */
+/* iOS 3 had no hover — nothing here on purpose. */
+
+.gs-tabbar-item--selected {
+  color: var(--gs-white);
+}
+
+.gs-tabbar-item--selected::before {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: var(--gs-tabbar-item-sunk);
+}
+
+/* pressing an unselected tab lights its well faintly */
+.gs-tabbar-item:active:not(:disabled):not(.gs-tabbar-item--selected)::before {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.gs-tabbar-item:focus-visible::before {
+  box-shadow: var(--gs-focus-ring);
+}
+
+.gs-tabbar-item--selected:focus-visible::before {
+  box-shadow: var(--gs-focus-ring), var(--gs-tabbar-item-sunk);
+}
+
+.gs-tabbar-item:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

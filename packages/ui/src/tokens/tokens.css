@@ -1,0 +1,169 @@
+/* ==========================================================================
+   3GS UI — design tokens
+   iPhone 3GS / iOS 3 aesthetic, dark-mode skeuomorphism.
+   Every component reads from these; never hard-code a colour in a component
+   when a token fits. Prefix: --gs-
+   ========================================================================== */
+:root {
+  /* ---- type ------------------------------------------------------------ */
+  --gs-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --gs-font-size-xs: 11px;   /* tab-bar labels, badges */
+  --gs-font-size-sm: 13px;   /* secondary / footer text */
+  --gs-font-size-md: 15px;   /* detail text, back buttons */
+  --gs-font-size-lg: 17px;   /* cell titles, inputs, buttons */
+  --gs-font-size-xl: 20px;   /* nav-bar titles */
+  --gs-line-height: 1.2;
+
+  /* ---- base palette ---------------------------------------------------- */
+  --gs-black: #000000;
+  --gs-white: #ffffff;
+  --gs-gray-900: #131315;
+  --gs-gray-800: #1c1c1e;
+  --gs-gray-700: #2a2a2d;
+  --gs-gray-600: #3a3a3e;
+  --gs-gray-500: #58585c;
+  --gs-gray-400: #8e8e93;
+  --gs-gray-300: #b8b8bd;
+  --gs-gray-200: #d9d9de;
+  --gs-gray-100: #f2f2f5;
+
+  /* ---- text ------------------------------------------------------------ */
+  --gs-text: #ffffff;
+  --gs-text-secondary: #a1a1a6;
+  --gs-text-tertiary: #6f6f75;
+  --gs-text-link: #8cb6ff;
+  --gs-text-on-blue: #ffffff;
+  --gs-text-disabled: rgba(255, 255, 255, 0.35);
+  --gs-text-shadow-dark: 0 -1px 0 rgba(0, 0, 0, 0.7);   /* white text on dark gel */
+  --gs-text-shadow-light: 0 1px 0 rgba(255, 255, 255, 0.6); /* dark text on light gel */
+
+  /* ---- accents --------------------------------------------------------- */
+  --gs-blue-100: #9ec4ff;
+  --gs-blue-300: #5b9bf0;
+  --gs-blue-500: #2f74d8;
+  --gs-blue-700: #1d4fa4;
+  --gs-blue-900: #12376f;
+  --gs-red-300: #ff7b76;
+  --gs-red-500: #d8332e;
+  --gs-red-700: #9c1712;
+  --gs-green-500: #4cd964;
+
+  /* ---- surfaces -------------------------------------------------------- */
+  --gs-screen-bg: #000000;
+  /* the classic grouped-table pinstripe, dark edition */
+  --gs-pinstripe-bg: repeating-linear-gradient(
+    to right,
+    #151517 0px,
+    #151517 6px,
+    #1b1b1e 6px,
+    #1b1b1e 7px
+  );
+  --gs-surface: #2c2c2f;
+  --gs-surface-raised: #38383c;
+  --gs-surface-sunken: #1a1a1c;
+  --gs-separator: rgba(0, 0, 0, 0.85);
+  --gs-separator-light: rgba(255, 255, 255, 0.09);
+
+  /* ---- the "gel" gradients ------------------------------------------- */
+  /* glass highlight: hard split at 50% = the signature iOS 3 shine */
+  --gs-gloss: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.30) 0%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.00) 50.5%,
+    rgba(255, 255, 255, 0.00) 100%
+  );
+  --gs-gloss-soft: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.00) 51%,
+    rgba(255, 255, 255, 0.00) 100%
+  );
+  /* black bar (UIBarStyleBlack): nav bar, tab bar, toolbars */
+  --gs-gradient-bar: linear-gradient(
+    to bottom,
+    #6e6e72 0%,
+    #4b4b4f 49%,
+    #333336 50%,
+    #1f1f22 100%
+  );
+  /* dark gel: default buttons, raised cells */
+  --gs-gradient-dark: linear-gradient(
+    to bottom,
+    #5a5a5f 0%,
+    #414145 49%,
+    #303034 50%,
+    #232326 100%
+  );
+  --gs-gradient-dark-pressed: linear-gradient(
+    to bottom,
+    #1c1c1f 0%,
+    #26262a 50%,
+    #2d2d31 100%
+  );
+  /* blue gel: primary buttons, switch ON, active tab icons */
+  --gs-gradient-blue: linear-gradient(
+    to bottom,
+    #8fb8f5 0%,
+    #4d8ae4 49%,
+    #2a6bd2 50%,
+    #1d55b5 100%
+  );
+  --gs-gradient-blue-pressed: linear-gradient(
+    to bottom,
+    #17427f 0%,
+    #1f56a8 50%,
+    #2b66bf 100%
+  );
+  /* red gel: destructive */
+  --gs-gradient-red: linear-gradient(
+    to bottom,
+    #f08a86 0%,
+    #d9403b 49%,
+    #c1221d 50%,
+    #9a1511 100%
+  );
+  --gs-gradient-red-pressed: linear-gradient(
+    to bottom,
+    #6f0e0b 0%,
+    #8d1713 50%,
+    #a11d19 100%
+  );
+  /* icon gradients (used by <Icon> via SVG defs) */
+  --gs-icon-inactive-top: #b9b9be;
+  --gs-icon-inactive-bottom: #5f5f64;
+  --gs-icon-active-top: #a6d0ff;
+  --gs-icon-active-bottom: #2a70e0;
+
+  /* ---- radii ----------------------------------------------------------- */
+  --gs-radius-sm: 5px;
+  --gs-radius-md: 8px;    /* buttons */
+  --gs-radius-lg: 10px;   /* grouped cells, alerts */
+  --gs-radius-pill: 999px;
+
+  /* ---- shadows / rims -------------------------------------------------- */
+  --gs-rim-light: inset 0 1px 0 rgba(255, 255, 255, 0.22);   /* top inner highlight */
+  --gs-rim-dark: 0 1px 0 rgba(0, 0, 0, 0.75);                /* bottom drop edge */
+  --gs-emboss: var(--gs-rim-light), var(--gs-rim-dark);
+  --gs-inset: inset 0 2px 5px rgba(0, 0, 0, 0.75), inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+  --gs-shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.5);
+  --gs-border: 1px solid rgba(0, 0, 0, 0.9);
+  --gs-border-light: 1px solid rgba(255, 255, 255, 0.14);
+
+  /* ---- spacing / sizing ---------------------------------------------- */
+  --gs-space-1: 4px;
+  --gs-space-2: 8px;
+  --gs-space-3: 12px;
+  --gs-space-4: 16px;
+  --gs-space-5: 20px;
+  --gs-control-height: 44px;   /* cells, nav bars, buttons */
+  --gs-bar-height: 44px;
+  --gs-tabbar-height: 49px;
+  --gs-statusbar-height: 20px;
+
+  /* ---- motion ---------------------------------------------------------- */
+  --gs-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --gs-duration: 160ms;
+  --gs-focus-ring: 0 0 0 2px rgba(143, 184, 245, 0.85);
+}

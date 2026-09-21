@@ -1,0 +1,117 @@
+/* ==========================================================================
+   Button — iOS 3 gel push button
+   Layered background: --gs-gloss (hard 50 % highlight) over the variant gel.
+   Each variant only sets the two gel custom properties; the base rule does
+   the rest, so a host can retint a button by overriding them.
+   ========================================================================== */
+.gs-button {
+  --gs-button-gel: var(--gs-gradient-dark);
+  --gs-button-gel-pressed: var(--gs-gradient-dark-pressed);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  min-width: 0;
+  height: var(--gs-control-height);
+  padding: 0 14px;
+  vertical-align: middle;
+
+  font-family: var(--gs-font);
+  font-size: var(--gs-font-size-lg);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--gs-white);
+  text-shadow: var(--gs-text-shadow-dark);
+  text-decoration: none;
+  white-space: nowrap;
+
+  background: var(--gs-gloss), var(--gs-button-gel);
+  border: var(--gs-border);
+  border-radius: var(--gs-radius-md);
+  box-shadow: var(--gs-emboss);
+
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: background var(--gs-duration) var(--gs-ease);
+}
+
+/* ---- variants ---------------------------------------------------------- */
+.gs-button--default {
+  --gs-button-gel: var(--gs-gradient-dark);
+  --gs-button-gel-pressed: var(--gs-gradient-dark-pressed);
+}
+
+.gs-button--primary {
+  --gs-button-gel: var(--gs-gradient-blue);
+  --gs-button-gel-pressed: var(--gs-gradient-blue-pressed);
+}
+
+.gs-button--destructive {
+  --gs-button-gel: var(--gs-gradient-red);
+  --gs-button-gel-pressed: var(--gs-gradient-red-pressed);
+}
+
+/* ---- sizes ------------------------------------------------------------- */
+.gs-button--sm {
+  height: 30px;
+  padding: 0 10px;
+  gap: 4px;
+  font-size: var(--gs-font-size-sm);
+  border-radius: var(--gs-radius-sm);
+}
+
+.gs-button--md {
+  height: var(--gs-control-height);
+  font-size: var(--gs-font-size-lg);
+}
+
+.gs-button--lg {
+  height: 50px;
+  padding: 0 16px;
+  font-size: 18px;
+}
+
+/* ---- block ------------------------------------------------------------- */
+.gs-button--block {
+  display: flex;
+  width: 100%;
+}
+
+/* ---- elements ---------------------------------------------------------- */
+.gs-button__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* flat white stroke, etched like the text */
+.gs-button__icon {
+  flex-shrink: 0;
+  color: var(--gs-white);
+  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.7));
+}
+
+/* ---- states ------------------------------------------------------------ */
+/* iOS 3 had no hover — nothing here on purpose. */
+
+.gs-button:focus-visible {
+  outline: none;
+  box-shadow: var(--gs-focus-ring), var(--gs-emboss);
+}
+
+/* pressed: gloss gone, gel sunk */
+.gs-button:active:not(:disabled),
+.gs-button[data-pressed],
+.gs-button--pressed {
+  background: var(--gs-button-gel-pressed);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), var(--gs-rim-dark);
+}
+
+.gs-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

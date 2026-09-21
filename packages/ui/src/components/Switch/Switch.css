@@ -1,0 +1,141 @@
+/* ==========================================================================
+   Switch — the iOS 3 ON/OFF slider.
+   94×27 pill track (overflow hidden) holding a two-tone strip twice as wide:
+   blue gel "ON" on the left, dark gel "OFF" on the right. A 27 px silver gel
+   knob sits over the track's edge and slides with the strip.
+   ========================================================================== */
+.gs-switch {
+  /* component-local: no token matches the OFF gel or the silver knob exactly */
+  --gs-switch-width: 94px;
+  --gs-switch-height: 27px;
+  --gs-switch-knob: 27px;
+  --gs-switch-off-gel: linear-gradient(to bottom, var(--gs-gray-600), var(--gs-gray-700));
+  --gs-switch-knob-gel: linear-gradient(
+    to bottom,
+    #fdfdfd 0%,
+    #e6e6ea 49%,
+    #d6d6db 50%,
+    #c4c4ca 100%
+  );
+
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  width: var(--gs-switch-width);
+  height: var(--gs-switch-height);
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: var(--gs-radius-pill);
+  font-family: var(--gs-font);
+  cursor: pointer;
+  vertical-align: middle;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Invisible hit-area extension to the 44 px touch-target height. */
+.gs-switch::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc((var(--gs-switch-height) - var(--gs-control-height)) / 2);
+  bottom: calc((var(--gs-switch-height) - var(--gs-control-height)) / 2);
+}
+
+.gs-switch:focus-visible {
+  outline: none;
+}
+
+/* ---- track ------------------------------------------------------------ */
+.gs-switch__track {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: var(--gs-border);
+  border-radius: var(--gs-radius-pill);
+  box-shadow: var(--gs-inset);
+  box-sizing: border-box;
+}
+
+.gs-switch:focus-visible .gs-switch__track {
+  box-shadow: var(--gs-focus-ring), var(--gs-inset);
+}
+
+/* ---- sliding two-tone strip ------------------------------------------ */
+.gs-switch__strip {
+  display: flex;
+  width: 200%;
+  height: 100%;
+  transform: translateX(-50%);
+  transition: transform var(--gs-duration) var(--gs-ease);
+}
+
+.gs-switch--on .gs-switch__strip {
+  transform: translateX(0);
+}
+
+.gs-switch__on,
+.gs-switch__off {
+  display: flex;
+  align-items: center;
+  flex: 0 0 50%;
+  height: 100%;
+  padding: 0 10px;
+  font-size: var(--gs-font-size-md);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: var(--gs-text-shadow-dark);
+  box-sizing: border-box;
+}
+
+.gs-switch__on {
+  justify-content: flex-start;
+  color: var(--gs-text-on-blue);
+  background: var(--gs-gloss), var(--gs-gradient-blue);
+}
+
+.gs-switch__off {
+  justify-content: flex-end;
+  color: var(--gs-text-secondary);
+  background: var(--gs-gloss), var(--gs-switch-off-gel);
+}
+
+/* ---- knob -------------------------------------------------------------- */
+.gs-switch__knob {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--gs-switch-knob);
+  height: var(--gs-switch-knob);
+  border-radius: 50%;
+  background: var(--gs-gloss), var(--gs-switch-knob-gel);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.8),
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateX(0);
+  transition: transform var(--gs-duration) var(--gs-ease);
+}
+
+.gs-switch--on .gs-switch__knob {
+  transform: translateX(calc(var(--gs-switch-width) - var(--gs-switch-knob)));
+}
+
+/* ---- states ------------------------------------------------------------ */
+.gs-switch:disabled,
+.gs-switch--disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gs-switch__strip,
+  .gs-switch__knob {
+    transition: none;
+  }
+}

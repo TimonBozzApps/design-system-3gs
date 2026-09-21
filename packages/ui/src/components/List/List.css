@@ -1,0 +1,214 @@
+/* ==========================================================================
+   List — iOS 3 grouped table view
+   Grouped: a rounded, black-outlined container on the pinstripe with a faint
+   light rim beneath it. Plain: full-bleed rows. Each cell is a raised dark
+   surface with a 1 px light inner highlight on top and a near-black separator
+   between rows; tapping floods the cell with the blue gel.
+   ========================================================================== */
+.gs-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  font-family: var(--gs-font);
+  line-height: var(--gs-line-height);
+}
+
+/* ---- header / footer --------------------------------------------------- */
+.gs-list__header {
+  padding: 0 10px 6px;
+  font-size: var(--gs-font-size-md);
+  font-weight: 700;
+  color: var(--gs-text-secondary);
+  text-shadow: var(--gs-text-shadow-dark);
+}
+
+.gs-list__footer {
+  padding: 6px 10px 0;
+  font-size: var(--gs-font-size-sm);
+  color: var(--gs-text-secondary);
+  text-align: center;
+  text-shadow: var(--gs-text-shadow-dark);
+}
+
+/* ---- the group container ---------------------------------------------- */
+.gs-list__group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--gs-surface);
+}
+
+.gs-list--grouped .gs-list__group {
+  border: var(--gs-border);
+  border-radius: var(--gs-radius-lg);
+  overflow: hidden;
+  /* light rim under the group, catching the pinstripe */
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.gs-list--plain .gs-list__group {
+  border-top: 1px solid var(--gs-separator);
+  border-bottom: 1px solid var(--gs-separator);
+}
+
+/* ==========================================================================
+   ListItem — one cell
+   ========================================================================== */
+.gs-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--gs-control-height);
+  margin: 0;
+  padding: 6px 10px;
+
+  /* neutralise <button> / <a> chrome so all three tags look identical */
+  font: inherit;
+  font-family: var(--gs-font);
+  text-align: left;
+  text-decoration: none;
+  color: var(--gs-text);
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+
+  background: var(--gs-surface);
+  box-shadow: inset 0 1px 0 var(--gs-separator-light);
+  border-top: 1px solid var(--gs-separator);
+
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gs-list-item:first-child {
+  border-top: 0;
+}
+
+.gs-list-item--interactive {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* ---- icon slot / app-icon tile ----------------------------------------- */
+.gs-list-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 29px;
+  height: 29px;
+  color: var(--gs-text-secondary);
+}
+
+.gs-list-item__icon--tile {
+  --gs-list-tile-gel: var(--gs-gradient-dark);
+
+  color: var(--gs-white);
+  background: var(--gs-gloss), var(--gs-list-tile-gel);
+  border: var(--gs-border);
+  border-radius: 6px;
+  box-shadow: var(--gs-emboss);
+}
+
+.gs-list-item__icon--tile > .gs-icon--flat {
+  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.7));
+}
+
+.gs-list-item__icon--gray { --gs-list-tile-gel: var(--gs-gradient-dark); }
+.gs-list-item__icon--blue { --gs-list-tile-gel: var(--gs-gradient-blue); }
+.gs-list-item__icon--red  { --gs-list-tile-gel: var(--gs-gradient-red); }
+
+/* ---- body: title + subtitle -------------------------------------------- */
+.gs-list-item__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.gs-list-item__title,
+.gs-list-item__subtitle,
+.gs-list-item__detail {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gs-list-item__title {
+  font-size: var(--gs-font-size-lg);
+  font-weight: 700;
+  color: var(--gs-white);
+  text-shadow: var(--gs-text-shadow-dark);
+}
+
+.gs-list-item__subtitle {
+  font-size: 14px;
+  color: var(--gs-text-secondary);
+}
+
+/* ---- detail text (right-aligned value) --------------------------------- */
+.gs-list-item__detail {
+  flex: 0 1 auto;
+  max-width: 50%;
+  font-size: var(--gs-font-size-lg);
+  color: var(--gs-text-link);
+  text-shadow: var(--gs-text-shadow-dark);
+  text-align: right;
+}
+
+/* ---- accessory --------------------------------------------------------- */
+.gs-list-item__accessory {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 20px;
+}
+
+.gs-list-item__accessory-icon--chevron   { color: var(--gs-gray-400); }
+.gs-list-item__accessory-icon--checkmark { color: var(--gs-blue-300); }
+.gs-list-item__accessory-icon--detail    { color: var(--gs-blue-300); }
+
+/* ---- states ------------------------------------------------------------ */
+/* iOS 3 had no hover — nothing here on purpose. */
+
+.gs-list-item:focus-visible {
+  outline: none;
+  box-shadow: inset var(--gs-focus-ring);
+}
+
+/* pressed / selected: the blue gel floods the cell, everything goes white */
+.gs-list-item--interactive:active:not(:disabled):not(.gs-list-item--disabled),
+.gs-list-item--selected {
+  background: var(--gs-gloss-soft), var(--gs-gradient-blue);
+}
+
+.gs-list-item--interactive:active:not(:disabled):not(.gs-list-item--disabled) .gs-list-item__title,
+.gs-list-item--interactive:active:not(:disabled):not(.gs-list-item--disabled) .gs-list-item__subtitle,
+.gs-list-item--interactive:active:not(:disabled):not(.gs-list-item--disabled) .gs-list-item__detail,
+.gs-list-item--interactive:active:not(:disabled):not(.gs-list-item--disabled) .gs-list-item__icon,
+.gs-list-item--interactive:active:not(:disabled):not(.gs-list-item--disabled) .gs-list-item__accessory-icon,
+.gs-list-item--selected .gs-list-item__title,
+.gs-list-item--selected .gs-list-item__subtitle,
+.gs-list-item--selected .gs-list-item__detail,
+.gs-list-item--selected .gs-list-item__icon,
+.gs-list-item--selected .gs-list-item__accessory-icon {
+  color: var(--gs-white);
+}
+
+.gs-list-item--disabled,
+.gs-list-item:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

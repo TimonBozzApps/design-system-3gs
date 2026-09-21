@@ -1,0 +1,127 @@
+.gs-statusbar {
+  height: var(--gs-statusbar-height);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 6px;
+  font-family: var(--gs-font);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gs-white);
+  text-shadow: var(--gs-text-shadow-dark);
+  border-bottom: 1px solid var(--gs-black);
+  flex-shrink: 0;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.gs-statusbar--black {
+  background: linear-gradient(to bottom, #464649 0%, #2f2f32 49%, #1f1f21 50%, #0f0f10 100%);
+}
+
+.gs-statusbar--gray {
+  background: linear-gradient(to bottom, rgba(120, 120, 126, 0.85) 0%, rgba(80, 80, 86, 0.85) 49%, rgba(60, 60, 66, 0.85) 50%, rgba(40, 40, 46, 0.85) 100%);
+  border-bottom-color: rgba(0, 0, 0, 0.6);
+}
+
+.gs-statusbar__left,
+.gs-statusbar__right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.gs-statusbar__right {
+  justify-content: flex-end;
+}
+
+.gs-statusbar__carrier {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gs-statusbar__net {
+  font-size: 11px;
+}
+
+/* ---- signal bars -------------------------------------------------------- */
+.gs-statusbar__signal {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 9px;
+}
+
+.gs-statusbar__signal i {
+  display: block;
+  width: 3px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+}
+.gs-statusbar__signal i:nth-child(1) { height: 3px; }
+.gs-statusbar__signal i:nth-child(2) { height: 4.5px; }
+.gs-statusbar__signal i:nth-child(3) { height: 6px; }
+.gs-statusbar__signal i:nth-child(4) { height: 7.5px; }
+.gs-statusbar__signal i:nth-child(5) { height: 9px; }
+
+.gs-statusbar__signal[data-bars="1"] i:nth-child(-n + 1),
+.gs-statusbar__signal[data-bars="2"] i:nth-child(-n + 2),
+.gs-statusbar__signal[data-bars="3"] i:nth-child(-n + 3),
+.gs-statusbar__signal[data-bars="4"] i:nth-child(-n + 4),
+.gs-statusbar__signal[data-bars="5"] i:nth-child(-n + 5) {
+  background: var(--gs-white);
+}
+
+.gs-statusbar__wifi {
+  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.5));
+}
+
+/* ---- battery ------------------------------------------------------------ */
+.gs-statusbar__battery {
+  --gs-battery: 100%;
+  position: relative;
+  width: 22px;
+  height: 10px;
+  border: 1px solid var(--gs-white);
+  border-radius: 2px;
+  padding: 1px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+}
+
+.gs-statusbar__battery::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: 2px;
+  width: 2px;
+  height: 4px;
+  background: var(--gs-white);
+  border-radius: 0 1px 1px 0;
+}
+
+.gs-statusbar__battery i {
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  bottom: 1px;
+  width: var(--gs-battery);
+  min-width: 2px;
+  background: linear-gradient(to bottom, #c9f2b4, #63c34b 50%, #3fa22f 51%, #2f8a22);
+  border-radius: 1px;
+  transition: width var(--gs-duration) var(--gs-ease);
+}
+
+.gs-statusbar__battery--low i {
+  background: linear-gradient(to bottom, #ffb3ae, #e0463f 50%, #c02b25 51%, #9c1712);
+}
+
+.gs-statusbar__bolt {
+  position: relative;
+  z-index: 1;
+}

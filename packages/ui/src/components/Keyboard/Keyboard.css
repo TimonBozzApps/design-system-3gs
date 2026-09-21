@@ -1,0 +1,256 @@
+/* ==========================================================================
+   Keyboard — the iOS 3 on-screen keyboard, dark "alert" appearance.
+   320×216: four 39 px rows of 26 px gel keys on a translucent dark slab.
+   Letter keys are the lighter gel, function keys the darker one, the return
+   key turns blue for Go/Search/Done/Send/Next. A pressed character key grows
+   a 46×58 popup bubble with a 26 px neck that swallows the key itself.
+   ========================================================================== */
+.gs-keyboard {
+  /* component-local gels: the alert keyboard's keys sit between --gs-gradient-bar
+     and --gs-gradient-dark, so neither token matches */
+  --gs-key-gel: linear-gradient(to bottom, #6a6a70 0%, #55555b 49%, #46464c 50%, #3a3a40 100%);
+  /* ~25 % brighter twin for the held state (a filter would also tint the popup child) */
+  --gs-key-gel-pressed: linear-gradient(to bottom, #85858d 0%, #6b6b72 49%, #5a5a61 50%, #4a4a51 100%);
+  --gs-key-fn: linear-gradient(to bottom, #3e3e44 0%, #2f2f34 49%, #26262b 50%, #1e1e22 100%);
+  --gs-key-popup: linear-gradient(to bottom, #8a8a92, #5a5a62);
+  --gs-key-popup-bottom: #5a5a62;
+  --gs-key-radius: 5px;
+  --gs-key-height: 39px;
+  --gs-key-width: 26px;
+
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 320px;
+  height: 216px;
+  padding: 5px 3px 3px;
+
+  font-family: var(--gs-font);
+  color: var(--gs-white);
+
+  background: linear-gradient(to bottom, rgba(64, 64, 70, 0.96), rgba(24, 24, 28, 0.98));
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.9);
+
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gs-keyboard--disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ---- rows -------------------------------------------------------------- */
+.gs-keyboard__row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  overflow: visible;
+}
+
+/* a s d f g h j k l — half a key in from either edge */
+.gs-keyboard__row--inset {
+  padding: 0 16px;
+}
+
+/* 76 + 154 + 76 only fits the 314 px inner width with 4 px gaps */
+.gs-keyboard__row--bottom {
+  gap: 4px;
+}
+
+/* ---- keys -------------------------------------------------------------- */
+.gs-keyboard__key {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--gs-key-width);
+  box-sizing: border-box;
+  width: var(--gs-key-width);
+  height: var(--gs-key-height);
+  padding: 0;
+  margin: 0;
+
+  /* iOS 3 set its keys in regular weight, not bold */
+  font: 400 22px/1 var(--gs-font);
+  color: var(--gs-white);
+  text-shadow: var(--gs-text-shadow-dark);
+  white-space: nowrap;
+
+  background: var(--gs-gloss), var(--gs-key-gel);
+  border: var(--gs-border);
+  border-radius: var(--gs-key-radius);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 1px 0 rgba(0, 0, 0, 0.75);
+
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gs-keyboard__key:focus-visible {
+  outline: none;
+  box-shadow: var(--gs-focus-ring), inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 1px 0 rgba(0, 0, 0, 0.75);
+}
+
+/* numbers / symbols layers: the glyphs sit a touch smaller */
+.gs-keyboard__key--symbol {
+  font-size: 20px;
+}
+
+/* shift, delete, 123, #+=, ABC */
+.gs-keyboard__key--fn {
+  flex-basis: 38px;
+  width: 38px;
+  font: 700 15px/1 var(--gs-font);
+  background: var(--gs-gloss), var(--gs-key-fn);
+}
+
+.gs-keyboard__key--wide {
+  flex-basis: 76px;
+  width: 76px;
+}
+
+.gs-keyboard__key--space {
+  flex-basis: 154px;
+  width: 154px;
+  font: 400 16px/1 var(--gs-font);
+}
+
+.gs-keyboard__key--return {
+  flex-basis: 76px;
+  width: 76px;
+  font: 700 16px/1 var(--gs-font);
+  background: var(--gs-gloss), var(--gs-key-fn);
+}
+
+.gs-keyboard__key--return-blue {
+  background: var(--gs-gloss), var(--gs-gradient-blue);
+  color: var(--gs-text-on-blue);
+}
+
+/* flat white glyphs, etched like the text */
+.gs-keyboard__icon {
+  flex-shrink: 0;
+  color: var(--gs-white);
+  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.7));
+}
+
+/* shift on: the arrow fills in (set via `fill` on the SVG) */
+.gs-keyboard__key--shift-on {
+  background: var(--gs-gloss), var(--gs-key-gel);
+}
+
+/* caps lock: blue key, filled arrow, and the little bar underneath */
+.gs-keyboard__key--caps {
+  background: var(--gs-gloss), var(--gs-gradient-blue);
+}
+
+.gs-keyboard__key--caps::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  width: 12px;
+  height: 2px;
+  transform: translateX(-50%);
+  border-radius: 1px;
+  background: var(--gs-white);
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.7);
+}
+
+/* ---- pressed ----------------------------------------------------------- */
+/* iOS 3 had no hover — nothing here on purpose. Held keys brighten. */
+.gs-keyboard__key:active:not(:disabled),
+.gs-keyboard__key--pressed {
+  background: var(--gs-gloss), var(--gs-key-gel-pressed);
+}
+
+/* function keys lift to the letter gel while held, like iOS */
+.gs-keyboard__key--fn:active:not(:disabled),
+.gs-keyboard__key--fn.gs-keyboard__key--pressed,
+.gs-keyboard__key--return:active:not(:disabled),
+.gs-keyboard__key--return.gs-keyboard__key--pressed {
+  background: var(--gs-gloss), var(--gs-key-gel);
+}
+
+.gs-keyboard__key--return-blue:active:not(:disabled),
+.gs-keyboard__key--return-blue.gs-keyboard__key--pressed,
+.gs-keyboard__key--caps:active:not(:disabled),
+.gs-keyboard__key--caps.gs-keyboard__key--pressed {
+  background: var(--gs-gradient-blue-pressed);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), var(--gs-rim-dark);
+}
+
+/* ---- popup ------------------------------------------------------------- */
+/* The enlarged key bubble: anchored above the key, overlapping it by 2 px. */
+.gs-keyboard__popup {
+  position: absolute;
+  bottom: calc(100% - 2px);
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 46px;
+  height: 58px;
+  padding-bottom: 2px;
+  transform: translateX(-50%);
+
+  font: 400 36px/1 var(--gs-font);
+  color: var(--gs-white);
+  text-shadow: var(--gs-text-shadow-dark);
+
+  background: var(--gs-gloss-soft), var(--gs-key-popup);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.9), 0 3px 8px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+/* neck: a key-wide column that runs from the bubble down over the pressed key */
+.gs-keyboard__popup::after {
+  content: "";
+  position: absolute;
+  top: calc(100% - 2px);
+  left: 50%;
+  width: var(--gs-key-width);
+  height: calc(var(--gs-key-height) + 1px);
+  transform: translateX(-50%);
+  background: var(--gs-key-popup-bottom);
+  border-radius: 0 0 var(--gs-key-radius) var(--gs-key-radius);
+  box-shadow:
+    -1px 0 0 rgba(0, 0, 0, 0.9),
+    1px 0 0 rgba(0, 0, 0, 0.9),
+    0 1px 0 rgba(0, 0, 0, 0.9);
+}
+
+/* edge columns: hug the key's outer edge so the bubble stays on screen */
+.gs-keyboard__popup--left {
+  left: 0;
+  transform: none;
+}
+
+.gs-keyboard__popup--left::after {
+  left: 0;
+  transform: none;
+}
+
+.gs-keyboard__popup--right {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.gs-keyboard__popup--right::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}

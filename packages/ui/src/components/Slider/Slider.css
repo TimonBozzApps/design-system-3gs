@@ -1,0 +1,168 @@
+/* ==========================================================================
+   Slider — the iOS 3 volume / brightness slider.
+   A native <input type="range"> restyled: a 9 px sunken pill track, the blue
+   gel filling it from the left edge up to the knob, and the Switch's 23 px
+   silver gel knob with a black outline. The fill is driven by the
+   `--gs-slider-pct` custom property (0–100) that the component sets on the
+   wrapper; it is painted as a clipped background layer of the track.
+   WebKit and Gecko style the track/thumb through different pseudo-elements,
+   so every track/thumb rule is written twice — keep the pairs in sync.
+   ========================================================================== */
+.gs-slider {
+  --gs-slider-pct: 0;
+  --gs-slider-track: 9px;
+  --gs-slider-thumb: 23px;
+  /* component-local: the knob reuses the Switch's silver gel (no token) */
+  --gs-slider-knob-gel: linear-gradient(
+    to bottom,
+    #fdfdfd 0%,
+    #e6e6ea 49%,
+    #d6d6db 50%,
+    #c4c4ca 100%
+  );
+  --gs-slider-knob-gel-pressed: linear-gradient(
+    to bottom,
+    #d5d5da 0%,
+    #c7c7cc 49%,
+    #bebec3 50%,
+    #b8b8be 100%
+  );
+  --gs-slider-knob-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.85),
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  /* blue fill width: from the track's left edge to the knob's centre. The knob
+     travels over (track − knob) px, so a plain percentage would drift under it. */
+  --gs-slider-fill: calc(
+    var(--gs-slider-thumb) / 2 +
+      (100% - var(--gs-slider-thumb)) * var(--gs-slider-pct) / 100
+  );
+
+  display: flex;
+  align-items: center;
+  gap: var(--gs-space-2);
+  min-width: 0;
+  font-family: var(--gs-font);
+  line-height: var(--gs-line-height);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---- the input --------------------------------------------------------- */
+.gs-slider__input {
+  flex: 1;
+  min-width: 0;
+  height: var(--gs-slider-thumb);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.gs-slider__input:focus-visible {
+  outline: none;
+}
+
+.gs-slider__input:disabled {
+  cursor: default;
+}
+
+/* ---- track: sunken pill + clipped blue gel fill ------------------------ */
+.gs-slider__input::-webkit-slider-runnable-track {
+  box-sizing: border-box;
+  height: var(--gs-slider-track);
+  border: var(--gs-border);
+  border-radius: var(--gs-radius-pill);
+  background-color: var(--gs-surface-sunken);
+  background-image: var(--gs-gloss), var(--gs-gradient-blue);
+  background-size: var(--gs-slider-fill) 100%;
+  background-repeat: no-repeat;
+  box-shadow: var(--gs-inset);
+}
+
+.gs-slider__input::-moz-range-track {
+  box-sizing: border-box;
+  height: var(--gs-slider-track);
+  border: var(--gs-border);
+  border-radius: var(--gs-radius-pill);
+  background-color: var(--gs-surface-sunken);
+  background-image: var(--gs-gloss), var(--gs-gradient-blue);
+  background-size: var(--gs-slider-fill) 100%;
+  background-repeat: no-repeat;
+  box-shadow: var(--gs-inset);
+}
+
+/* ---- thumb: the silver gel knob ---------------------------------------- */
+.gs-slider__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  width: var(--gs-slider-thumb);
+  height: var(--gs-slider-thumb);
+  /* WebKit lays the thumb out at the top of the track's content box; pull it
+     up to centre it on the 9 px track (minus the 2 × 1 px border) → −8 px. */
+  margin-top: calc((var(--gs-slider-track) - 2px - var(--gs-slider-thumb)) / 2);
+  border: 0;
+  border-radius: 50%;
+  background: var(--gs-gloss), var(--gs-slider-knob-gel);
+  box-shadow: var(--gs-slider-knob-shadow);
+}
+
+.gs-slider__input::-moz-range-thumb {
+  box-sizing: border-box;
+  width: var(--gs-slider-thumb);
+  height: var(--gs-slider-thumb);
+  border: 0;
+  border-radius: 50%;
+  background: var(--gs-gloss), var(--gs-slider-knob-gel);
+  box-shadow: var(--gs-slider-knob-shadow);
+}
+
+/* pressed: the knob goes a shade darker (no hover — iOS 3 had none) */
+.gs-slider__input:active:not(:disabled)::-webkit-slider-thumb {
+  background: var(--gs-gloss), var(--gs-slider-knob-gel-pressed);
+}
+
+.gs-slider__input:active:not(:disabled)::-moz-range-thumb {
+  background: var(--gs-gloss), var(--gs-slider-knob-gel-pressed);
+}
+
+/* keyboard focus: the blue ring around the knob */
+.gs-slider__input:focus-visible::-webkit-slider-thumb {
+  box-shadow: var(--gs-focus-ring), var(--gs-slider-knob-shadow);
+}
+
+.gs-slider__input:focus-visible::-moz-range-thumb {
+  box-shadow: var(--gs-focus-ring), var(--gs-slider-knob-shadow);
+}
+
+/* ---- end icons ---------------------------------------------------------- */
+.gs-slider__icon {
+  flex-shrink: 0;
+  color: var(--gs-gray-400);
+}
+
+/* ---- numeric readout ---------------------------------------------------- */
+.gs-slider__value {
+  flex-shrink: 0;
+  min-width: 3ch;
+  font-size: var(--gs-font-size-sm);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--gs-text-secondary);
+  text-align: right;
+  text-shadow: var(--gs-text-shadow-dark);
+}
+
+/* ---- states ------------------------------------------------------------ */
+.gs-slider--disabled {
+  opacity: 0.5;
+}
+
+.gs-slider--disabled .gs-slider__input {
+  cursor: default;
+}

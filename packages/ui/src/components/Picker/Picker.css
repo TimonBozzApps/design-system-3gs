@@ -1,0 +1,195 @@
+/* ==========================================================================
+   Picker — the iOS 3 spinning wheel (UIPickerView)
+   A black chrome frame holding one drum per column. Each drum is a plain
+   scroll container (snap points, hidden scrollbar) whose rows are shaded
+   into darkness toward the top and bottom edges to fake a cylinder; a
+   translucent blue-glass bar is overlaid across the middle row.
+   ========================================================================== */
+.gs-picker {
+  --gs-picker-rows: 5;
+  --gs-picker-row-height: var(--gs-control-height); /* 44px — mirrored by ROW_HEIGHT in Picker.tsx */
+  /* the drum surface: light in the middle, dark at the ends */
+  --gs-picker-drum: linear-gradient(
+    to bottom,
+    var(--gs-gray-700),
+    var(--gs-gray-600) 50%,
+    var(--gs-gray-700)
+  );
+
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  font-family: var(--gs-font);
+  line-height: var(--gs-line-height);
+}
+
+.gs-picker--rows-3 { --gs-picker-rows: 3; }
+.gs-picker--rows-5 { --gs-picker-rows: 5; }
+.gs-picker--rows-7 { --gs-picker-rows: 7; }
+
+/* ---- the black chrome frame ------------------------------------------- */
+.gs-picker__frame {
+  display: flex;
+  gap: 0;
+  min-width: 0;
+  padding: 8px 6px;
+  background: linear-gradient(to bottom, #5a5a5f, var(--gs-gray-700) 8%, #1b1b1e 92%, #0c0c0d);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid var(--gs-black);
+}
+
+/* ---- one column -------------------------------------------------------- */
+.gs-picker__column {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--gs-picker-drum);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.8);
+}
+
+.gs-picker__column:first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.gs-picker__column:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* focus ring, drawn on top of the shades so it stays crisp */
+.gs-picker__column::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  box-shadow: inset var(--gs-focus-ring);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gs-picker__column:has(> .gs-picker__drum:focus-visible)::after {
+  opacity: 1;
+}
+
+/* ---- divider between columns ------------------------------------------ */
+.gs-picker__divider {
+  flex: 0 0 2px;
+  width: 2px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.9) 50%, rgba(255, 255, 255, 0.08) 50%);
+}
+
+/* ---- the drum (scroll container) -------------------------------------- */
+.gs-picker__drum {
+  position: relative;
+  height: calc(var(--gs-picker-rows) * var(--gs-picker-row-height));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  outline: none;
+  -webkit-overflow-scrolling: touch;
+
+  /* no scrollbar — the shading and the bar are the affordance */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.gs-picker__drum::-webkit-scrollbar {
+  display: none;
+}
+
+/* padding so the first / last rows can sit in the selection band */
+.gs-picker__spacer {
+  height: calc((var(--gs-picker-rows) - 1) / 2 * var(--gs-picker-row-height));
+}
+
+/* ---- rows -------------------------------------------------------------- */
+.gs-picker__row {
+  display: block;
+  box-sizing: border-box;
+  height: var(--gs-picker-row-height);
+  padding: 0 10px;
+  scroll-snap-align: center;
+
+  font-family: var(--gs-font);
+  font-size: var(--gs-font-size-xl);
+  font-weight: 700;
+  line-height: var(--gs-picker-row-height);
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+  text-shadow: var(--gs-text-shadow-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gs-picker__column--left .gs-picker__row  { text-align: left; }
+.gs-picker__column--right .gs-picker__row { text-align: right; }
+
+.gs-picker__row--selected {
+  color: var(--gs-white);
+}
+
+.gs-picker__row--disabled {
+  color: var(--gs-text-disabled);
+}
+
+/* ---- cylinder shading -------------------------------------------------- */
+.gs-picker__shade-top,
+.gs-picker__shade-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 40%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.gs-picker__shade-top {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
+}
+
+.gs-picker__shade-bottom {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
+}
+
+/* ---- the blue-glass selection bar ------------------------------------- */
+.gs-picker__selection {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--gs-picker-row-height);
+  transform: translateY(-50%);
+  z-index: 2;
+  pointer-events: none;
+  background:
+    var(--gs-gloss),
+    linear-gradient(to bottom, rgba(110, 150, 220, 0.35), rgba(60, 100, 190, 0.4));
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* ---- states ------------------------------------------------------------ */
+.gs-picker--disabled .gs-picker__drum {
+  pointer-events: none;
+}
+
+.gs-picker--disabled .gs-picker__row {
+  color: var(--gs-text-disabled);
+}
+
+.gs-picker--disabled .gs-picker__selection {
+  opacity: 0.6;
+}

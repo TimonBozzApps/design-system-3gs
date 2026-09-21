@@ -1,0 +1,157 @@
+/* ==========================================================================
+   SegmentedControl — the iOS 3 segmented control (UISegmentedControlStyleBar)
+   One rounded gel bar cut into equal segments by 1 px black dividers. The
+   selected segment is pressed in (sunken, blue-black gel); the others are
+   raised glass with the hard 50 % gloss. Each tint only sets the three gel
+   custom properties; the segment rules do the rest.
+   ========================================================================== */
+.gs-segmented {
+  --gs-segment-gel: var(--gs-gradient-dark);
+  --gs-segment-gel-pressed: var(--gs-gradient-dark-pressed);
+  --gs-segment-gel-selected: var(--gs-gradient-blue-pressed);
+  --gs-segment-sunk: inset 0 2px 4px rgba(0, 0, 0, 0.65), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  /* the light rim to the right of each divider */
+  --gs-segment-divider-rim: inset 1px 0 0 rgba(255, 255, 255, 0.12);
+
+  display: inline-grid;
+  grid-auto-flow: column;
+  /* equal segments: with an intrinsic width the widest label sizes them all,
+     with a definite width (--block) they share it; min 0 lets labels ellipsise */
+  grid-auto-columns: minmax(0, 1fr);
+  box-sizing: border-box;
+  max-width: 100%;
+  height: var(--gs-control-height);
+  margin: 0;
+  padding: 0;
+  vertical-align: middle;
+
+  font-family: var(--gs-font);
+  font-size: var(--gs-font-size-md);
+
+  border: var(--gs-border);
+  border-radius: var(--gs-radius-sm);
+  overflow: hidden;
+  /* the segments paint over the bar, so the light rim lives on them (below);
+     only the bottom drop edge belongs here */
+  box-shadow: var(--gs-rim-dark);
+
+  /* stays tappable in slots that switch pointer events off (a NavigationBar title) */
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ---- sizes ------------------------------------------------------------- */
+.gs-segmented--sm {
+  height: 30px;
+  font-size: var(--gs-font-size-sm);
+}
+
+.gs-segmented--md {
+  height: var(--gs-control-height);
+  font-size: var(--gs-font-size-md);
+}
+
+/* ---- tints ------------------------------------------------------------- */
+.gs-segmented--dark {
+  --gs-segment-gel: var(--gs-gradient-dark);
+  --gs-segment-gel-pressed: var(--gs-gradient-dark-pressed);
+  --gs-segment-gel-selected: var(--gs-gradient-blue-pressed);
+}
+
+/* the blue-gray gel of a tint="blue" NavigationBar (same as its bar buttons) */
+.gs-segmented--blue {
+  --gs-segment-gel: linear-gradient(to bottom, #8aa4c8 0%, #6684ad 49%, #51739f 50%, #45668f 100%);
+  --gs-segment-gel-pressed: linear-gradient(to bottom, #2c405f 0%, #3a5278 50%, #435f8b 100%);
+  --gs-segment-gel-selected: linear-gradient(to bottom, #2c4f82 0%, #35598e 50%, #3f6499 100%);
+}
+
+/* ---- block ------------------------------------------------------------- */
+.gs-segmented--block {
+  display: grid;
+  width: 100%;
+}
+
+/* ---- segment ----------------------------------------------------------- */
+.gs-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+  padding: 0 12px;
+
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  line-height: var(--gs-line-height); /* room for descenders inside the label's overflow: hidden */
+  color: var(--gs-white);
+  text-shadow: var(--gs-text-shadow-dark);
+  white-space: nowrap;
+
+  background: var(--gs-gloss), var(--gs-segment-gel);
+  border: 0;
+  border-radius: 0;
+  box-shadow: var(--gs-rim-light);
+
+  cursor: pointer;
+  outline: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--gs-duration) var(--gs-ease);
+}
+
+/* divider: a 1 px black line with a light rim on its right, on every segment
+   after the first. :where() keeps the selector at single-class specificity so
+   the state rules below can replace the whole box-shadow stack. */
+:where(.gs-segment) + .gs-segment {
+  border-left: 1px solid var(--gs-separator);
+  box-shadow: var(--gs-rim-light), var(--gs-segment-divider-rim);
+}
+
+/* ---- elements ---------------------------------------------------------- */
+.gs-segment__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* flat white stroke, etched like the text */
+.gs-segment__icon {
+  flex-shrink: 0;
+  color: var(--gs-white);
+  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.7));
+}
+
+/* ---- states ------------------------------------------------------------ */
+/* iOS 3 had no hover — nothing here on purpose. */
+
+/* selected: gloss and rim gone, gel sunk into the bar */
+.gs-segment--selected {
+  background: var(--gs-segment-gel-selected);
+  box-shadow: var(--gs-segment-sunk);
+  cursor: default;
+}
+
+/* pressing an unselected segment sinks it the same way */
+.gs-segment:active:not(:disabled):not(.gs-segment--selected) {
+  background: var(--gs-segment-gel-pressed);
+  box-shadow: var(--gs-segment-sunk);
+}
+
+/* inset ring, so the bar's overflow: hidden cannot clip it */
+.gs-segment:focus-visible {
+  box-shadow: inset var(--gs-focus-ring);
+}
+
+.gs-segment--selected:focus-visible {
+  box-shadow: inset var(--gs-focus-ring), var(--gs-segment-sunk);
+}
+
+.gs-segment--disabled,
+.gs-segment:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

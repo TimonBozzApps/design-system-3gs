@@ -1,0 +1,39 @@
+.gs-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--gs-radius-pill);
+  font-family: var(--gs-font);
+  font-size: var(--gs-font-size-sm);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--gs-white);
+  text-shadow: var(--gs-text-shadow-dark);
+  border: 2px solid var(--gs-white);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.gs-badge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gs-gloss);
+  pointer-events: none;
+}
+
+.gs-badge--red {
+  background: var(--gs-gradient-red);
+}
+
+.gs-badge--gray {
+  background: var(--gs-gradient-dark);
+  border-color: rgba(255, 255, 255, 0.8);
+}

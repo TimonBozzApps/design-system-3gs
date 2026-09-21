@@ -1,0 +1,211 @@
+/* ==========================================================================
+   ActionSheet — iOS 3 action sheet (UIActionSheet)
+   A translucent black-glass sheet that slides up from the bottom edge: a
+   small gray title, then a stack of full-width 46 px gel buttons — light
+   silver glass for normal actions, red gel for the destructive one and a
+   dark "Cancel" at the bottom. Every button is 1 px black outlined with a
+   light inner rim on top. The silver / cancel gels are sheet-specific (no
+   system token fits), so they are defined locally on the panel.
+   ========================================================================== */
+
+/* ---- backdrop ---------------------------------------------------------- */
+.gs-actionsheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.4);
+  font-family: var(--gs-font);
+  animation: gs-actionsheet-fade var(--gs-duration) var(--gs-ease) both;
+}
+
+/* in-place variant: fills the nearest positioned ancestor (a phone screen) */
+.gs-actionsheet-backdrop--contained {
+  position: absolute;
+}
+
+/* ---- panel ------------------------------------------------------------- */
+.gs-actionsheet {
+  --gs-actionsheet-gel-default: linear-gradient(
+    to bottom,
+    #f6f7fa 0%,
+    #dfe3ea 49%,
+    #cfd5df 50%,
+    #b9c1ce 100%
+  );
+  --gs-actionsheet-gel-default-pressed: linear-gradient(
+    to bottom,
+    #a3abb9 0%,
+    #b7bfcb 50%,
+    #c4cbd6 100%
+  );
+  --gs-actionsheet-gel-cancel: linear-gradient(
+    to bottom,
+    #3a3a3e 0%,
+    #262629 49%,
+    #1b1b1e 50%,
+    #111113 100%
+  );
+  --gs-actionsheet-gel-cancel-pressed: linear-gradient(
+    to bottom,
+    #0a0a0b 0%,
+    #141416 50%,
+    #1c1c1f 100%
+  );
+
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+
+  color: var(--gs-white);
+  text-align: center;
+  line-height: var(--gs-line-height);
+
+  background: linear-gradient(
+    to bottom,
+    rgba(70, 70, 75, 0.92) 0%,
+    rgba(40, 40, 44, 0.94) 50%,
+    rgba(20, 20, 23, 0.96) 100%
+  );
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 -1px 0 rgba(0, 0, 0, 0.9),
+    0 -8px 24px rgba(0, 0, 0, 0.5);
+
+  animation: gs-actionsheet-slide 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.gs-actionsheet:focus {
+  outline: none;
+}
+
+/* ---- title ------------------------------------------------------------- */
+.gs-actionsheet__title {
+  margin: 0;
+  padding: 4px 8px 12px;
+  font-family: var(--gs-font);
+  font-size: var(--gs-font-size-sm);
+  font-weight: 700;
+  color: var(--gs-text-secondary);
+  text-shadow: var(--gs-text-shadow-dark);
+  overflow-wrap: break-word;
+}
+
+/* ---- actions ----------------------------------------------------------- */
+.gs-actionsheet__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gs-actionsheet__action {
+  flex: none;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 46px;
+  padding: 0 8px;
+  margin: 0;
+
+  font-family: var(--gs-font);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--gs-white);
+  text-shadow: var(--gs-text-shadow-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  background: var(--gs-gloss), var(--gs-actionsheet-gel-default);
+  border: 1px solid rgba(0, 0, 0, 0.9);
+  border-radius: var(--gs-radius-md);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.06);
+
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+}
+
+/* variants */
+.gs-actionsheet__action--default {
+  background: var(--gs-gloss), var(--gs-actionsheet-gel-default);
+  color: #16181d;
+  text-shadow: var(--gs-text-shadow-light);
+}
+
+.gs-actionsheet__action--destructive {
+  background: var(--gs-gloss), var(--gs-gradient-red);
+}
+
+.gs-actionsheet__action--cancel {
+  margin-top: 8px;
+  background: var(--gs-gloss-soft), var(--gs-actionsheet-gel-cancel);
+}
+
+/* states — iOS 3 had no hover, nothing here on purpose */
+.gs-actionsheet__action:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--gs-focus-ring),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.gs-actionsheet__action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* pressed: gloss gone, gel sunk */
+.gs-actionsheet__action--default:active:not(:disabled) {
+  background: var(--gs-actionsheet-gel-default-pressed);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.gs-actionsheet__action--destructive:active:not(:disabled) {
+  background: var(--gs-gradient-red-pressed);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.gs-actionsheet__action--cancel:active:not(:disabled) {
+  background: var(--gs-actionsheet-gel-cancel-pressed);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* ---- motion ------------------------------------------------------------ */
+@keyframes gs-actionsheet-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gs-actionsheet-slide {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gs-actionsheet-backdrop,
+  .gs-actionsheet {
+    animation: none;
+  }
+}
