@@ -6,11 +6,13 @@
     "dev": "pnpm --filter site dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
+    "props": "pnpm --filter site props",
     "preview": "pnpm --filter site preview",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "pnpm build && changeset publish",
-    "pack:check": "pnpm --filter @3gs/ui build && cd packages/ui && pnpm pack --pack-destination ../../.packs && cd ../.. && tar -tzf .packs/*.tgz | sort"
+    "pack:check": "pnpm --filter @3gs/ui build && cd packages/ui && pnpm pack --pack-destination ../../.packs && cd ../.. && tar -tzf .packs/*.tgz | sort",
+    "design:export": "node scripts/export-tokens.mjs && node scripts/figma-sheet.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",

@@ -87,6 +87,9 @@
 }
 
 /* ---- battery ------------------------------------------------------------ */
+/* The bar itself mirrors in RTL (the grid columns flip, like iOS), but the
+   battery is a pictogram of an object: its nub stays on the right and it
+   fills from the left in either direction, so these edges are physical. */
 .gs-statusbar__battery {
   --gs-battery: 100%;
   position: relative;

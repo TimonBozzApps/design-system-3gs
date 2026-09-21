@@ -89,3 +89,7 @@ Library `@3gs/ui` (packages/ui) + showcase site (apps/site). Icons via lucide-re
 - [ ] Figma export: DTCG token JSON (dark/light) + SVG gel sticker sheets, `pnpm design:export`
 - [ ] Stepper, SearchBar (scopes), NotificationBanner
 - [ ] Integrate: typecheck, build, browser verification (both themes + RTL), tarball smoke test, changeset version → CHANGELOG, commit
+- Batch 5 review: 23 components / 39 exports; props.json 57 types · 313 props; tarball smoke test
+  (ESM+CJS+CSS+SSR+GsProvider) green; light+RTL verified visually; `changeset version` → 0.1.0 +
+  CHANGELOG. Open: portaled overlays inherit document dir (documented); Figma import drops filters
+  (documented in design/README.md).

@@ -50,7 +50,19 @@ src/components/<Name>/
 - **Sizing**: touch targets 44 px tall (`--gs-control-height`). Font sizes and
   radii from tokens. Components are `display: flex/inline-flex`, never rely on
   global resets beyond `src/styles/base.css`.
+- **Themes**: read *semantic* tokens (`--gs-gradient-neutral`, `--gs-gradient-barbutton`,
+  `--gs-text-on-bar`, `--gs-text-emboss`, …) so `data-theme="light"` works; never remap a raw
+  gel token. Parts that are always dark (tab bar, HUD) pin their own values.
+- **RTL**: logical properties only (`padding-inline-start`, `inset-inline-end`,
+  `text-align: start`, `border-inline-*`). Anything that must mirror geometrically
+  (clip-paths, `translateX`, background anchors, chevrons) gets an
+  `:is([dir="rtl"] .gs-x, .gs-x:dir(rtl))` override in the same file.
+- **Strings**: no hard-coded UI text or aria-labels — read `useGsStrings()` from
+  `src/lib/i18n.tsx` as the default and let an explicit prop override it. Add new
+  keys to `GsStrings` + `defaultStrings`.
+- **Docs**: JSDoc every prop (one line, `@default` where it isn't obvious) — the
+  showcase's prop tables are generated from the types (`pnpm props`).
 - **Demo**: also write `apps/site/src/demos/<Name>Demo.tsx` (see
-  `apps/site/src/demos/README.md`).
+  `apps/site/src/demos/README.md`) and set `meta.propTypes` to your interfaces.
 - Typecheck with `pnpm --filter @3gs/ui typecheck` (other components may still
   be missing while work is parallel — only your files must be error-free).

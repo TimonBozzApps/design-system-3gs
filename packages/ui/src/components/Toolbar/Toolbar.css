@@ -132,13 +132,18 @@
     transform var(--gs-duration) var(--gs-ease);
 }
 
-/* red gel count on the icon's top-right corner, like the tab bar's */
+/* red gel count on the icon's top inline-end corner, like the tab bar's
+   (top-right in LTR, top-left in RTL — it scales towards that corner) */
 .gs-toolbar-button__badge {
   position: absolute;
   top: -4px;
-  right: -10px;
+  inset-inline-end: -10px;
   transform: scale(0.85);
   transform-origin: 100% 0;
+}
+
+[dir="rtl"] .gs-toolbar-button__badge {
+  transform-origin: 0 0;
 }
 
 /* ---- states ------------------------------------------------------------ */

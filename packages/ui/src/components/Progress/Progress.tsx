@@ -1,5 +1,6 @@
 import { forwardRef, type HTMLAttributes } from "react";
 import { cn } from "../../lib/cn";
+import { useGsStrings } from "../../lib/i18n";
 import "./Progress.css";
 
 /* ==========================================================================
@@ -79,7 +80,7 @@ export interface ActivityIndicatorProps extends HTMLAttributes<HTMLSpanElement> 
   size?: number;
   /** Spoke colour: `white` (default, for dark surfaces) or `gray`. */
   tone?: "white" | "gray";
-  /** Accessible name, announced via `role="status"`. Default "Loading". */
+  /** Accessible name, announced via `role="status"`. Default `strings.loading` ("Loading"). */
   label?: string;
   /** `false` renders nothing — `hidesWhenStopped`. Default `true`. */
   animating?: boolean;
@@ -98,16 +99,17 @@ const SPOKES = Array.from({ length: 12 }, (_, i) => ({
  */
 export const ActivityIndicator = forwardRef<HTMLSpanElement, ActivityIndicatorProps>(
   function ActivityIndicator(
-    { size = 20, tone = "white", label = "Loading", animating = true, className, ...rest },
+    { size = 20, tone = "white", label, animating = true, className, ...rest },
     ref,
   ) {
+    const strings = useGsStrings();
     if (!animating) return null;
 
     return (
       <span
         ref={ref}
         role="status"
-        aria-label={label}
+        aria-label={label ?? strings.loading}
         className={cn("gs-spinner", `gs-spinner--${tone}`, className)}
         {...rest}
       >

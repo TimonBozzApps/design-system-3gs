@@ -10,6 +10,7 @@ export const meta: DemoMeta = {
     "Sunken text wells — iOS 3 pressed inputs into the surface instead of raising them: dark well, inset shadow, hairline edge, bold inline label. SearchField is the shorter pill search bar with the gel Cancel button.",
   usage: `<TextField label="Name" placeholder="required" />
 <SearchField value={q} onChange={(e) => setQ(e.target.value)} showCancel onCancel={() => setQ("")} />`,
+  propTypes: ["TextFieldProps", "SearchFieldProps"],
   props: [
     { name: "label", type: "ReactNode", note: "bold inline label on the left (\"Name | value\")" },
     { name: "helper", type: "ReactNode", note: "secondary text under the field" },

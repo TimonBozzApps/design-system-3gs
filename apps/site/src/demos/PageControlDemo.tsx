@@ -44,6 +44,7 @@ export const meta: DemoMeta = {
   setPage(p);
   pager.current?.scrollTo({ left: p * width, behavior: "smooth" });
 }} label="Home screen pages" />`,
+  propTypes: ["PageControlProps"],
   props: [
     { name: "count", type: "number", note: "number of pages; renders nothing for <= 1 (see hideForSinglePage)" },
     { name: "value", type: "number", note: "controlled current page, 0-based, clamped to [0, count - 1]" },

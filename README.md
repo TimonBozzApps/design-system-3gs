@@ -12,7 +12,7 @@ packages/ui     @3gs/ui — the component library (React 18/19, TypeScript, plai
 apps/site       the showcase site (Vite) — every component inside a 320×480 phone frame
 ```
 
-## Components (v0.4)
+## Components (v0.1.0)
 
 | Component | What it is |
 | --- | --- |
@@ -36,6 +36,9 @@ apps/site       the showcase site (Vite) — every component inside a 320×480 p
 | `Keyboard` | Dark alert-style QWERTY with letters / numbers / symbols, shift + caps, key popup, delete repeat, `value`/`onChange` binding |
 | `DatePicker` | UIDatePicker presets on the wheel: date / time / dateTime, minute intervals, 12/24 h |
 | `ModalSheet` | Full-screen modal that slides up with its own Cancel / title / Done bar |
+| `Stepper` | Joined − / + gel control for list rows, hold-to-repeat, wraps, value well |
+| `SearchBar` | UISearchBar: search pill in a bar with a sliding Cancel and scope buttons |
+| `NotificationBanner` | Black-glass banner dropping from the top: icon tile, action, swipe-up to dismiss |
 | `Icon`, `Badge` | Foundation: glossy lucide wrapper and the red gel badge |
 
 ## Use
@@ -78,6 +81,37 @@ such as `--gs-gradient-bar`, `--gs-gradient-neutral`, `--gs-text-on-bar` and
 `--gs-text-emboss`, so a third theme is one more file of overrides. The
 showcase's sidebar switch flips every phone screen between the two.
 
+## Localization and RTL
+
+Every built-in string (Cancel, Done, space, "Page 2 of 5", aria-labels…) comes
+from `GsProvider`; explicit props still win:
+
+```tsx
+<GsProvider locale="de-DE" strings={{ cancel: "Abbrechen", done: "Fertig", on: "EIN", off: "AUS" }}>
+  <App />
+</GsProvider>
+```
+
+`DatePicker` takes month / weekday names from the provider's `locale`. Layout
+uses logical properties throughout, so `dir="rtl"` on `.gs-root` mirrors the
+back button, chevrons, switches, slider fills and badges (the keyboard stays
+QWERTY). Overlays that portal to `document.body` (Alert, ActionSheet, HUD,
+Popover, ModalSheet) inherit the document's direction — pass `dir` to them or
+render them `contained`.
+
+## Props reference
+
+The showcase's per-component prop tables are generated from the TypeScript
+types (`pnpm props` → `apps/site/src/generated/props.json`), including JSDoc
+descriptions and defaults, so they can't drift from the code.
+
+## Publishing
+
+Releases use [changesets](https://github.com/changesets/changesets): add one
+with `pnpm changeset`, and the Release workflow opens a "Version Packages" PR
+that publishes `@3gs/ui` on merge (needs an `NPM_TOKEN` secret). Locally:
+`pnpm version && pnpm release`. `pnpm pack:check` lists exactly what ships.
+
 ## Develop
 
 ```bash
@@ -88,3 +122,11 @@ pnpm typecheck
 ```
 
 Adding a component: read `packages/ui/CONTRIBUTING.md`.
+
+## Design export
+
+`pnpm design:export` regenerates `design/` from the CSS — the `--gs-*` tokens as
+W3C DTCG JSON (`design/tokens/3gs.{dark,light}.tokens.json`, for Tokens Studio /
+variable importers) and two SVG sticker sheets of the gel styles
+(`design/3gs-gel-sheet-{dark,light}.svg`, drawn with real gradients so Figma's
+SVG import yields editable vectors). Import notes in `design/README.md`.

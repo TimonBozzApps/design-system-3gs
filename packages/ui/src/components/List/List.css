@@ -76,7 +76,7 @@
   /* neutralise <button> / <a> chrome so all three tags look identical */
   font: inherit;
   font-family: var(--gs-font);
-  text-align: left;
+  text-align: start;
   text-decoration: none;
   color: var(--gs-text);
   border: 0;
@@ -175,14 +175,14 @@
   color: var(--gs-list-subtitle);
 }
 
-/* ---- detail text (right-aligned value) --------------------------------- */
+/* ---- detail text (end-aligned value) ----------------------------------- */
 .gs-list-item__detail {
   flex: 0 1 auto;
   max-width: 50%;
   font-size: var(--gs-font-size-lg);
   color: var(--gs-text-link);
   text-shadow: var(--gs-text-emboss);
-  text-align: right;
+  text-align: end;
 }
 
 /* ---- accessory --------------------------------------------------------- */
@@ -197,6 +197,13 @@
 .gs-list-item__accessory-icon--chevron   { color: var(--gs-gray-400); }
 .gs-list-item__accessory-icon--checkmark { color: var(--gs-blue-300); }
 .gs-list-item__accessory-icon--detail    { color: var(--gs-blue-300); }
+
+/* right-to-left: the disclosure glyphs point towards the inline-end side
+   (the checkmark is not a direction and stays as drawn) */
+[dir="rtl"] .gs-list-item__accessory-icon--chevron,
+[dir="rtl"] .gs-list-item__accessory-icon--detail {
+  transform: scaleX(-1);
+}
 
 /* ---- states ------------------------------------------------------------ */
 /* iOS 3 had no hover — nothing here on purpose. */

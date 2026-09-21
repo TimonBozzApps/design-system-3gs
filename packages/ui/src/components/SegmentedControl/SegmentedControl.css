@@ -12,9 +12,12 @@
   --gs-segment-gel-pressed: var(--gs-gradient-barbutton-pressed);
   --gs-segment-gel-selected: var(--gs-gradient-blue-pressed);
   --gs-segment-sunk: inset 0 2px 4px rgba(0, 0, 0, 0.65), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
-  /* the 1 px line between segments and the light rim to its right */
+  /* the 1 px line between segments and the light rim on its inline-end side
+     (--gs-segment-divider-rim-x is the rim's inset offset: +1 px in LTR, −1 px
+     in RTL — see the bottom of the file) */
   --gs-segment-divider: var(--gs-separator);
-  --gs-segment-divider-rim: inset 1px 0 0 rgba(255, 255, 255, 0.12);
+  --gs-segment-divider-rim: rgba(255, 255, 255, 0.12);
+  --gs-segment-divider-rim-x: 1px;
 
   display: inline-grid;
   grid-auto-flow: column;
@@ -71,7 +74,7 @@
   --gs-gradient-barbutton-pressed: linear-gradient(to bottom, #2c4f82 0%, #35598e 50%, #3f6499 100%);
   --gs-text-shadow-on-bar: 0 -1px 0 rgba(0, 0, 0, 0.4);
   --gs-segment-divider: rgba(0, 0, 0, 0.45);
-  --gs-segment-divider-rim: inset 1px 0 0 rgba(255, 255, 255, 0.3);
+  --gs-segment-divider-rim: rgba(255, 255, 255, 0.3);
 }
 
 /* light theme: the blue-gray gel arrives through the bar tokens; only the
@@ -79,7 +82,7 @@
 .gs-root[data-theme="light"] .gs-segmented,
 .gs-theme-light .gs-segmented {
   --gs-segment-divider: rgba(0, 0, 0, 0.45);
-  --gs-segment-divider-rim: inset 1px 0 0 rgba(255, 255, 255, 0.3);
+  --gs-segment-divider-rim: rgba(255, 255, 255, 0.3);
 }
 
 /* ---- block ------------------------------------------------------------- */
@@ -119,12 +122,20 @@
   transition: background var(--gs-duration) var(--gs-ease);
 }
 
-/* divider: a 1 px black line with a light rim on its right, on every segment
-   after the first. :where() keeps the selector at single-class specificity so
-   the state rules below can replace the whole box-shadow stack. */
+/* divider: a 1 px black line on the segment's inline-start edge with a light
+   rim just inside it, on every segment after the first. :where() keeps the
+   selector at single-class specificity so the state rules below can replace
+   the whole box-shadow stack. */
 :where(.gs-segment) + .gs-segment {
-  border-left: 1px solid var(--gs-segment-divider);
-  box-shadow: var(--gs-rim-light), var(--gs-segment-divider-rim);
+  border-inline-start: 1px solid var(--gs-segment-divider);
+  box-shadow:
+    var(--gs-rim-light),
+    inset var(--gs-segment-divider-rim-x) 0 0 var(--gs-segment-divider-rim);
+}
+
+/* right-to-left: the rim moves to the other side of the line */
+:is([dir="rtl"] .gs-segment, .gs-segment:dir(rtl)) {
+  --gs-segment-divider-rim-x: -1px;
 }
 
 /* ---- elements ---------------------------------------------------------- */

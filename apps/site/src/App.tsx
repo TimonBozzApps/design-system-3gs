@@ -3,6 +3,7 @@ import { Switch } from "@3gs/ui";
 import { PhoneFrame } from "./shell/PhoneFrame";
 import { TokensSection } from "./TokensSection";
 import { AppStoreScreen } from "./shell/AppStoreScreen";
+import { PropsTable } from "./PropsTable";
 import { demos } from "./demos";
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -112,21 +113,7 @@ export function App() {
               <h2>{meta.title}</h2>
               <p>{meta.description}</p>
               <pre className="demo__usage"><code>{meta.usage}</code></pre>
-              {meta.props && meta.props.length > 0 && (
-                <dl className="demo__props">
-                  {meta.props.map((p) => (
-                    <div key={p.name} className="demo__prop">
-                      <dt>
-                        <code>{p.name}</code>
-                      </dt>
-                      <dd>
-                        <code className="demo__prop-type">{p.type}</code>
-                        {p.note && <span className="demo__prop-note">{p.note}</span>}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              )}
+              <PropsTable propTypes={meta.propTypes} notes={meta.props} />
             </div>
             <div className="demo__phone">
               <PhoneFrame theme={theme} dir={dir}>

@@ -13,6 +13,7 @@ export const meta: DemoMeta = {
   left={<BarButton variant="back">Featured</BarButton>}
   right={<BarButton variant="done">Done</BarButton>}
 />`,
+  propTypes: ["NavigationBarProps", "BarButtonProps"],
   props: [
     { name: "title", type: "ReactNode", note: "bold 20 px, centred over the full width, ellipsis when too long" },
     { name: "left", type: "ReactNode", note: 'usually <BarButton variant="back">' },

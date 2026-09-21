@@ -68,7 +68,7 @@
   align-self: stretch; /* full height, so the whole column is a click target */
   flex: 0 0 90px;
   width: 90px;
-  padding-right: var(--gs-space-2);
+  padding-inline-end: var(--gs-space-2);
   font-size: var(--gs-font-size-md);
   font-weight: 700;
   line-height: var(--gs-line-height);
@@ -79,16 +79,22 @@
   cursor: default;
 }
 
-/* etched divider between label and value (separator line + light rim) */
+/* etched divider between label and value (separator line + light rim), on
+   the label's inline-end edge */
 .gs-textfield__label::after {
   content: "";
   position: absolute;
   top: 9px;
   bottom: 9px;
-  right: 0;
+  inset-inline-end: 0;
   width: 1px;
   background: var(--gs-separator);
   box-shadow: 1px 0 0 var(--gs-separator-light);
+}
+
+/* right-to-left: the light rim sits on the other side of the line */
+[dir="rtl"] .gs-textfield__label::after {
+  box-shadow: -1px 0 0 var(--gs-separator-light);
 }
 
 /* leading icon ------------------------------------------------------------ */
@@ -151,7 +157,7 @@
   flex-shrink: 0;
   width: 24px;
   height: 24px;
-  margin-right: -4px;
+  margin-inline-end: -4px;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -211,7 +217,8 @@
 .gs-searchfield__field .gs-textfield__field {
   height: 32px;
   gap: 6px;
-  padding: 0 8px 0 10px;
+  padding-block: 0;
+  padding-inline: 10px 8px; /* the ⓧ hugs the end edge a little tighter */
   border-radius: var(--gs-radius-pill);
 }
 

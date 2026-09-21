@@ -19,6 +19,7 @@ export const meta: DemoMeta = {
   ]}
   onClose={() => setOpen(false)}
 />`,
+  propTypes: ["ActionSheetProps", "ActionSheetAction"],
   props: [
     { name: "open", type: "boolean", note: "renders nothing while false" },
     { name: "title", type: "ReactNode", note: "small gray centered text at the top" },

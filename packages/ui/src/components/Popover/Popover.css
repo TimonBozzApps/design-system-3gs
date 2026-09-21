@@ -59,7 +59,7 @@
   font-family: var(--gs-font);
   font-size: var(--gs-font-size-lg);
   line-height: var(--gs-line-height);
-  text-align: left;
+  text-align: start;
 
   border-radius: var(--gs-radius-md);
   /* the rim: 6 px dark ring (1..7 px), a faint light line outside it, drop shadow */
@@ -119,7 +119,9 @@
 /* ---- arrow ------------------------------------------------------------- */
 /* A 17 px square rotated 45°. Its centre sits on the rim's outer edge, so the
    outer half is the 24 × 12 px triangle and the inner half merges with the
-   rim (and slides under the panel face). `-8px - 8.5px` = rim + half side. */
+   rim (and slides under the panel face). `-8px - 8.5px` = rim + half side.
+   Placement, `left`/`top` and the arrow offset are screen geometry measured
+   by Popover.tsx, so they stay PHYSICAL on purpose — nothing here mirrors. */
 .gs-popover__arrow {
   position: absolute;
   z-index: -1;
@@ -190,8 +192,7 @@
 /* a grouped List fills the bubble edge to edge */
 .gs-popover__content > .gs-list .gs-list__group {
   border-radius: 0;
-  border-left: 0;
-  border-right: 0;
+  border-inline: 0;
   box-shadow: none;
 }
 

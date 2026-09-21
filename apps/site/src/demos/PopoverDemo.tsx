@@ -18,6 +18,7 @@ export const meta: DemoMeta = {
     <ListItem title="History" accessory="chevron" onClick={pick} />
   </List>
 </Popover>`,
+  propTypes: ["PopoverProps"],
   props: [
     { name: "open", type: "boolean", note: "renders nothing while false" },
     {

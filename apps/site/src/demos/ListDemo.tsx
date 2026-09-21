@@ -29,6 +29,7 @@ export const meta: DemoMeta = {
   <ListItem title="Wi-Fi" detail="On" accessory="chevron" href="#" />
   <ListItem title="Mail" accessory={<Badge value={3} />} />
 </List>`,
+  propTypes: ["ListProps", "ListItemProps"],
   props: [
     { name: "variant", type: '"grouped" | "plain"', note: "List — rounded container vs. full-bleed rows" },
     { name: "header / footer", type: "ReactNode", note: "List — section title above, gray note below" },

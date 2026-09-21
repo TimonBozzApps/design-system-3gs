@@ -61,6 +61,10 @@
   max-width: 320px;
   height: 216px;
   padding: 5px 3px 3px;
+  /* a keyboard is a physical layout: Q W E R T Y stays left-to-right (and
+     shift / delete on their sides) even inside an RTL screen. Key labels can
+     still be localised; only the geometry is pinned. */
+  direction: ltr;
 
   font-family: var(--gs-font);
   color: var(--gs-key-text);

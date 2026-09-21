@@ -17,6 +17,7 @@ export const meta: DemoMeta = {
   duration={1500}
   onClose={() => setSaved(false)}
 />`,
+  propTypes: ["HUDProps"],
   props: [
     { name: "open", type: "boolean", note: "renders nothing while false" },
     {

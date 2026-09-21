@@ -8,6 +8,7 @@ export const meta: DemoMeta = {
   description:
     "The iOS 3 ON/OFF slider: a 94×27 gel pill whose blue/dark two-tone strip slides under a silver gel knob.",
   usage: `<Switch defaultChecked label="Wi-Fi" onChange={(on) => setWifi(on)} />`,
+  propTypes: ["SwitchProps"],
   props: [
     { name: "checked", type: "boolean", note: "controlled" },
     { name: "defaultChecked", type: "boolean", note: "uncontrolled initial state" },

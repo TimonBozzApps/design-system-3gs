@@ -34,6 +34,7 @@ export const meta: DemoMeta = {
   <ToolbarSpacer />
   <ToolbarButton icon={SquarePen} label="Compose" />
 </Toolbar>`,
+  propTypes: ["ToolbarProps", "ToolbarButtonProps", "ToolbarTitleProps"],
   props: [
     { name: "tint", type: '"black" | "blue"', note: "black glass (default) or the classic iOS 3 blue-gray bar" },
     { name: "position", type: '"bottom" | "top"', note: "where the 1 px black outline goes: top edge (default) or bottom edge like a nav bar" },

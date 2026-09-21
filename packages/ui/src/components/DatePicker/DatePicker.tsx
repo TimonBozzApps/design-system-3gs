@@ -1,6 +1,7 @@
 import { forwardRef, useMemo, useState, type HTMLAttributes } from "react";
 import { Picker, type PickerColumn, type PickerOption, type PickerValue } from "../Picker";
 import { cn } from "../../lib/cn";
+import { useGsLocale, useGsStrings } from "../../lib/i18n";
 import "./DatePicker.css";
 
 /* ---- types -------------------------------------------------------------- */
@@ -24,12 +25,12 @@ export interface DatePickerProps
   yearRange?: [number, number];
   /** `dateTime` preset: days before and after the initial value in the rolling day drum. Default `365`. */
   dayRange?: number;
-  /** Intl locale for month, weekday and AM/PM names. Default `en-US`. */
+  /** Intl locale for month, weekday and AM/PM names. Default: the `<GsProvider>` locale, else `en-US`. */
   locale?: string;
   /** Visible rows per drum. Default `5`. */
   rows?: 3 | 5 | 7;
   disabled?: boolean;
-  /** `aria-label` for the picker. */
+  /** `aria-label` for the picker. Default: `strings.date` / `time` / `dateTime` per `mode`. */
   label?: string;
 }
 
@@ -157,8 +158,8 @@ function numberOptions(from: number, to: number, step = 1, pad = false): PickerO
   return options;
 }
 
-/** Locale day-period names via `formatToParts`; falls back to `AM` / `PM`. */
-function periodOptions(locale: string): PickerOption[] {
+/** Locale day-period names via `formatToParts`; falls back to the provider's `am` / `pm`. */
+function periodOptions(locale: string, am: string, pm: string): PickerOption[] {
   const name = (hour: number, fallback: string) => {
     try {
       const parts = new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true }).formatToParts(
@@ -170,19 +171,25 @@ function periodOptions(locale: string): PickerOption[] {
     }
   };
   return [
-    { value: "am", label: name(9, "AM") },
-    { value: "pm", label: name(21, "PM") },
+    { value: "am", label: name(9, am) },
+    { value: "pm", label: name(21, pm) },
   ];
 }
 
-/** `dayRange` days either side of `anchor`, labelled "Today" or like "Mon Jun 29". */
-function rollingDayOptions(anchor: Date, dayRange: number, locale: string, todayISO: string): PickerOption[] {
+/** `dayRange` days either side of `anchor`, labelled `today` ("Today") or like "Mon Jun 29". */
+function rollingDayOptions(
+  anchor: Date,
+  dayRange: number,
+  locale: string,
+  todayISO: string,
+  today: string,
+): PickerOption[] {
   const format = new Intl.DateTimeFormat(locale, { weekday: "short", month: "short", day: "numeric" });
   const options: PickerOption[] = [];
   for (let offset = -dayRange; offset <= dayRange; offset++) {
     const day = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() + offset, 12);
     const iso = toISODate(day);
-    options.push({ value: iso, label: iso === todayISO ? "Today" : format.format(day) });
+    options.push({ value: iso, label: iso === todayISO ? today : format.format(day) });
   }
   return options;
 }
@@ -206,7 +213,7 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(function D
     hourCycle = "h12",
     yearRange = [1970, 2037],
     dayRange = 365,
-    locale = "en-US",
+    locale: localeProp,
     rows,
     disabled,
     label,
@@ -215,6 +222,9 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(function D
   },
   ref,
 ) {
+  const strings = useGsStrings();
+  const providerLocale = useGsLocale();
+  const locale = localeProp ?? providerLocale ?? "en-US";
   const isControlled = value !== undefined;
   const [internal, setInternal] = useState<Date>(() =>
     roundToInterval(defaultValue ?? new Date(), minuteInterval),
@@ -249,36 +259,64 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(function D
     [hourCycle],
   );
   const minutes = useMemo(() => numberOptions(0, 59, minuteInterval, true), [minuteInterval]);
-  const periods = useMemo(() => periodOptions(locale), [locale]);
+  const periods = useMemo(
+    () => periodOptions(locale, strings.am, strings.pm),
+    [locale, strings.am, strings.pm],
+  );
   const rollingDays = useMemo(
-    () => (mode === "dateTime" ? rollingDayOptions(anchor, dayRange, locale, todayISO) : []),
-    [mode, anchor, dayRange, locale, todayISO],
+    () =>
+      mode === "dateTime" ? rollingDayOptions(anchor, dayRange, locale, todayISO, strings.today) : [],
+    [mode, anchor, dayRange, locale, todayISO, strings.today],
   );
 
+  const {
+    month: monthLabel,
+    day: dayLabel,
+    year: yearLabel,
+    hour: hourLabel,
+    minute: minuteLabel,
+    dayPeriod,
+  } = strings;
   const columns = useMemo<PickerColumn[]>(() => {
     const h12 = hourCycle === "h12";
     switch (mode) {
       case "date":
         return [
-          { key: "month", label: "Month", align: "left", width: "46%", options: months },
-          { key: "day", label: "Day", align: "right", width: "20%", options: days },
-          { key: "year", label: "Year", width: "34%", options: years },
+          { key: "month", label: monthLabel, align: "left", width: "46%", options: months },
+          { key: "day", label: dayLabel, align: "right", width: "20%", options: days },
+          { key: "year", label: yearLabel, width: "34%", options: years },
         ];
       case "time":
         return [
-          { key: "hour", label: "Hour", align: "right", width: h12 ? "34%" : "50%", options: hours },
-          { key: "minute", label: "Minute", width: h12 ? "33%" : "50%", options: minutes },
-          ...(h12 ? [{ key: "period", label: "AM/PM", width: "33%", options: periods }] : []),
+          { key: "hour", label: hourLabel, align: "right", width: h12 ? "34%" : "50%", options: hours },
+          { key: "minute", label: minuteLabel, width: h12 ? "33%" : "50%", options: minutes },
+          ...(h12 ? [{ key: "period", label: dayPeriod, width: "33%", options: periods }] : []),
         ];
       case "dateTime":
         return [
-          { key: "day", label: "Day", align: "left", width: h12 ? "44%" : "56%", options: rollingDays },
-          { key: "hour", label: "Hour", align: "right", width: h12 ? "18%" : "22%", options: hours },
-          { key: "minute", label: "Minute", width: h12 ? "18%" : "22%", options: minutes },
-          ...(h12 ? [{ key: "period", label: "AM/PM", width: "20%", options: periods }] : []),
+          { key: "day", label: dayLabel, align: "left", width: h12 ? "44%" : "56%", options: rollingDays },
+          { key: "hour", label: hourLabel, align: "right", width: h12 ? "18%" : "22%", options: hours },
+          { key: "minute", label: minuteLabel, width: h12 ? "18%" : "22%", options: minutes },
+          ...(h12 ? [{ key: "period", label: dayPeriod, width: "20%", options: periods }] : []),
         ];
     }
-  }, [mode, hourCycle, months, days, years, hours, minutes, periods, rollingDays]);
+  }, [
+    mode,
+    hourCycle,
+    months,
+    days,
+    years,
+    hours,
+    minutes,
+    periods,
+    rollingDays,
+    monthLabel,
+    dayLabel,
+    yearLabel,
+    hourLabel,
+    minuteLabel,
+    dayPeriod,
+  ]);
 
   const handleChange = (next: PickerValue) => {
     const date = valueToDate(next, current, mode, hourCycle);
@@ -294,7 +332,8 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(function D
       onChange={handleChange}
       rows={rows}
       disabled={disabled}
-      label={label}
+      // `GsStrings` names its picker labels after the modes, so the mode indexes it directly
+      label={label ?? strings[mode]}
       className={cn("gs-datepicker", `gs-datepicker--${mode.toLowerCase()}`, className)}
       {...rest}
     />

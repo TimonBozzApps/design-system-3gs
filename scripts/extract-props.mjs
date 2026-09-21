@@ -12,7 +12,8 @@
  * non-object aliases are recorded as `{ kind: "alias", type }`.
  *
  * Property defaults come from a `@default` JSDoc tag, else from the
- * component's destructuring (`{ variant = "default" }`).
+ * component's destructuring (`{ variant = "default" }`), else from a
+ * "Default `x`" phrase in the property's JSDoc.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve, sep } from "node:path";
@@ -53,10 +54,21 @@ const isInLib = (file) => {
   return rel !== "" && !rel.startsWith("..") && !rel.startsWith(sep) && !file.fileName.includes(`${sep}node_modules${sep}`);
 };
 
-const TYPE_FLAGS = ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.InTypeAlias;
-
 /** Collapse a multi-line source snippet into one line. */
 const oneLine = (text) => text.replace(/\s*\n\s*/g, " ").trim();
+
+/** Source text of a type node with comments removed and whitespace normalised. */
+function typeSource(node, file) {
+  const printed = ts.createPrinter({ removeComments: true }).printNode(ts.EmitHint.Unspecified, node, file);
+  return oneLine(printed)
+    .replace(/\s*\n\s*/g, " ")
+    .replace(/([<(])\s+/g, "$1")
+    .replace(/\s+([>),])/g, "$1")
+    .replace(/\[\s+/g, "[")
+    .replace(/\s+\]/g, "]")
+    .replace(/;\s*}/g, " }")
+    .replace(/^\|\s*/, "");
+}
 
 /** First paragraph of a JSDoc block, joined onto one line. */
 function firstParagraph(text) {
@@ -85,19 +97,52 @@ function defaultTag(sym) {
   return tag ? oneLine(ts.displayPartsToString(tag.text ?? [])) : undefined;
 }
 
-/** Type of a property without the `| undefined` that `?` adds under strictNullChecks. */
-function propertyTypeText(sym, decl) {
-  let type;
-  if (decl && (ts.isPropertySignature(decl) || ts.isPropertyDeclaration(decl)) && decl.type) {
-    type = checker.getTypeFromTypeNode(decl.type);
-  } else {
-    type = checker.getTypeOfSymbolAtLocation(sym, decl ?? entry);
+/** A "Default `x`" phrase in the description (used when nothing is destructured). */
+function defaultFromDocs(description) {
+  const m = /\bDefault:?\s+`([^`]+)`/.exec(description);
+  return m ? m[1] : undefined;
+}
+
+/** The lib-local `type X = …` declaration a bare type reference points at, if any. */
+function localAliasDecl(node) {
+  if (!ts.isTypeReferenceNode(node) || node.typeArguments) return undefined;
+  const sym = checker.getSymbolAtLocation(node.typeName);
+  const target = sym && sym.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(sym) : sym;
+  const decl = target?.declarations?.find(ts.isTypeAliasDeclaration);
+  return decl && isInLib(decl.getSourceFile()) ? decl : undefined;
+}
+
+/**
+ * The type as written in the source (author's member order, `ReactNode` and
+ * `LucideIcon` kept by name), with lib-local union aliases such as
+ * `ButtonVariant` expanded at the top level so the table shows the choices.
+ */
+function typeNodeText(node, file, depth = 0) {
+  const alias = localAliasDecl(node);
+  if (alias && ts.isUnionTypeNode(alias.type)) return typeSource(alias.type, alias.getSourceFile());
+  if (depth === 0 && ts.isUnionTypeNode(node)) {
+    return node.types.map((t) => typeNodeText(t, file, 1)).join(" | ");
   }
-  let text = checker.typeToString(type, undefined, TYPE_FLAGS);
+  return typeSource(node, file);
+}
+
+/**
+ * `{ type, alias? }` of a property — `alias` names the lib-local union alias the
+ * type was expanded from (`variant?: ButtonVariant`), so a consumer can look up
+ * its documented members. `| undefined` from `?` is not included.
+ */
+function propertyType(sym, decl) {
+  if (decl && (ts.isPropertySignature(decl) || ts.isPropertyDeclaration(decl)) && decl.type) {
+    const aliasDecl = localAliasDecl(decl.type);
+    const type = typeNodeText(decl.type, decl.getSourceFile());
+    return aliasDecl && ts.isUnionTypeNode(aliasDecl.type) ? { type, alias: aliasDecl.name.text } : { type };
+  }
+  const type = checker.getTypeOfSymbolAtLocation(sym, decl ?? entry);
+  let text = checker.typeToString(type, undefined, ts.TypeFormatFlags.NoTruncation);
   if (sym.flags & ts.SymbolFlags.Optional) {
     text = text.replace(/^undefined \| /, "").replace(/ \| undefined$/, "");
   }
-  return text;
+  return { type: text };
 }
 
 /** The interface / type-literal / alias declaration a property is declared in. */
@@ -175,13 +220,15 @@ for (const exported of checker.getExportsOfModule(moduleSymbol)) {
     const propDecl = decls.find((d) => owningTypeName(d) === name) ?? decls[0];
     if (!propDecl || !isInLib(propDecl.getSourceFile())) continue;
     const owner = owningTypeName(propDecl);
+    const description = describeSymbol(prop, propDecl);
     const entryProps = {
       name: prop.name,
-      type: propertyTypeText(prop, propDecl),
+      ...propertyType(prop, propDecl),
       optional: Boolean(prop.flags & ts.SymbolFlags.Optional),
-      description: describeSymbol(prop, propDecl),
+      description,
     };
-    const def = defaultTag(prop) ?? destructuredDefaults.get(owner)?.get(prop.name);
+    const def =
+      defaultTag(prop) ?? destructuredDefaults.get(owner)?.get(prop.name) ?? defaultFromDocs(description);
     if (def !== undefined) entryProps.default = def;
     if (owner && owner !== name) entryProps.inheritedFrom = owner;
     props.push({ ...entryProps, _own: owner === name, _pos: propDecl.pos, _file: propDecl.getSourceFile().fileName });
@@ -196,23 +243,26 @@ for (const exported of checker.getExportsOfModule(moduleSymbol)) {
   if (ts.isInterfaceDeclaration(decl)) {
     const heritage = (decl.heritageClauses ?? [])
       .filter((c) => c.token === ts.SyntaxKind.ExtendsKeyword)
-      .flatMap((c) => c.types.map((t) => oneLine(t.getText(decl.getSourceFile()))));
+      .flatMap((c) => c.types.map((t) => typeSource(t, decl.getSourceFile())));
     interfaces[name] = { kind: "interface", extends: heritage, description, props };
   } else if (props.length > 0) {
+    // `type X = { … }` — an object shape written as an alias.
     interfaces[name] = { kind: "type", extends: [], description, props };
   } else {
-    const typeText = checker.typeToString(type, undefined, TYPE_FLAGS);
-    const alias = { kind: "alias", type: typeText, description };
+    const alias = { kind: "alias", type: typeSource(decl.type, decl.getSourceFile()), description };
     // Per-member docs of a documented union (`/** dark gel */ | "default"`).
     if (ts.isUnionTypeNode(decl.type)) {
       const file = decl.getSourceFile();
+      let scanFrom = decl.type.getFullStart();
       const members = decl.type.types.map((member) => {
-        const ranges = ts.getLeadingCommentRanges(file.text, member.getFullStart()) ?? [];
+        // The comment precedes the `|` token, which belongs to neither member node.
+        const ranges = ts.getLeadingCommentRanges(file.text, scanFrom) ?? [];
+        scanFrom = member.end;
         const docs = ranges
           .map((r) => file.text.slice(r.pos, r.end))
           .map((c) => c.replace(/^\/\*\*?|\*\/$/g, "").replace(/^\s*\*\s?/gm, "").replace(/^\/\/\s?/, "").trim())
           .filter(Boolean);
-        return { value: oneLine(member.getText(file)), description: oneLine(docs.join(" ")) };
+        return { value: typeSource(member, file), description: oneLine(docs.join(" ")) };
       });
       if (members.some((m) => m.description)) alias.members = members;
     }

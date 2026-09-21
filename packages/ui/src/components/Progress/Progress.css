@@ -13,6 +13,10 @@
   /* component-local: no token matches the silver iPod scrubber */
   --gs-progress-height: 9px;
   --gs-progress-gel: var(--gs-gradient-blue);
+  /* the fill grows from inline-start: its shaded leading edge and the
+     indeterminate segment's travel point towards inline-end (negated in RTL) */
+  --gs-progress-edge-x: 1px;
+  --gs-progress-slide-x: 185.7%;
 
   display: flex;
   align-items: center;
@@ -52,6 +56,7 @@
 }
 
 /* ---- fill -------------------------------------------------------------- */
+/* a width-based block, so it starts at the track's inline-start edge by itself */
 .gs-progress__fill {
   display: block;
   width: 0;
@@ -60,11 +65,11 @@
   background: var(--gs-gloss), var(--gs-progress-gel);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    1px 0 1px rgba(0, 0, 0, 0.5);
+    var(--gs-progress-edge-x) 0 1px rgba(0, 0, 0, 0.5);
   transition: width 240ms var(--gs-ease);
 }
 
-/* ---- indeterminate: a 35 % gel segment sliding left ↔ right ------------ */
+/* ---- indeterminate: a 35 % gel segment sliding start ↔ end ------------- */
 .gs-progress--indeterminate .gs-progress__fill {
   width: 35%;
   transition: none;
@@ -74,7 +79,14 @@
 @keyframes gs-progress-slide {
   from { transform: translateX(0); }
   /* percentages are of the fill's own width: (100 − 35) / 35 = 185.7 % */
-  to   { transform: translateX(185.7%); }
+  to   { transform: translateX(var(--gs-progress-slide-x, 185.7%)); }
+}
+
+/* right-to-left: the fill grows leftwards, so its leading edge and the
+   indeterminate travel flip sign */
+:is([dir="rtl"] .gs-progress, .gs-progress:dir(rtl)) {
+  --gs-progress-edge-x: -1px;
+  --gs-progress-slide-x: -185.7%;
 }
 
 /* ---- value text -------------------------------------------------------- */
@@ -84,7 +96,7 @@
   font-size: var(--gs-font-size-sm);
   font-variant-numeric: tabular-nums;
   color: var(--gs-text-secondary);
-  text-align: right;
+  text-align: end;
   text-shadow: var(--gs-text-emboss);
   white-space: nowrap;
 }

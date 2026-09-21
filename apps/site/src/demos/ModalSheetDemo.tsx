@@ -29,6 +29,7 @@ export const meta: DemoMeta = {
   <TextField label="To" placeholder="name@example.com" />
   <TextField label="Subject" />
 </ModalSheet>`,
+  propTypes: ["ModalSheetProps"],
   props: [
     { name: "open", type: "boolean", note: "renders nothing while false; slides up on open" },
     { name: "onClose", type: "() => void", note: "Escape and the default Cancel / Done buttons" },

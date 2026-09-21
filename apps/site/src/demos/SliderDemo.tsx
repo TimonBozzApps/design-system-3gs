@@ -12,6 +12,7 @@ export const meta: DemoMeta = {
     "keyboard, touch and forms come for free.",
   usage: `<Slider defaultValue={70} minIcon={Volume} maxIcon={Volume2} label="Ringer volume"
         onChange={(v) => preview(v)} onChangeEnd={(v) => save(v)} />`,
+  propTypes: ["SliderProps"],
   props: [
     { name: "value", type: "number", note: "controlled" },
     { name: "defaultValue", type: "number", note: "uncontrolled initial value (default: min)" },

@@ -19,6 +19,7 @@ export const meta: DemoMeta = {
   ]}
   onClose={() => setOpen(false)}
 />`,
+  propTypes: ["AlertProps", "AlertAction"],
   props: [
     { name: "open", type: "boolean", note: "renders nothing while false" },
     { name: "title", type: "ReactNode" },

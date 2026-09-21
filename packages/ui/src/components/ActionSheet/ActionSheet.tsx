@@ -10,6 +10,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "../../lib/cn";
+import { useGsStrings } from "../../lib/i18n";
 import "./ActionSheet.css";
 
 export interface ActionSheetAction {
@@ -31,7 +32,7 @@ export interface ActionSheetProps extends Omit<HTMLAttributes<HTMLDivElement>, "
   title?: ReactNode;
   /** Stacked in order, top to bottom. */
   actions: ActionSheetAction[];
-  /** Label of the dark Cancel button at the bottom. Default `"Cancel"`; `null` hides it. */
+  /** Label of the dark Cancel button at the bottom. Default `strings.cancel` ("Cancel"); `null` hides it. */
   cancelLabel?: string | null;
   /** Called after any action, on Cancel, on Escape, and on backdrop click when `dismissOnBackdrop`. */
   onClose?: () => void;
@@ -59,7 +60,7 @@ export const ActionSheet = forwardRef<HTMLDivElement, ActionSheetProps>(function
     open,
     title,
     actions,
-    cancelLabel = "Cancel",
+    cancelLabel: cancelLabelProp,
     onClose,
     dismissOnBackdrop = true,
     contained = false,
@@ -68,6 +69,8 @@ export const ActionSheet = forwardRef<HTMLDivElement, ActionSheetProps>(function
   },
   ref,
 ) {
+  const strings = useGsStrings();
+  const cancelLabel = cancelLabelProp === undefined ? strings.cancel : cancelLabelProp;
   const baseId = useId();
   const titleId = `${baseId}-title`;
   const hasTitle = title !== undefined && title !== null && title !== false;
@@ -146,7 +149,7 @@ export const ActionSheet = forwardRef<HTMLDivElement, ActionSheetProps>(function
         role="dialog"
         aria-modal="true"
         aria-labelledby={hasTitle ? titleId : undefined}
-        aria-label={hasTitle ? undefined : "Actions"}
+        aria-label={hasTitle ? undefined : strings.actions}
         {...rest}
       >
         {hasTitle && (

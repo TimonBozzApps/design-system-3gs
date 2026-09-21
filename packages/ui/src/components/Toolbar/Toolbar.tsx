@@ -6,6 +6,7 @@ import {
 } from "react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "../../lib/cn";
+import { useGsStrings } from "../../lib/i18n";
 import { Icon } from "../Icon";
 import { Badge } from "../Badge";
 import "./Toolbar.css";
@@ -31,7 +32,7 @@ export interface ToolbarProps extends HTMLAttributes<HTMLDivElement> {
   tint?: ToolbarTint;
   /** Which edge of the screen the bar sits on — decides where the 1 px black outline goes. */
   position?: ToolbarPosition;
-  /** `aria-label` for the toolbar. Default `"Toolbar"`. */
+  /** `aria-label` for the toolbar. Default `strings.toolbar` ("Toolbar"). */
   label?: string;
   /** `<ToolbarButton>`s, `<ToolbarSpacer>`s, a `<ToolbarTitle>`, or `<BarButton>`s when an action needs a label. */
   children: ReactNode;
@@ -44,14 +45,15 @@ export interface ToolbarProps extends HTMLAttributes<HTMLDivElement> {
  * straight in when an action needs a label ("Edit", "Done").
  */
 export const Toolbar = forwardRef<HTMLDivElement, ToolbarProps>(function Toolbar(
-  { tint = "black", position = "bottom", label = "Toolbar", className, children, ...rest },
+  { tint = "black", position = "bottom", label, className, children, ...rest },
   ref,
 ) {
+  const strings = useGsStrings();
   return (
     <div
       ref={ref}
       role="toolbar"
-      aria-label={label}
+      aria-label={label ?? strings.toolbar}
       className={cn("gs-toolbar", `gs-toolbar--${tint}`, `gs-toolbar--${position}`, className)}
       {...rest}
     >

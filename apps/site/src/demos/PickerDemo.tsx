@@ -19,6 +19,7 @@ export const meta: DemoMeta = {
   value={date}
   onChange={setDate}
 />`,
+  propTypes: ["PickerProps", "PickerColumn", "PickerOption"],
   props: [
     {
       name: "columns",

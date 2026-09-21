@@ -1,0 +1,131 @@
+/* Generated prop tables — one shared grid per section so the name / type /
+   default columns line up across every interface; each row contributes its
+   cells via `display: contents` (same approach as `.demo__props` in site.css).
+   The description spans the full row width underneath, because the text
+   column next to the phone is only ~500 px wide. */
+
+.props-table {
+  margin: 20px 0 0;
+  display: grid;
+  grid-template-columns: fit-content(180px) minmax(0, 1fr) fit-content(180px);
+  column-gap: 16px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.props-table code {
+  font-family: var(--site-mono);
+}
+
+/* ---- per-interface heading --------------------------------------------- */
+.props-table__heading {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 26px 0 8px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.props-table__heading:first-child {
+  margin-top: 0;
+}
+
+.props-table__heading > code {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--site-text);
+}
+
+.props-table__extends {
+  color: var(--site-muted);
+}
+
+.props-table__extends code {
+  color: #cfcfd4;
+}
+
+.props-table__intro {
+  grid-column: 1 / -1;
+  margin: 0 0 8px;
+  color: var(--site-muted);
+}
+
+/* ---- rows --------------------------------------------------------------- */
+.props-table__head,
+.props-table__row {
+  display: contents;
+}
+
+.props-table__head > span {
+  padding: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--site-muted);
+}
+
+.props-table__row > div {
+  min-width: 0;
+  padding: 8px 0;
+  border-top: 1px solid var(--site-border);
+}
+
+/* description: full width under the three cells, no divider of its own */
+.props-table__row > .props-table__desc {
+  grid-column: 1 / -1;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.props-table__name code {
+  color: var(--site-accent);
+}
+
+.props-table__required {
+  margin-left: 2px;
+  color: #f09090;
+  text-decoration: none;
+  cursor: help;
+}
+
+.props-table__from {
+  display: block;
+  font-size: 11px;
+  color: var(--site-muted);
+}
+
+.props-table__type code,
+.props-table__default code {
+  color: #cfcfd4;
+  overflow-wrap: anywhere;
+}
+
+.props-table__default {
+  color: var(--site-muted);
+}
+
+.props-table__desc {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 560px;
+  color: var(--site-muted);
+}
+
+.props-table__desc code {
+  font-size: 12px;
+  color: #cfcfd4;
+}
+
+/* the demo's hand-written hint, appended under the JSDoc text */
+.props-table__note {
+  color: #b4b4bb;
+}
+
+.props-table__note::before {
+  content: "→ ";
+  color: var(--site-muted);
+}

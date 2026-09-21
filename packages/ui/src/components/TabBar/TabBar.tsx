@@ -15,6 +15,7 @@ import {
 } from "react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "../../lib/cn";
+import { useGsStrings } from "../../lib/i18n";
 import { Icon } from "../Icon";
 import { Badge } from "../Badge";
 import "./TabBar.css";
@@ -50,7 +51,7 @@ export interface TabBarProps extends Omit<HTMLAttributes<HTMLDivElement>, "onCha
   /** Uncontrolled initial tab. Defaults to the first item — an iOS tab bar always has a selection. */
   defaultValue?: string;
   onChange?: (value: string) => void;
-  /** `aria-label` for the tablist. Default `"Tabs"`. */
+  /** `aria-label` for the tablist. Default `strings.tabs` ("Tabs"). */
   label?: string;
   /** `<TabBarItem>`s. */
   children: ReactNode;
@@ -65,9 +66,10 @@ export interface TabBarProps extends Omit<HTMLAttributes<HTMLDivElement>, "onCha
  * tabindex, so the bar is a single Tab stop.
  */
 export const TabBar = forwardRef<HTMLDivElement, TabBarProps>(function TabBar(
-  { value, defaultValue, onChange, label = "Tabs", className, children, onKeyDown, ...rest },
+  { value, defaultValue, onChange, label, className, children, onKeyDown, ...rest },
   ref,
 ) {
+  const strings = useGsStrings();
   const values = collectValues(children);
   const isControlled = value !== undefined;
   const [internal, setInternal] = useState<string | undefined>(() => defaultValue ?? values[0]);
@@ -128,7 +130,7 @@ export const TabBar = forwardRef<HTMLDivElement, TabBarProps>(function TabBar(
       <div
         ref={ref}
         role="tablist"
-        aria-label={label}
+        aria-label={label ?? strings.tabs}
         aria-orientation="horizontal"
         className={cn("gs-tabbar", className)}
         onKeyDown={handleKeyDown}

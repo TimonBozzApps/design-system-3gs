@@ -24,6 +24,7 @@ export const meta: DemoMeta = {
   <TabBarItem value="featured" icon={Star} label="Featured" />
   <TabBarItem value="updates" icon={Download} label="Updates" badge={43} />
 </TabBar>`,
+  propTypes: ["TabBarProps", "TabBarItemProps"],
   props: [
     { name: "value", type: "string", note: "controlled selected tab" },
     {

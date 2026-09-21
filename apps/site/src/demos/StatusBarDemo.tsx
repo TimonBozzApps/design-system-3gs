@@ -10,6 +10,7 @@ export const meta: DemoMeta = {
   usage: `<StatusBar time="3:53 PM" signal={4} network="3G" battery={80} bluetooth />
 <StatusBar network="wifi" carrier="AT&T" battery={15} />
 <StatusBar tint="gray" charging />`,
+  propTypes: ["StatusBarProps"],
   props: [
     { name: "time", type: "string", note: 'clock text, default "3:53 PM"' },
     { name: "signal", type: "0 | 1 | 2 | 3 | 4 | 5", note: "lit bars" },

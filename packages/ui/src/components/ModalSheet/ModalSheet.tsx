@@ -9,6 +9,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "../../lib/cn";
+import { useGsStrings } from "../../lib/i18n";
 import { BarButton, NavigationBar, type NavigationBarTint } from "../NavigationBar";
 import "./ModalSheet.css";
 
@@ -18,9 +19,9 @@ export interface ModalSheetProps extends Omit<HTMLAttributes<HTMLDivElement>, "t
   onClose?: () => void;
   /** NavigationBar title. A string also becomes the dialog's accessible name. */
   title?: ReactNode;
-  /** NavigationBar left slot. Default: a "Cancel" bar button that calls `onClose`; `null` hides it. */
+  /** NavigationBar left slot. Default: a `strings.cancel` ("Cancel") bar button that calls `onClose`; `null` hides it. */
   left?: ReactNode;
-  /** NavigationBar right slot. Default: a blue "Done" bar button that calls `onClose`; `null` hides it. */
+  /** NavigationBar right slot. Default: a blue `strings.done` ("Done") bar button that calls `onClose`; `null` hides it. */
   right?: ReactNode;
   /** Forwarded to the NavigationBar: `black` glass (default) or the blue-gray bar. */
   tint?: NavigationBarTint;
@@ -34,7 +35,7 @@ export interface ModalSheetProps extends Omit<HTMLAttributes<HTMLDivElement>, "t
    * nearest positioned ancestor (e.g. a phone screen in a showcase).
    */
   contained?: boolean;
-  /** `aria-label` for the dialog when `title` isn't a plain string. */
+  /** `aria-label` for the dialog when `title` isn't a plain string. Default `strings.dialog`. */
   label?: string;
   children: ReactNode;
 }
@@ -77,6 +78,7 @@ export const ModalSheet = forwardRef<HTMLDivElement, ModalSheetProps>(function M
   },
   ref,
 ) {
+  const strings = useGsStrings();
   const baseId = useId();
   const titleId = `${baseId}-title`;
   const isStringTitle = typeof title === "string";
@@ -160,11 +162,11 @@ export const ModalSheet = forwardRef<HTMLDivElement, ModalSheetProps>(function M
   if (!open) return null;
 
   const leftNode =
-    left === undefined ? <BarButton onClick={() => onClose?.()}>Cancel</BarButton> : left;
+    left === undefined ? <BarButton onClick={() => onClose?.()}>{strings.cancel}</BarButton> : left;
   const rightNode =
     right === undefined ? (
       <BarButton variant="done" onClick={() => onClose?.()}>
-        Done
+        {strings.done}
       </BarButton>
     ) : (
       right
@@ -178,7 +180,7 @@ export const ModalSheet = forwardRef<HTMLDivElement, ModalSheetProps>(function M
         role="dialog"
         aria-modal="true"
         aria-labelledby={isStringTitle ? titleId : undefined}
-        aria-label={isStringTitle ? undefined : label}
+        aria-label={isStringTitle ? undefined : (label ?? strings.dialog)}
         tabIndex={-1}
         {...rest}
       >

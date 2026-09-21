@@ -11,6 +11,7 @@ import {
 } from "react";
 import { CircleX, Search, type LucideIcon } from "lucide-react";
 import { cn } from "../../lib/cn";
+import { useGsStrings } from "../../lib/i18n";
 import { Icon } from "../Icon";
 import "./TextField.css";
 
@@ -63,6 +64,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
   },
   ref,
 ) {
+  const strings = useGsStrings();
   const autoId = useId();
   const id = idProp ?? autoId;
   const helperId = `${id}-helper`;
@@ -144,7 +146,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
           <button
             type="button"
             className="gs-textfield__clear"
-            aria-label="Clear"
+            aria-label={strings.clear}
             // keep focus in the input while the button is pressed
             onMouseDown={(e) => e.preventDefault()}
             onClick={handleClear}
@@ -170,6 +172,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
 export interface SearchFieldProps extends Omit<TextFieldProps, "label" | "leadingIcon" | "size"> {
   /** Renders the small dark-gel "Cancel" button to the right of the pill. */
   showCancel?: boolean;
+  /** Default `strings.cancel` ("Cancel"). */
   cancelLabel?: string;
   onCancel?: () => void;
 }
@@ -181,16 +184,17 @@ export interface SearchFieldProps extends Omit<TextFieldProps, "label" | "leadin
 export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(function SearchField(
   {
     showCancel = false,
-    cancelLabel = "Cancel",
+    cancelLabel,
     onCancel,
     wrapperClassName,
-    placeholder = "Search",
+    placeholder,
     clearable = true,
     type = "search",
     ...rest
   },
   ref,
 ) {
+  const strings = useGsStrings();
   const inputRef = useRef<HTMLInputElement>(null);
   useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
 
@@ -205,7 +209,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
         ref={inputRef}
         wrapperClassName="gs-searchfield__field"
         leadingIcon={Search}
-        placeholder={placeholder}
+        placeholder={placeholder ?? strings.search}
         clearable={clearable}
         type={type}
         enterKeyHint="search"
@@ -219,7 +223,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleCancel}
         >
-          {cancelLabel}
+          {cancelLabel ?? strings.cancel}
         </button>
       )}
     </div>

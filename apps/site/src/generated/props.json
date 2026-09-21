@@ -1,0 +1,2593 @@
+{
+  "generatedAt": "2026-09-21T09:18:05.904Z",
+  "interfaces": {
+    "ActionSheetAction": {
+      "kind": "interface",
+      "extends": [],
+      "description": "",
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "onClick",
+          "type": "() => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "variant",
+          "type": "\"default\" | \"destructive\"",
+          "optional": true,
+          "description": "light silver glass with dark text (default) or red gel."
+        },
+        {
+          "name": "keepOpen",
+          "type": "boolean",
+          "optional": true,
+          "description": "`true` keeps the sheet open after the click (the caller decides when to close). Default: the action fires `onClick`, then `onClose`."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "optional": true,
+          "description": ""
+        }
+      ]
+    },
+    "ActionSheetProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"title\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "title",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Small gray centered text at the top of the sheet."
+        },
+        {
+          "name": "actions",
+          "type": "ActionSheetAction[]",
+          "optional": false,
+          "description": "Stacked in order, top to bottom."
+        },
+        {
+          "name": "cancelLabel",
+          "type": "string | null",
+          "optional": true,
+          "description": "Label of the dark Cancel button at the bottom. Default `strings.cancel` (\"Cancel\"); `null` hides it.",
+          "default": "strings.cancel"
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "optional": true,
+          "description": "Called after any action, on Cancel, on Escape, and on backdrop click when `dismissOnBackdrop`."
+        },
+        {
+          "name": "dismissOnBackdrop",
+          "type": "boolean",
+          "optional": true,
+          "description": "Default `true` — tapping the dimmed area behind the sheet dismisses it.",
+          "default": "true"
+        },
+        {
+          "name": "contained",
+          "type": "boolean",
+          "optional": true,
+          "description": "Default `false` → portal to `document.body` with a `position: fixed` backdrop. `true` → render in place with `position: absolute; inset: 0`, filling the nearest positioned ancestor (e.g. a phone screen in a showcase).",
+          "default": "false"
+        }
+      ]
+    },
+    "ActivityIndicatorProps": {
+      "kind": "interface",
+      "extends": [
+        "HTMLAttributes<HTMLSpanElement>"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "size",
+          "type": "number",
+          "optional": true,
+          "description": "Diameter in px. 20 (default) is the \"white\" / \"gray\" style, 37 the \"whiteLarge\" style.",
+          "default": "20"
+        },
+        {
+          "name": "tone",
+          "type": "\"white\" | \"gray\"",
+          "optional": true,
+          "description": "Spoke colour: `white` (default, for dark surfaces) or `gray`.",
+          "default": "\"white\""
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "Accessible name, announced via `role=\"status\"`. Default `strings.loading` (\"Loading\").",
+          "default": "strings.loading"
+        },
+        {
+          "name": "animating",
+          "type": "boolean",
+          "optional": true,
+          "description": "`false` renders nothing — `hidesWhenStopped`. Default `true`.",
+          "default": "true"
+        }
+      ]
+    },
+    "AlertAction": {
+      "kind": "interface",
+      "extends": [],
+      "description": "",
+      "props": [
+        {
+          "name": "label",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "onClick",
+          "type": "() => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "variant",
+          "type": "\"default\" | \"primary\" | \"destructive\"",
+          "optional": true,
+          "description": "dark navy gel (default), light glass (primary — the highlighted \"OK\") or red gel."
+        },
+        {
+          "name": "keepOpen",
+          "type": "boolean",
+          "optional": true,
+          "description": "`true` keeps the alert open after the click (the caller decides when to close). Default: the action fires `onClick`, then `onClose`."
+        }
+      ]
+    },
+    "AlertProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"title\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "title",
+          "type": "ReactNode",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "message",
+          "type": "ReactNode",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "actions",
+          "type": "AlertAction[]",
+          "optional": false,
+          "description": "1..n actions. Exactly two render side by side, any other count stacks."
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "optional": true,
+          "description": "Called after an action, on Escape, and on backdrop click when `dismissOnBackdrop`."
+        },
+        {
+          "name": "dismissOnBackdrop",
+          "type": "boolean",
+          "optional": true,
+          "description": "Default `false` — iOS 3 alerts were strictly modal.",
+          "default": "false"
+        },
+        {
+          "name": "contained",
+          "type": "boolean",
+          "optional": true,
+          "description": "Default `false` → portal to `document.body` with a `position: fixed` backdrop. `true` → render in place with `position: absolute; inset: 0`, filling the nearest positioned ancestor (e.g. a phone screen in a showcase).",
+          "default": "false"
+        }
+      ]
+    },
+    "BadgeProps": {
+      "kind": "interface",
+      "extends": [
+        "HTMLAttributes<HTMLSpanElement>"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "value",
+          "type": "number | string",
+          "optional": true,
+          "description": "Number or short text. Numbers above `max` render as `max+`."
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "99"
+        },
+        {
+          "name": "tone",
+          "type": "\"red\" | \"gray\"",
+          "optional": true,
+          "description": "Red gel (default) or the quieter gray used inside list cells.",
+          "default": "\"red\""
+        }
+      ]
+    },
+    "BarButtonProps": {
+      "kind": "interface",
+      "extends": [
+        "ButtonHTMLAttributes<HTMLButtonElement>"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "variant",
+          "type": "\"default\" | \"back\" | \"done\"",
+          "alias": "BarButtonVariant",
+          "optional": true,
+          "description": "",
+          "default": "\"default\""
+        },
+        {
+          "name": "icon",
+          "type": "LucideIcon",
+          "optional": true,
+          "description": "Any `lucide-react` icon, rendered flat in white before the label."
+        }
+      ]
+    },
+    "BarButtonVariant": {
+      "kind": "alias",
+      "type": "\"default\" | \"back\" | \"done\"",
+      "description": "",
+      "members": [
+        {
+          "value": "\"default\"",
+          "description": "dark gel — the everyday bar button"
+        },
+        {
+          "value": "\"back\"",
+          "description": "the left-pointing arrow shape"
+        },
+        {
+          "value": "\"done\"",
+          "description": "blue gel — the primary action (\"Done\", \"Save\")"
+        }
+      ]
+    },
+    "ButtonProps": {
+      "kind": "interface",
+      "extends": [
+        "ButtonHTMLAttributes<HTMLButtonElement>"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "variant",
+          "type": "\"default\" | \"primary\" | \"destructive\"",
+          "alias": "ButtonVariant",
+          "optional": true,
+          "description": "",
+          "default": "\"default\""
+        },
+        {
+          "name": "size",
+          "type": "\"sm\" | \"md\" | \"lg\"",
+          "alias": "ButtonSize",
+          "optional": true,
+          "description": "",
+          "default": "\"md\""
+        },
+        {
+          "name": "block",
+          "type": "boolean",
+          "optional": true,
+          "description": "Full width — the grouped-table \"Delete Contact\" / \"Sign Out\" style.",
+          "default": "false"
+        },
+        {
+          "name": "icon",
+          "type": "LucideIcon",
+          "optional": true,
+          "description": "Any `lucide-react` icon, rendered flat in white next to the label."
+        },
+        {
+          "name": "iconPosition",
+          "type": "\"leading\" | \"trailing\"",
+          "optional": true,
+          "description": "Which side of the label the icon sits on. Default: `leading`.",
+          "default": "\"leading\""
+        }
+      ]
+    },
+    "ButtonSize": {
+      "kind": "alias",
+      "type": "\"sm\" | \"md\" | \"lg\"",
+      "description": "",
+      "members": [
+        {
+          "value": "\"sm\"",
+          "description": "30 px tall, 13 px text — nav-bar / toolbar size"
+        },
+        {
+          "value": "\"md\"",
+          "description": "44 px tall, 17 px text — the standard touch target (default)"
+        },
+        {
+          "value": "\"lg\"",
+          "description": "50 px tall, 18 px text — prominent CTA"
+        }
+      ]
+    },
+    "ButtonVariant": {
+      "kind": "alias",
+      "type": "\"default\" | \"primary\" | \"destructive\"",
+      "description": "",
+      "members": [
+        {
+          "value": "\"default\"",
+          "description": "dark gel — the everyday button"
+        },
+        {
+          "value": "\"primary\"",
+          "description": "blue gel — the \"Done\" / confirm button"
+        },
+        {
+          "value": "\"destructive\"",
+          "description": "red gel — \"Delete Contact\", \"Sign Out\" style"
+        }
+      ]
+    },
+    "DatePickerMode": {
+      "kind": "alias",
+      "type": "\"date\" | \"time\" | \"dateTime\"",
+      "description": ""
+    },
+    "DatePickerProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"onChange\" | \"defaultValue\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "mode",
+          "type": "\"date\" | \"time\" | \"dateTime\"",
+          "alias": "DatePickerMode",
+          "optional": true,
+          "description": "Which `UIDatePicker` preset. Default `date`.",
+          "default": "\"date\""
+        },
+        {
+          "name": "value",
+          "type": "Date",
+          "optional": true,
+          "description": "Controlled value."
+        },
+        {
+          "name": "defaultValue",
+          "type": "Date",
+          "optional": true,
+          "description": "Uncontrolled initial value. Default: now, minutes rounded to `minuteInterval`."
+        },
+        {
+          "name": "onChange",
+          "type": "(date: Date) => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "minuteInterval",
+          "type": "1 | 5 | 10 | 15 | 30",
+          "optional": true,
+          "description": "Step of the minute drum. Default `1`.",
+          "default": "1"
+        },
+        {
+          "name": "hourCycle",
+          "type": "\"h12\" | \"h23\"",
+          "optional": true,
+          "description": "`h12` (1–12 plus an AM/PM drum, default) or `h23` (0–23).",
+          "default": "\"h12\""
+        },
+        {
+          "name": "yearRange",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "Years offered by the `date` preset, inclusive. Default `[1970, 2037]`.",
+          "default": "[1970, 2037]"
+        },
+        {
+          "name": "dayRange",
+          "type": "number",
+          "optional": true,
+          "description": "`dateTime` preset: days before and after the initial value in the rolling day drum. Default `365`.",
+          "default": "365"
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "Intl locale for month, weekday and AM/PM names. Default: the `<GsProvider>` locale, else `en-US`."
+        },
+        {
+          "name": "rows",
+          "type": "3 | 5 | 7",
+          "optional": true,
+          "description": "Visible rows per drum. Default `5`.",
+          "default": "5"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` for the picker. Default: `strings.date` / `time` / `dateTime` per `mode`.",
+          "default": "strings.date"
+        }
+      ]
+    },
+    "GsProviderProps": {
+      "kind": "interface",
+      "extends": [],
+      "description": "",
+      "props": [
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "BCP 47 locale, e.g. `\"de-DE\"`. Inherited from an outer provider when omitted."
+        },
+        {
+          "name": "strings",
+          "type": "Partial<GsStrings>",
+          "optional": true,
+          "description": "Overrides merged over the outer provider's strings (or the English defaults)."
+        },
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "optional": false,
+          "description": ""
+        }
+      ]
+    },
+    "GsStrings": {
+      "kind": "interface",
+      "extends": [],
+      "description": "Every user-facing string a component falls back to when the caller passes no explicit label. Override any subset through `<GsProvider strings>`.",
+      "props": [
+        {
+          "name": "cancel",
+          "type": "string",
+          "optional": false,
+          "description": "ActionSheet cancel button, SearchField cancel button, ModalSheet left bar button."
+        },
+        {
+          "name": "done",
+          "type": "string",
+          "optional": false,
+          "description": "ModalSheet right bar button; Keyboard `returnKey=\"Done\"`."
+        },
+        {
+          "name": "ok",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "close",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "clear",
+          "type": "string",
+          "optional": false,
+          "description": "TextField clear (ⓧ) button `aria-label`."
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "optional": false,
+          "description": "SearchField default placeholder; Keyboard `returnKey=\"Search\"`."
+        },
+        {
+          "name": "go",
+          "type": "string",
+          "optional": false,
+          "description": "Keyboard `returnKey=\"Go\"` / `\"Send\"` / `\"Next\"`."
+        },
+        {
+          "name": "send",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "next",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "loading",
+          "type": "string",
+          "optional": false,
+          "description": "ActivityIndicator `aria-label`."
+        },
+        {
+          "name": "progress",
+          "type": "string",
+          "optional": false,
+          "description": "HUD `kind=\"progress\"` bar `aria-label` when the title isn't a string."
+        },
+        {
+          "name": "actions",
+          "type": "string",
+          "optional": false,
+          "description": "ActionSheet `aria-label` when it has no title."
+        },
+        {
+          "name": "dialog",
+          "type": "string",
+          "optional": false,
+          "description": "Popover / ModalSheet `aria-label` when nothing else names the dialog."
+        },
+        {
+          "name": "tabs",
+          "type": "string",
+          "optional": false,
+          "description": "TabBar tablist `aria-label`."
+        },
+        {
+          "name": "segments",
+          "type": "string",
+          "optional": false,
+          "description": "SegmentedControl group `aria-label`."
+        },
+        {
+          "name": "pages",
+          "type": "string",
+          "optional": false,
+          "description": "PageControl tablist `aria-label`."
+        },
+        {
+          "name": "pageOf",
+          "type": "(page: number, count: number) => string",
+          "optional": false,
+          "description": "PageControl dot `aria-label`, e.g. `\"Page 2 of 5\"`."
+        },
+        {
+          "name": "toolbar",
+          "type": "string",
+          "optional": false,
+          "description": "Toolbar `aria-label`."
+        },
+        {
+          "name": "keyboard",
+          "type": "string",
+          "optional": false,
+          "description": "Keyboard group `aria-label`."
+        },
+        {
+          "name": "shift",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "delete",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "numbers",
+          "type": "string",
+          "optional": false,
+          "description": "Layer-switch key `aria-label`s (`123`, `#+=`, `ABC`)."
+        },
+        {
+          "name": "symbols",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "letters",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "space",
+          "type": "string",
+          "optional": false,
+          "description": "Visible label of the space bar."
+        },
+        {
+          "name": "return",
+          "type": "string",
+          "optional": false,
+          "description": "Visible label of the plain (non-blue) return key."
+        },
+        {
+          "name": "on",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "off",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "date",
+          "type": "string",
+          "optional": false,
+          "description": "DatePicker `aria-label` per mode."
+        },
+        {
+          "name": "time",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "dateTime",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "month",
+          "type": "string",
+          "optional": false,
+          "description": "Drum (column) `aria-label`s."
+        },
+        {
+          "name": "day",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "year",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "hour",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "minute",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "dayPeriod",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "today",
+          "type": "string",
+          "optional": false,
+          "description": "The rolling day drum's label for the current day."
+        },
+        {
+          "name": "am",
+          "type": "string",
+          "optional": false,
+          "description": "Day-period fallbacks when `Intl` can't supply them for the locale."
+        },
+        {
+          "name": "pm",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        }
+      ]
+    },
+    "HUDKind": {
+      "kind": "alias",
+      "type": "\"loading\" | \"progress\" | \"success\" | \"error\" | \"text\" | \"custom\"",
+      "description": "",
+      "members": [
+        {
+          "value": "\"loading\"",
+          "description": "37 px white spinner — \"Loading…\" (default)"
+        },
+        {
+          "value": "\"progress\"",
+          "description": "a gel progress bar driven by `progress`"
+        },
+        {
+          "value": "\"success\"",
+          "description": "big white check — \"Saved\""
+        },
+        {
+          "value": "\"error\"",
+          "description": "big white X — \"Failed\""
+        },
+        {
+          "value": "\"text\"",
+          "description": "label only: a compact pill-ish toast — \"Copied\""
+        },
+        {
+          "value": "\"custom\"",
+          "description": "your own graphic in the `icon` slot — the volume bell"
+        }
+      ]
+    },
+    "HUDProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"title\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "kind",
+          "type": "\"loading\" | \"progress\" | \"success\" | \"error\" | \"text\" | \"custom\"",
+          "alias": "HUDKind",
+          "optional": true,
+          "description": "What the square shows. Default `loading`.",
+          "default": "\"loading\""
+        },
+        {
+          "name": "title",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Bold 16 px white label under the graphic (\"Loading…\", \"Saved\")."
+        },
+        {
+          "name": "message",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Optional 13 px secondary line."
+        },
+        {
+          "name": "progress",
+          "type": "number",
+          "optional": true,
+          "description": "`0..100` for `kind=\"progress\"`. Omit for an indeterminate bar."
+        },
+        {
+          "name": "icon",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "The graphic for `kind=\"custom\"`, e.g. `<Icon icon={Volume2} variant=\"flat\" size={48} />`."
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "optional": true,
+          "description": "Auto-dismiss: calls `onClose` after this many ms. The timer restarts when `open`, `title` or `kind` change, so a toast that swaps its text stays up for the full duration again. Typical toast use: 1500."
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "position",
+          "type": "\"center\" | \"top\" | \"bottom\"",
+          "optional": true,
+          "description": "Default `center`; `top` / `bottom` sit 60 px from that edge.",
+          "default": "\"center\""
+        },
+        {
+          "name": "blocking",
+          "type": "boolean",
+          "optional": true,
+          "description": "Default `false`: pointer events pass through the transparent backdrop — the HUD is a non-modal overlay. `true`: the backdrop absorbs clicks (still no dimming, HUDs never dimmed) and the box reports `aria-busy`.",
+          "default": "false"
+        },
+        {
+          "name": "contained",
+          "type": "boolean",
+          "optional": true,
+          "description": "Default `false` → portal to `document.body` with a `position: fixed` backdrop. `true` → render in place with `position: absolute; inset: 0`, filling the nearest positioned ancestor (e.g. a phone screen in a showcase).",
+          "default": "false"
+        }
+      ]
+    },
+    "IconProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<LucideProps, \"ref\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "icon",
+          "type": "LucideIcon",
+          "optional": false,
+          "description": "Any `lucide-react` icon component, e.g. `Star`, `Search`, `Settings`."
+        },
+        {
+          "name": "variant",
+          "type": "\"gloss\" | \"active\" | \"flat\"",
+          "alias": "IconVariant",
+          "optional": true,
+          "description": "",
+          "default": "\"gloss\""
+        },
+        {
+          "name": "embossed",
+          "type": "boolean",
+          "optional": true,
+          "description": "Adds the etched drop-shadow that sits icons into a bar. Default: true for gel variants."
+        },
+        {
+          "name": "size",
+          "type": "number | string",
+          "optional": true,
+          "description": "",
+          "default": "24"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "Accessible label. Omit to mark the icon decorative (`aria-hidden`)."
+        }
+      ]
+    },
+    "IconVariant": {
+      "kind": "alias",
+      "type": "\"gloss\" | \"active\" | \"flat\"",
+      "description": "",
+      "members": [
+        {
+          "value": "\"gloss\"",
+          "description": "gray glass — inactive tab icons, list glyphs"
+        },
+        {
+          "value": "\"active\"",
+          "description": "blue glass — the active/tinted state"
+        },
+        {
+          "value": "\"flat\"",
+          "description": "plain currentColor stroke, no gel treatment"
+        }
+      ]
+    },
+    "KeyboardLayer": {
+      "kind": "alias",
+      "type": "\"letters\" | \"numbers\" | \"symbols\"",
+      "description": ""
+    },
+    "KeyboardProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"onChange\" | \"autoCapitalize\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "optional": true,
+          "description": "High-level binding: the keyboard edits this string (append / backspace) and reports the result."
+        },
+        {
+          "name": "onChange",
+          "type": "(value: string) => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "onKey",
+          "type": "(key: string) => void",
+          "optional": true,
+          "description": "Low-level: a character, `\" \"` for space, `\"\\n\"` for return. Fired in addition to `onChange`."
+        },
+        {
+          "name": "onBackspace",
+          "type": "() => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "onReturn",
+          "type": "() => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "returnKey",
+          "type": "\"return\" | \"Go\" | \"Search\" | \"Done\" | \"Send\" | \"Next\"",
+          "alias": "KeyboardReturnKey",
+          "optional": true,
+          "description": "The return key's type (`UIReturnKeyType`). Anything but `\"return\"` renders as the blue gel key. The visible text is looked up in the provider strings (`return`, `go`, `search`, `done`, `send`, `next`).",
+          "default": "\"return\""
+        },
+        {
+          "name": "layer",
+          "type": "\"letters\" | \"numbers\" | \"symbols\"",
+          "alias": "KeyboardLayer",
+          "optional": true,
+          "description": "Controlled layer. Leave undefined to let the keyboard manage its own, starting at `\"letters\"`."
+        },
+        {
+          "name": "onLayerChange",
+          "type": "(layer: KeyboardLayer) => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "defaultShift",
+          "type": "boolean",
+          "optional": true,
+          "description": "Start with shift on (sentence start). Default `false`.",
+          "default": "false"
+        },
+        {
+          "name": "autoCapitalize",
+          "type": "boolean",
+          "optional": true,
+          "description": "Shift auto-enables on an empty value or after `\". \"`. Only acts through the `value`/`onChange` binding.",
+          "default": "false"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "Accessible name (`aria-label`). Default `strings.keyboard` (\"Keyboard\").",
+          "default": "strings.keyboard"
+        }
+      ]
+    },
+    "KeyboardReturnKey": {
+      "kind": "alias",
+      "type": "\"return\" | \"Go\" | \"Search\" | \"Done\" | \"Send\" | \"Next\"",
+      "description": ""
+    },
+    "ListItemAccessory": {
+      "kind": "alias",
+      "type": "\"chevron\" | \"checkmark\" | \"detail\" | \"none\"",
+      "description": "",
+      "members": [
+        {
+          "value": "\"chevron\"",
+          "description": "gray disclosure chevron — \"tap to drill in\""
+        },
+        {
+          "value": "\"checkmark\"",
+          "description": "blue check — the chosen option in a picker list"
+        },
+        {
+          "value": "\"detail\"",
+          "description": "blue circled chevron — the detail-disclosure button"
+        },
+        {
+          "value": "\"none\"",
+          "description": ""
+        }
+      ]
+    },
+    "ListItemProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLElement>, \"title\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "icon",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Anything, typically `<Icon icon={Star} />`; rendered inside a 29 × 29 slot."
+        },
+        {
+          "name": "iconTile",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw the icon slot as a glossy app-icon tile (29 × 29, radius 6, black outline).",
+          "default": "false"
+        },
+        {
+          "name": "iconTint",
+          "type": "\"gray\" | \"blue\" | \"red\"",
+          "optional": true,
+          "description": "Tile gel colour. Default `gray`.",
+          "default": "\"gray\""
+        },
+        {
+          "name": "title",
+          "type": "ReactNode",
+          "optional": false,
+          "description": "Bold white cell title. Ellipsises."
+        },
+        {
+          "name": "subtitle",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Secondary gray line under the title. Ellipsises."
+        },
+        {
+          "name": "detail",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Right-aligned blue value text, e.g. \"On\", \"3 items\"."
+        },
+        {
+          "name": "accessory",
+          "type": "\"chevron\" | \"checkmark\" | \"detail\" | \"none\" | ReactNode",
+          "optional": true,
+          "description": "A built-in accessory or any node (a `<Switch>`, a `<Badge>`, …)."
+        },
+        {
+          "name": "selected",
+          "type": "boolean",
+          "optional": true,
+          "description": "Persistent blue highlight — the tapped-row state.",
+          "default": "false"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false"
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "optional": true,
+          "description": "Renders the row as an `<a>`."
+        },
+        {
+          "name": "onClick",
+          "type": "MouseEventHandler<HTMLElement>",
+          "optional": true,
+          "description": "With `onClick` (and no `href`) the row renders as a `<button>`."
+        }
+      ]
+    },
+    "ListProps": {
+      "kind": "interface",
+      "extends": [
+        "HTMLAttributes<HTMLDivElement>"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "variant",
+          "type": "\"grouped\" | \"plain\"",
+          "optional": true,
+          "description": "`grouped` (rounded, outlined container on the pinstripe) or `plain` (full-bleed rows).",
+          "default": "\"grouped\""
+        },
+        {
+          "name": "header",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Section header above the group — bold gray, etched."
+        },
+        {
+          "name": "footer",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Small centered gray text under the group."
+        },
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "optional": false,
+          "description": "`<ListItem>`s."
+        }
+      ]
+    },
+    "ModalSheetProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"title\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "optional": true,
+          "description": "Called on Escape and by the default Cancel / Done bar buttons."
+        },
+        {
+          "name": "title",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "NavigationBar title. A string also becomes the dialog's accessible name."
+        },
+        {
+          "name": "left",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "NavigationBar left slot. Default: a `strings.cancel` (\"Cancel\") bar button that calls `onClose`; `null` hides it."
+        },
+        {
+          "name": "right",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "NavigationBar right slot. Default: a blue `strings.done` (\"Done\") bar button that calls `onClose`; `null` hides it."
+        },
+        {
+          "name": "tint",
+          "type": "\"black\" | \"blue\"",
+          "alias": "NavigationBarTint",
+          "optional": true,
+          "description": "Forwarded to the NavigationBar: `black` glass (default) or the blue-gray bar.",
+          "default": "\"black\""
+        },
+        {
+          "name": "background",
+          "type": "\"pinstripe\" | \"black\" | \"surface\"",
+          "optional": true,
+          "description": "Body background: the grouped-table pinstripe (default), plain black or the flat cell surface.",
+          "default": "\"pinstripe\""
+        },
+        {
+          "name": "bodyClassName",
+          "type": "string",
+          "optional": true,
+          "description": "`className` goes to the sheet panel; this one to the scrolling body."
+        },
+        {
+          "name": "contained",
+          "type": "boolean",
+          "optional": true,
+          "description": "Default `false` → portal to `document.body` with a `position: fixed` backdrop. `true` → render in place with `position: absolute; inset: 0`, filling the nearest positioned ancestor (e.g. a phone screen in a showcase).",
+          "default": "false"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` for the dialog when `title` isn't a plain string. Default `strings.dialog`.",
+          "default": "strings.dialog"
+        },
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "optional": false,
+          "description": ""
+        }
+      ]
+    },
+    "NavigationBarProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"title\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "title",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Bold 20 px white title, centred over the full bar width; ellipsised when too long."
+        },
+        {
+          "name": "left",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Left slot — usually a `<BarButton variant=\"back\">`."
+        },
+        {
+          "name": "right",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Right slot — usually a `<BarButton variant=\"done\">` or a default bar button."
+        },
+        {
+          "name": "tint",
+          "type": "\"black\" | \"blue\"",
+          "alias": "NavigationBarTint",
+          "optional": true,
+          "description": "`black` glass (default) or the classic blue-gray bar.",
+          "default": "\"black\""
+        }
+      ]
+    },
+    "NavigationBarTint": {
+      "kind": "alias",
+      "type": "\"black\" | \"blue\"",
+      "description": "",
+      "members": [
+        {
+          "value": "\"black\"",
+          "description": "black glass — `UIBarStyleBlack` (default)"
+        },
+        {
+          "value": "\"blue\"",
+          "description": "the classic iOS 3 blue-gray bar"
+        }
+      ]
+    },
+    "NotificationBannerProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"title\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "title",
+          "type": "ReactNode",
+          "optional": false,
+          "description": "Bold 14 px white line — the app or sender name."
+        },
+        {
+          "name": "message",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "13 px line under the title; clamped to two lines with an ellipsis."
+        },
+        {
+          "name": "icon",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Glyph for the 29 px app-icon tile, e.g. `<Icon icon={Mail} variant=\"flat\" size={18} />`."
+        },
+        {
+          "name": "iconTint",
+          "type": "\"gray\" | \"blue\" | \"red\" | \"green\"",
+          "alias": "NotificationBannerTint",
+          "optional": true,
+          "description": "Tile gel colour. Default `gray`.",
+          "default": "\"gray\""
+        },
+        {
+          "name": "actionLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Small dark gel bar-button on the end side (\"Reply\")."
+        },
+        {
+          "name": "onAction",
+          "type": "() => void",
+          "optional": true,
+          "description": "Fires when the action button is tapped."
+        },
+        {
+          "name": "onClick",
+          "type": "() => void",
+          "optional": true,
+          "description": "Fires when the banner body (not the action) is tapped — e.g. open the app."
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "optional": true,
+          "description": "Auto-dismiss: calls `onClose` after this many ms. Default 4000; `0` keeps the banner up until it is tapped, swiped or closed. The timer pauses while the banner is hovered, pressed or keyboard-focused and restarts when `open`, `duration` or `title` change (new content = new banner).",
+          "default": "4000"
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "optional": true,
+          "description": "Called after `duration`, after a swipe-up, after Escape, and after an action / body tap (see `dismissOnAction`). The caller sets `open` false."
+        },
+        {
+          "name": "dismissOnAction",
+          "type": "boolean",
+          "optional": true,
+          "description": "Whether an action / body tap also calls `onClose`. Default `true`.",
+          "default": "true"
+        },
+        {
+          "name": "contained",
+          "type": "boolean",
+          "optional": true,
+          "description": "Default `false` → portal to `document.body` with `position: fixed; top: 0`. `true` → render in place with `position: absolute; top: 0; inset-inline: 0` at the top of the nearest positioned ancestor (e.g. a phone screen in a showcase).",
+          "default": "false"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` of the status region. Default \"Notification\".",
+          "default": "\"Notification\""
+        }
+      ]
+    },
+    "NotificationBannerTint": {
+      "kind": "alias",
+      "type": "\"gray\" | \"blue\" | \"red\" | \"green\"",
+      "description": ""
+    },
+    "PageControlProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"onChange\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "count",
+          "type": "number",
+          "optional": false,
+          "description": "Number of pages. With `hideForSinglePage` (default) nothing renders when this is `<= 1`."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "optional": true,
+          "description": "Controlled current page, 0-based. Clamped to `[0, count - 1]`."
+        },
+        {
+          "name": "defaultValue",
+          "type": "number",
+          "optional": true,
+          "description": "Uncontrolled initial page, 0-based. Default `0`.",
+          "default": "0"
+        },
+        {
+          "name": "onChange",
+          "type": "(page: number) => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` for the tablist. Default `strings.pages` (\"Pages\").",
+          "default": "strings.pages"
+        },
+        {
+          "name": "hideForSinglePage",
+          "type": "boolean",
+          "optional": true,
+          "description": "Render nothing for 0 or 1 pages (`UIPageControl.hidesForSinglePage`). Default `true`.",
+          "default": "true"
+        },
+        {
+          "name": "size",
+          "type": "\"sm\" | \"md\"",
+          "alias": "PageControlSize",
+          "optional": true,
+          "description": "Dot size: `sm` = 6 px (default), `md` = 8 px.",
+          "default": "\"sm\""
+        }
+      ]
+    },
+    "PageControlSize": {
+      "kind": "alias",
+      "type": "\"sm\" | \"md\"",
+      "description": "",
+      "members": [
+        {
+          "value": "\"sm\"",
+          "description": "6 px dots — the home-screen pager (default)"
+        },
+        {
+          "value": "\"md\"",
+          "description": "8 px dots — photo pagers, larger canvases"
+        }
+      ]
+    },
+    "PickerColumn": {
+      "kind": "interface",
+      "extends": [],
+      "description": "",
+      "props": [
+        {
+          "name": "key",
+          "type": "string",
+          "optional": false,
+          "description": "Identifies the column; the key under which its value is reported."
+        },
+        {
+          "name": "options",
+          "type": "PickerOption[]",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` for the drum. Defaults to `key`."
+        },
+        {
+          "name": "width",
+          "type": "number | string",
+          "optional": true,
+          "description": "CSS width of the column. Without it, columns share the width equally."
+        },
+        {
+          "name": "align",
+          "type": "\"left\" | \"center\" | \"right\"",
+          "optional": true,
+          "description": "Text alignment inside the drum. Default `center`.",
+          "default": "\"center\""
+        }
+      ]
+    },
+    "PickerOption": {
+      "kind": "interface",
+      "extends": [],
+      "description": "",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "label",
+          "type": "ReactNode",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "optional": true,
+          "description": ""
+        }
+      ]
+    },
+    "PickerProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"onChange\" | \"defaultValue\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "columns",
+          "type": "PickerColumn[]",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "value",
+          "type": "PickerValue",
+          "optional": true,
+          "description": "Controlled selection."
+        },
+        {
+          "name": "defaultValue",
+          "type": "PickerValue",
+          "optional": true,
+          "description": "Uncontrolled initial selection; missing keys default to the first (enabled) option."
+        },
+        {
+          "name": "onChange",
+          "type": "(value: PickerValue, changed: { key: string; value: string }) => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "rows",
+          "type": "3 | 5 | 7",
+          "optional": true,
+          "description": "Visible rows per drum (44 px each). Default `5`.",
+          "default": "5"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` for the whole picker."
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false"
+        }
+      ]
+    },
+    "PickerValue": {
+      "kind": "alias",
+      "type": "Record<string, string>",
+      "description": "`{ [column.key]: option.value }`"
+    },
+    "PopoverPlacement": {
+      "kind": "alias",
+      "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+      "description": ""
+    },
+    "PopoverProps": {
+      "kind": "interface",
+      "extends": [
+        "HTMLAttributes<HTMLDivElement>"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "anchor",
+          "type": "HTMLElement | null",
+          "optional": false,
+          "description": "The element the arrow points at — pass `ref.current`. Re-measured on open, on window resize and on any scroll."
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "optional": true,
+          "description": "Called on Escape and on an outside click / tap (when `dismissOnOutside`)."
+        },
+        {
+          "name": "placement",
+          "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+          "alias": "PopoverPlacement",
+          "optional": true,
+          "description": "Preferred side. Default `\"bottom\"`; flips to the opposite side when there is no room.",
+          "default": "\"bottom\""
+        },
+        {
+          "name": "width",
+          "type": "number | string",
+          "optional": true,
+          "description": "Panel width (the box inside the 8 px rim). Default `240` — iPad popovers were 320, a phone screen wants narrower.",
+          "default": "240"
+        },
+        {
+          "name": "contained",
+          "type": "boolean",
+          "optional": true,
+          "description": "Default `false` → portal to `document.body`, `position: fixed`, viewport coordinates. `true` → render in place with `position: absolute`, coordinates relative to the nearest positioned ancestor's padding box (e.g. a phone screen in a showcase) and clamped within it.",
+          "default": "false"
+        },
+        {
+          "name": "dismissOnOutside",
+          "type": "boolean",
+          "optional": true,
+          "description": "Default `true` — a click outside the panel closes it.",
+          "default": "true"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` for the `role=\"dialog\"` panel when there is no heading inside. Default `strings.dialog`.",
+          "default": "strings.dialog"
+        },
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "optional": false,
+          "description": ""
+        }
+      ]
+    },
+    "ProgressBarProps": {
+      "kind": "interface",
+      "extends": [
+        "HTMLAttributes<HTMLDivElement>"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "value",
+          "type": "number",
+          "optional": true,
+          "description": "`0..max`. Omit for an indeterminate bar (a gel segment sliding back and forth)."
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "optional": true,
+          "description": "Default 100.",
+          "default": "100"
+        },
+        {
+          "name": "size",
+          "type": "\"sm\" | \"md\"",
+          "optional": true,
+          "description": "Track height: `sm` 9 px (default) or `md` 12 px.",
+          "default": "\"sm\""
+        },
+        {
+          "name": "showValue",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the percentage (\"42 %\") to the right of the track.",
+          "default": "false"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "Accessible name (`aria-label`)."
+        },
+        {
+          "name": "tint",
+          "type": "\"blue\" | \"gray\"",
+          "optional": true,
+          "description": "Fill gel: `blue` (App Store, default) or the silver iPod scrubber.",
+          "default": "\"blue\""
+        }
+      ]
+    },
+    "SearchBarProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"onChange\" | \"defaultValue\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "optional": true,
+          "description": "Controlled query."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "optional": true,
+          "description": "Uncontrolled initial query."
+        },
+        {
+          "name": "onChange",
+          "type": "(query: string) => void",
+          "optional": true,
+          "description": "Fires on every keystroke, on ⓧ and on Cancel (with `\"\"`)."
+        },
+        {
+          "name": "onSearch",
+          "type": "(query: string) => void",
+          "optional": true,
+          "description": "Enter key — the keyboard's \"Search\"."
+        },
+        {
+          "name": "onCancel",
+          "type": "() => void",
+          "optional": true,
+          "description": "Cancel tapped. The bar clears the query (reports `onChange(\"\")` when controlled — keep your `value` to override) and gives up focus first."
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "optional": true,
+          "description": "Defaults to the SearchField's placeholder (`strings.search`, \"Search\")."
+        },
+        {
+          "name": "scopes",
+          "type": "SearchScope[]",
+          "optional": true,
+          "description": "When given, a `SegmentedControl size=\"sm\" block` row of scope buttons appears under the field."
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "optional": true,
+          "description": "Controlled scope."
+        },
+        {
+          "name": "defaultScope",
+          "type": "string",
+          "optional": true,
+          "description": "Uncontrolled initial scope; falls back to the first one."
+        },
+        {
+          "name": "onScopeChange",
+          "type": "(scope: string) => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "showsScopeBar",
+          "type": "\"always\" | \"whileEditing\"",
+          "optional": true,
+          "description": "`always` (default) or fold the scope row open only while editing.",
+          "default": "\"always\""
+        },
+        {
+          "name": "showsCancel",
+          "type": "\"whileEditing\" | \"always\" | \"never\"",
+          "optional": true,
+          "description": "`whileEditing` (default): Cancel slides in while the field is focused or has text. `always` keeps it; `never` drops it.",
+          "default": "\"whileEditing\""
+        },
+        {
+          "name": "cancelLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Default `strings.cancel` (\"Cancel\").",
+          "default": "strings.cancel"
+        },
+        {
+          "name": "tint",
+          "type": "\"black\" | \"blue\"",
+          "alias": "NavigationBarTint",
+          "optional": true,
+          "description": "`black` glass (default) or the classic blue-gray bar — like NavigationBar.",
+          "default": "\"black\""
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` of the search landmark (and the input). Default `strings.search` (\"Search\").",
+          "default": "strings.search"
+        },
+        {
+          "name": "inputProps",
+          "type": "InputHTMLAttributes<HTMLInputElement>",
+          "optional": true,
+          "description": "Escape hatch for the inner `<input>`; `onChange` / `onKeyDown` given here are called too."
+        }
+      ]
+    },
+    "SearchFieldProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<TextFieldProps, \"label\" | \"leadingIcon\" | \"size\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "showCancel",
+          "type": "boolean",
+          "optional": true,
+          "description": "Renders the small dark-gel \"Cancel\" button to the right of the pill.",
+          "default": "false"
+        },
+        {
+          "name": "cancelLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Default `strings.cancel` (\"Cancel\").",
+          "default": "strings.cancel"
+        },
+        {
+          "name": "onCancel",
+          "type": "() => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "helper",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Secondary hint under the field.",
+          "inheritedFrom": "TextFieldProps"
+        },
+        {
+          "name": "error",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Error message under the field; also tints the rim red and sets `aria-invalid`.",
+          "inheritedFrom": "TextFieldProps"
+        },
+        {
+          "name": "clearable",
+          "type": "boolean",
+          "optional": true,
+          "description": "Shows the gray ⓧ button while the field has a value. Clearing fires `onChange` (empty) and `onClear`.",
+          "default": "false",
+          "inheritedFrom": "TextFieldProps"
+        },
+        {
+          "name": "onClear",
+          "type": "() => void",
+          "optional": true,
+          "description": "",
+          "inheritedFrom": "TextFieldProps"
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "optional": true,
+          "description": "`className` goes to the `<input>`; this one to the outer wrapper.",
+          "inheritedFrom": "TextFieldProps"
+        }
+      ]
+    },
+    "SearchScope": {
+      "kind": "interface",
+      "extends": [],
+      "description": "One scope button under the field.",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "optional": true,
+          "description": ""
+        }
+      ]
+    },
+    "SegmentProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<ButtonHTMLAttributes<HTMLButtonElement>, \"value\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "optional": false,
+          "description": "Identifies the segment; what `SegmentedControl` reports through `onChange`."
+        },
+        {
+          "name": "icon",
+          "type": "LucideIcon",
+          "optional": true,
+          "description": "Any `lucide-react` icon, rendered flat in white before the text — or alone."
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "Accessible name. Required for an icon-only segment (it becomes the `aria-label`); without an icon or `children` it is the visible text."
+        },
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "The visible text."
+        }
+      ]
+    },
+    "SegmentedControlProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"onChange\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "optional": true,
+          "description": "Controlled selected segment."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "optional": true,
+          "description": "Uncontrolled initial segment. Defaults to the first one — a segmented control always has a selection."
+        },
+        {
+          "name": "onChange",
+          "type": "(value: string) => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "size",
+          "type": "\"sm\" | \"md\"",
+          "alias": "SegmentedControlSize",
+          "optional": true,
+          "description": "",
+          "default": "\"md\""
+        },
+        {
+          "name": "tint",
+          "type": "\"dark\" | \"blue\"",
+          "alias": "SegmentedControlTint",
+          "optional": true,
+          "description": "",
+          "default": "\"dark\""
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` for the group. Default `strings.segments` (\"Segments\").",
+          "default": "strings.segments"
+        },
+        {
+          "name": "block",
+          "type": "boolean",
+          "optional": true,
+          "description": "Stretch to the container width. Default: intrinsic — every segment as wide as the widest.",
+          "default": "false"
+        },
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "optional": false,
+          "description": "`<Segment>`s."
+        }
+      ]
+    },
+    "SliderProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<InputHTMLAttributes<HTMLInputElement>, \"value\" | \"defaultValue\" | \"onChange\" | \"size\" | \"type\" | \"min\" | \"max\" | \"step\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "value",
+          "type": "number",
+          "optional": true,
+          "description": "Controlled value. Leave undefined to let the slider manage its own state."
+        },
+        {
+          "name": "defaultValue",
+          "type": "number",
+          "optional": true,
+          "description": "Initial value when uncontrolled. Default: `min`.",
+          "default": "min"
+        },
+        {
+          "name": "onChange",
+          "type": "(value: number) => void",
+          "optional": true,
+          "description": "Fires continuously while dragging (and on every key press)."
+        },
+        {
+          "name": "onChangeEnd",
+          "type": "(value: number) => void",
+          "optional": true,
+          "description": "Fires when the value is committed — pointer release / key release (the native `change` event)."
+        },
+        {
+          "name": "min",
+          "type": "number",
+          "optional": true,
+          "description": "Default `0`.",
+          "default": "0"
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "optional": true,
+          "description": "Default `100`.",
+          "default": "100"
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "optional": true,
+          "description": "Default `1`.",
+          "default": "1"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "Accessible name (`aria-label`). Required unless `aria-labelledby` is passed."
+        },
+        {
+          "name": "minIcon",
+          "type": "LucideIcon",
+          "optional": true,
+          "description": "Small flat gray icon left of the track (e.g. `Volume`, `Sun`)."
+        },
+        {
+          "name": "maxIcon",
+          "type": "LucideIcon",
+          "optional": true,
+          "description": "Larger flat gray icon right of the track (e.g. `Volume2`, `Sun`)."
+        },
+        {
+          "name": "showValue",
+          "type": "boolean",
+          "optional": true,
+          "description": "Renders the numeric value right of the track.",
+          "default": "false"
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "optional": true,
+          "description": "`className` goes to the `<input>`; this one to the outer wrapper."
+        }
+      ]
+    },
+    "StatusBarNetwork": {
+      "kind": "alias",
+      "type": "\"3G\" | \"E\" | \"wifi\" | \"none\"",
+      "description": ""
+    },
+    "StatusBarProps": {
+      "kind": "interface",
+      "extends": [
+        "HTMLAttributes<HTMLDivElement>"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "time",
+          "type": "string",
+          "optional": true,
+          "description": "Clock text, e.g. \"3:53 PM\".",
+          "default": "\"3:53 PM\""
+        },
+        {
+          "name": "signal",
+          "type": "0 | 1 | 2 | 3 | 4 | 5",
+          "optional": true,
+          "description": "Signal strength 0–5 bars.",
+          "default": "5"
+        },
+        {
+          "name": "network",
+          "type": "\"3G\" | \"E\" | \"wifi\" | \"none\"",
+          "alias": "StatusBarNetwork",
+          "optional": true,
+          "description": "Data indicator right of the signal bars.",
+          "default": "\"3G\""
+        },
+        {
+          "name": "carrier",
+          "type": "string",
+          "optional": true,
+          "description": "Carrier name instead of the signal bars' implicit \"iPhone\" — rendered after the network glyph."
+        },
+        {
+          "name": "battery",
+          "type": "number",
+          "optional": true,
+          "description": "Battery level 0–100.",
+          "default": "100"
+        },
+        {
+          "name": "charging",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false"
+        },
+        {
+          "name": "bluetooth",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true"
+        },
+        {
+          "name": "tint",
+          "type": "\"black\" | \"gray\"",
+          "optional": true,
+          "description": "Black glass (default) or the translucent gray used over photos.",
+          "default": "\"black\""
+        }
+      ]
+    },
+    "StepperProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"onChange\" | \"defaultValue\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "value",
+          "type": "number",
+          "optional": true,
+          "description": "Controlled value."
+        },
+        {
+          "name": "defaultValue",
+          "type": "number",
+          "optional": true,
+          "description": "Uncontrolled initial value. Defaults to `min`."
+        },
+        {
+          "name": "onChange",
+          "type": "(value: number) => void",
+          "optional": true,
+          "description": "Fires with the new value on every step (click, hold, key)."
+        },
+        {
+          "name": "min",
+          "type": "number",
+          "optional": true,
+          "description": "Default `0`.",
+          "default": "0"
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "optional": true,
+          "description": "Default `100`.",
+          "default": "100"
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "optional": true,
+          "description": "Default `1`. Values are rounded to the step's decimal precision.",
+          "default": "1"
+        },
+        {
+          "name": "wraps",
+          "type": "boolean",
+          "optional": true,
+          "description": "At the bounds the button disables (default); `true` wraps around instead.",
+          "default": "false"
+        },
+        {
+          "name": "autoRepeat",
+          "type": "boolean",
+          "optional": true,
+          "description": "Hold a button to repeat: 500 ms delay, then every 100 ms, every 50 ms after 2 s. Default `true`.",
+          "default": "true"
+        },
+        {
+          "name": "showValue",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the value in a sunken well on the inline-start side of the buttons.",
+          "default": "false"
+        },
+        {
+          "name": "formatValue",
+          "type": "(value: number) => string",
+          "optional": true,
+          "description": "Formats the shown value, e.g. `(v) => v + \" %\"`."
+        },
+        {
+          "name": "size",
+          "type": "\"sm\" | \"md\"",
+          "alias": "StepperSize",
+          "optional": true,
+          "description": "30 px (fits a 44 px list row) or 44 px. Default `\"sm\"`.",
+          "default": "\"sm\""
+        },
+        {
+          "name": "tint",
+          "type": "\"dark\" | \"blue\"",
+          "alias": "StepperTint",
+          "optional": true,
+          "description": "The bar-button gel of the theme, or the blue-gray gel of a blue NavigationBar. Default `\"dark\"`.",
+          "default": "\"dark\""
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "optional": true,
+          "description": "Dims the whole control; both buttons disable.",
+          "default": "false"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` for the group, e.g. `\"Quantity\"`."
+        },
+        {
+          "name": "decrementLabel",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` of the − button. Default `\"Decrease\"`.",
+          "default": "\"Decrease\""
+        },
+        {
+          "name": "incrementLabel",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` of the + button. Default `\"Increase\"`.",
+          "default": "\"Increase\""
+        }
+      ]
+    },
+    "StepperSize": {
+      "kind": "alias",
+      "type": "\"sm\" | \"md\"",
+      "description": "",
+      "members": [
+        {
+          "value": "\"sm\"",
+          "description": "30 px tall — fits a 44 px list row (default)"
+        },
+        {
+          "value": "\"md\"",
+          "description": "44 px tall — the standard touch target"
+        }
+      ]
+    },
+    "StepperTint": {
+      "kind": "alias",
+      "type": "\"dark\" | \"blue\"",
+      "description": "",
+      "members": [
+        {
+          "value": "\"dark\"",
+          "description": "the bar-button gel of the current theme (default)"
+        },
+        {
+          "value": "\"blue\"",
+          "description": "the blue-gray gel of a `tint=\"blue\"` NavigationBar, in either theme"
+        }
+      ]
+    },
+    "SwitchProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<ButtonHTMLAttributes<HTMLButtonElement>, \"onChange\" | \"value\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "checked",
+          "type": "boolean",
+          "optional": true,
+          "description": "Controlled state. Leave undefined to let the switch manage its own state."
+        },
+        {
+          "name": "defaultChecked",
+          "type": "boolean",
+          "optional": true,
+          "description": "Initial state when uncontrolled.",
+          "default": "false"
+        },
+        {
+          "name": "onChange",
+          "type": "(checked: boolean) => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false"
+        },
+        {
+          "name": "onLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text on the blue half. Default `strings.on` (\"ON\").",
+          "default": "strings.on"
+        },
+        {
+          "name": "offLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text on the dark half. Default `strings.off` (\"OFF\").",
+          "default": "strings.off"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "Accessible name (`aria-label`) when there is no visible label."
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "optional": true,
+          "description": "When set, a hidden `<input type=\"checkbox\">` carries the value in form submissions."
+        }
+      ]
+    },
+    "TabBarItemProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<ButtonHTMLAttributes<HTMLButtonElement>, \"value\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "optional": false,
+          "description": "Identifies the tab; what `TabBar` reports through `onChange`."
+        },
+        {
+          "name": "icon",
+          "type": "LucideIcon",
+          "optional": false,
+          "description": "Any `lucide-react` icon — gray glass when idle, blue glass when selected."
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": false,
+          "description": "The 10 px bold caption under the icon."
+        },
+        {
+          "name": "badge",
+          "type": "number | string",
+          "optional": true,
+          "description": "Red gel badge on the icon's top-right corner (`43`, `\"New\"`; numbers > 99 render `99+`)."
+        }
+      ]
+    },
+    "TabBarProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<HTMLAttributes<HTMLDivElement>, \"onChange\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "optional": true,
+          "description": "Controlled selected tab."
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "optional": true,
+          "description": "Uncontrolled initial tab. Defaults to the first item — an iOS tab bar always has a selection."
+        },
+        {
+          "name": "onChange",
+          "type": "(value: string) => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` for the tablist. Default `strings.tabs` (\"Tabs\").",
+          "default": "strings.tabs"
+        },
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "optional": false,
+          "description": "`<TabBarItem>`s."
+        }
+      ]
+    },
+    "TextFieldProps": {
+      "kind": "interface",
+      "extends": [
+        "Omit<InputHTMLAttributes<HTMLInputElement>, \"size\">"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "label",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Bold inline label on the left of the well — the iOS grouped-form \"Name | value\" pattern."
+        },
+        {
+          "name": "helper",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Secondary hint under the field."
+        },
+        {
+          "name": "error",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Error message under the field; also tints the rim red and sets `aria-invalid`."
+        },
+        {
+          "name": "clearable",
+          "type": "boolean",
+          "optional": true,
+          "description": "Shows the gray ⓧ button while the field has a value. Clearing fires `onChange` (empty) and `onClear`.",
+          "default": "false"
+        },
+        {
+          "name": "onClear",
+          "type": "() => void",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "leadingIcon",
+          "type": "LucideIcon",
+          "optional": true,
+          "description": "Flat gray lucide icon on the left."
+        },
+        {
+          "name": "size",
+          "type": "\"md\" | \"lg\"",
+          "optional": true,
+          "description": "44 px (default) or 50 px tall.",
+          "default": "\"md\""
+        },
+        {
+          "name": "wrapperClassName",
+          "type": "string",
+          "optional": true,
+          "description": "`className` goes to the `<input>`; this one to the outer wrapper."
+        }
+      ]
+    },
+    "ToolbarButtonProps": {
+      "kind": "interface",
+      "extends": [
+        "ButtonHTMLAttributes<HTMLButtonElement>"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "icon",
+          "type": "LucideIcon",
+          "optional": false,
+          "description": "Any `lucide-react` icon — gray glass when idle, blue glass when `active`."
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": false,
+          "description": "Accessible name for the icon-only button; also shown as the native `title` tooltip."
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "optional": true,
+          "description": "Blue glass — the current page, a bookmarked item… Pass `aria-pressed` yourself for real toggles.",
+          "default": "false"
+        },
+        {
+          "name": "badge",
+          "type": "number | string",
+          "optional": true,
+          "description": "Red gel badge on the icon's top-right corner (`3`, `\"New\"`; numbers > 99 render `99+`)."
+        }
+      ]
+    },
+    "ToolbarProps": {
+      "kind": "interface",
+      "extends": [
+        "HTMLAttributes<HTMLDivElement>"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "tint",
+          "type": "\"black\" | \"blue\"",
+          "alias": "ToolbarTint",
+          "optional": true,
+          "description": "`black` glass (default) or the classic blue-gray bar.",
+          "default": "\"black\""
+        },
+        {
+          "name": "position",
+          "type": "\"bottom\" | \"top\"",
+          "alias": "ToolbarPosition",
+          "optional": true,
+          "description": "Which edge of the screen the bar sits on — decides where the 1 px black outline goes.",
+          "default": "\"bottom\""
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true,
+          "description": "`aria-label` for the toolbar. Default `strings.toolbar` (\"Toolbar\").",
+          "default": "strings.toolbar"
+        },
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "optional": false,
+          "description": "`<ToolbarButton>`s, `<ToolbarSpacer>`s, a `<ToolbarTitle>`, or `<BarButton>`s when an action needs a label."
+        }
+      ]
+    },
+    "ToolbarTitleProps": {
+      "kind": "interface",
+      "extends": [
+        "HTMLAttributes<HTMLDivElement>"
+      ],
+      "description": "",
+      "props": [
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "optional": false,
+          "description": "Primary line, e.g. `\"5 Unread\"`."
+        },
+        {
+          "name": "subtitle",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Small second line, e.g. `\"Updated 9/21/26 9:41 AM\"`."
+        }
+      ]
+    }
+  }
+}

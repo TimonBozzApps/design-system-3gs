@@ -15,6 +15,7 @@ import {
 } from "react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "../../lib/cn";
+import { useGsStrings } from "../../lib/i18n";
 import { Icon } from "../Icon";
 import "./SegmentedControl.css";
 
@@ -71,7 +72,7 @@ export interface SegmentedControlProps extends Omit<HTMLAttributes<HTMLDivElemen
   onChange?: (value: string) => void;
   size?: SegmentedControlSize;
   tint?: SegmentedControlTint;
-  /** `aria-label` for the group. Default `"Segments"`. */
+  /** `aria-label` for the group. Default `strings.segments` ("Segments"). */
   label?: string;
   /** Stretch to the container width. Default: intrinsic — every segment as wide as the widest. */
   block?: boolean;
@@ -95,7 +96,7 @@ export const SegmentedControl = forwardRef<HTMLDivElement, SegmentedControlProps
       onChange,
       size = "md",
       tint = "dark",
-      label = "Segments",
+      label,
       block = false,
       className,
       children,
@@ -104,6 +105,7 @@ export const SegmentedControl = forwardRef<HTMLDivElement, SegmentedControlProps
     },
     ref,
   ) {
+    const strings = useGsStrings();
     const segments = collectSegments(children);
     const isControlled = value !== undefined;
     const [internal, setInternal] = useState<string | undefined>(
@@ -171,7 +173,7 @@ export const SegmentedControl = forwardRef<HTMLDivElement, SegmentedControlProps
         <div
           ref={ref}
           role="radiogroup"
-          aria-label={label}
+          aria-label={label ?? strings.segments}
           className={cn(
             "gs-segmented",
             `gs-segmented--${size}`,

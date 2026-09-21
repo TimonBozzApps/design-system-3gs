@@ -14,6 +14,7 @@ export const meta: DemoMeta = {
 <ProgressBar />                      {/* indeterminate */}
 <ActivityIndicator />                {/* 20 px white */}
 <ActivityIndicator size={37} tone="gray" label="Syncing" />`,
+  propTypes: ["ProgressBarProps", "ActivityIndicatorProps"],
   props: [
     { name: "value", type: "number", note: "ProgressBar — 0..max; omit for indeterminate" },
     { name: "max", type: "number", note: "ProgressBar — default 100" },

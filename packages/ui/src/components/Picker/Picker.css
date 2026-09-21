@@ -71,14 +71,15 @@
   box-shadow: inset 0 0 0 1px var(--gs-picker-drum-outline);
 }
 
+/* the outer columns round the frame's inline-start / inline-end corners */
 .gs-picker__column:first-child {
-  border-top-left-radius: 4px;
-  border-bottom-left-radius: 4px;
+  border-start-start-radius: 4px;
+  border-end-start-radius: 4px;
 }
 
 .gs-picker__column:last-child {
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
+  border-start-end-radius: 4px;
+  border-end-end-radius: 4px;
 }
 
 /* focus ring, drawn on top of the shades so it stays crisp */
@@ -98,10 +99,15 @@
 }
 
 /* ---- divider between columns ------------------------------------------ */
+/* dark line on the inline-start half, light rim on the inline-end half */
 .gs-picker__divider {
   flex: 0 0 2px;
   width: 2px;
   background: linear-gradient(to right, var(--gs-picker-divider) 50%, var(--gs-picker-divider-rim) 50%);
+}
+
+[dir="rtl"] .gs-picker__divider {
+  background: linear-gradient(to left, var(--gs-picker-divider) 50%, var(--gs-picker-divider-rim) 50%);
 }
 
 /* ---- the drum (scroll container) -------------------------------------- */
@@ -153,8 +159,9 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.gs-picker__column--left .gs-picker__row  { text-align: left; }
-.gs-picker__column--right .gs-picker__row { text-align: right; }
+/* `align="left" | "right"` mean inline-start / inline-end, so they mirror in RTL */
+.gs-picker__column--left .gs-picker__row  { text-align: start; }
+.gs-picker__column--right .gs-picker__row { text-align: end; }
 
 .gs-picker__row--selected {
   color: var(--gs-picker-text-selected);
@@ -168,8 +175,7 @@
 .gs-picker__shade-top,
 .gs-picker__shade-bottom {
   position: absolute;
-  left: 0;
-  right: 0;
+  inset-inline: 0;
   height: 40%;
   z-index: 1;
   pointer-events: none;
@@ -188,8 +194,7 @@
 /* ---- the blue-glass selection bar ------------------------------------- */
 .gs-picker__selection {
   position: absolute;
-  left: 0;
-  right: 0;
+  inset-inline: 0;
   top: 50%;
   height: var(--gs-picker-row-height);
   transform: translateY(-50%);

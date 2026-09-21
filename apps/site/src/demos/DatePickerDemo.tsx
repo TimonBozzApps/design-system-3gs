@@ -24,6 +24,7 @@ export const meta: DemoMeta = {
   onChange={setStarts}
   minuteInterval={5}
 />`,
+  propTypes: ["DatePickerProps"],
   props: [
     { name: "mode", type: '"date" | "time" | "dateTime"', note: "which UIDatePicker preset, default date" },
     { name: "value", type: "Date", note: "controlled" },

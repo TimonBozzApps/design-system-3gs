@@ -12,6 +12,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "../../lib/cn";
+import { useGsStrings } from "../../lib/i18n";
 import "./Popover.css";
 
 export type PopoverPlacement = "top" | "bottom" | "left" | "right";
@@ -41,7 +42,7 @@ export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
   contained?: boolean;
   /** Default `true` — a click outside the panel closes it. */
   dismissOnOutside?: boolean;
-  /** `aria-label` for the `role="dialog"` panel when there is no heading inside. */
+  /** `aria-label` for the `role="dialog"` panel when there is no heading inside. Default `strings.dialog`. */
   label?: string;
   children: ReactNode;
 }
@@ -129,6 +130,7 @@ export const Popover = forwardRef<HTMLDivElement, PopoverProps>(function Popover
   },
   ref,
 ) {
+  const strings = useGsStrings();
   const panelRef = useRef<HTMLDivElement | null>(null);
   const setPanelRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -322,7 +324,7 @@ export const Popover = forwardRef<HTMLDivElement, PopoverProps>(function Popover
         className={cn("gs-popover", `gs-popover--${side}`, ready && "gs-popover--ready", className)}
         role="dialog"
         aria-modal="false"
-        aria-label={label}
+        aria-label={label ?? strings.dialog}
         tabIndex={-1}
         style={panelStyle}
         {...rest}

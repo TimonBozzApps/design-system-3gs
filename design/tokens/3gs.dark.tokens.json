@@ -1,0 +1,1148 @@
+{
+  "$description": "3GS UI — dark theme (default): black glass, --gs-* tokens from tokens.css.",
+  "$extensions": {
+    "com.3gs": {
+      "name": "3GS UI design tokens",
+      "version": "0.0.0",
+      "prefix": "--gs-",
+      "source": [
+        "packages/ui/src/tokens/tokens.css"
+      ],
+      "generator": "scripts/export-tokens.mjs",
+      "theme": "dark"
+    }
+  },
+  "font": {
+    "default": {
+      "$type": "fontFamily",
+      "$value": [
+        "Helvetica Neue",
+        "Helvetica",
+        "Arial",
+        "sans-serif"
+      ],
+      "$extensions": {
+        "com.3gs.css": "--gs-font"
+      }
+    },
+    "size-xs": {
+      "$type": "dimension",
+      "$value": "11px",
+      "$description": "tab-bar labels, badges",
+      "$extensions": {
+        "com.3gs.css": "--gs-font-size-xs"
+      }
+    },
+    "size-sm": {
+      "$type": "dimension",
+      "$value": "13px",
+      "$description": "secondary / footer text",
+      "$extensions": {
+        "com.3gs.css": "--gs-font-size-sm"
+      }
+    },
+    "size-md": {
+      "$type": "dimension",
+      "$value": "15px",
+      "$description": "detail text, back buttons",
+      "$extensions": {
+        "com.3gs.css": "--gs-font-size-md"
+      }
+    },
+    "size-lg": {
+      "$type": "dimension",
+      "$value": "17px",
+      "$description": "cell titles, inputs, buttons",
+      "$extensions": {
+        "com.3gs.css": "--gs-font-size-lg"
+      }
+    },
+    "size-xl": {
+      "$type": "dimension",
+      "$value": "20px",
+      "$description": "nav-bar titles",
+      "$extensions": {
+        "com.3gs.css": "--gs-font-size-xl"
+      }
+    }
+  },
+  "line": {
+    "height": {
+      "$type": "number",
+      "$value": 1.2,
+      "$extensions": {
+        "com.3gs.css": "--gs-line-height"
+      }
+    }
+  },
+  "black": {
+    "$type": "color",
+    "$value": "#000000",
+    "$extensions": {
+      "com.3gs.css": "--gs-black"
+    }
+  },
+  "white": {
+    "$type": "color",
+    "$value": "#ffffff",
+    "$extensions": {
+      "com.3gs.css": "--gs-white"
+    }
+  },
+  "gray": {
+    "100": {
+      "$type": "color",
+      "$value": "#f2f2f5",
+      "$extensions": {
+        "com.3gs.css": "--gs-gray-100"
+      }
+    },
+    "200": {
+      "$type": "color",
+      "$value": "#d9d9de",
+      "$extensions": {
+        "com.3gs.css": "--gs-gray-200"
+      }
+    },
+    "300": {
+      "$type": "color",
+      "$value": "#b8b8bd",
+      "$extensions": {
+        "com.3gs.css": "--gs-gray-300"
+      }
+    },
+    "400": {
+      "$type": "color",
+      "$value": "#8e8e93",
+      "$extensions": {
+        "com.3gs.css": "--gs-gray-400"
+      }
+    },
+    "500": {
+      "$type": "color",
+      "$value": "#58585c",
+      "$extensions": {
+        "com.3gs.css": "--gs-gray-500"
+      }
+    },
+    "600": {
+      "$type": "color",
+      "$value": "#3a3a3e",
+      "$extensions": {
+        "com.3gs.css": "--gs-gray-600"
+      }
+    },
+    "700": {
+      "$type": "color",
+      "$value": "#2a2a2d",
+      "$extensions": {
+        "com.3gs.css": "--gs-gray-700"
+      }
+    },
+    "800": {
+      "$type": "color",
+      "$value": "#1c1c1e",
+      "$extensions": {
+        "com.3gs.css": "--gs-gray-800"
+      }
+    },
+    "900": {
+      "$type": "color",
+      "$value": "#131315",
+      "$extensions": {
+        "com.3gs.css": "--gs-gray-900"
+      }
+    }
+  },
+  "text": {
+    "default": {
+      "$type": "color",
+      "$value": "#ffffff",
+      "$extensions": {
+        "com.3gs.css": "--gs-text"
+      }
+    },
+    "secondary": {
+      "$type": "color",
+      "$value": "#a1a1a6",
+      "$extensions": {
+        "com.3gs.css": "--gs-text-secondary"
+      }
+    },
+    "tertiary": {
+      "$type": "color",
+      "$value": "#6f6f75",
+      "$extensions": {
+        "com.3gs.css": "--gs-text-tertiary"
+      }
+    },
+    "link": {
+      "$type": "color",
+      "$value": "#8cb6ff",
+      "$extensions": {
+        "com.3gs.css": "--gs-text-link"
+      }
+    },
+    "on-blue": {
+      "$type": "color",
+      "$value": "#ffffff",
+      "$extensions": {
+        "com.3gs.css": "--gs-text-on-blue"
+      }
+    },
+    "disabled": {
+      "$type": "color",
+      "$value": "#ffffff59",
+      "$extensions": {
+        "com.3gs.css": "--gs-text-disabled"
+      }
+    },
+    "shadow-dark": {
+      "$type": "shadow",
+      "$value": {
+        "color": "#000000b3",
+        "offsetX": "0px",
+        "offsetY": "-1px",
+        "blur": "0px",
+        "spread": "0px",
+        "inset": false
+      },
+      "$description": "white text on dark gel",
+      "$extensions": {
+        "com.3gs.css": "--gs-text-shadow-dark",
+        "com.3gs.cssValue": "0 -1px 0 rgba(0, 0, 0, 0.7)"
+      }
+    },
+    "shadow-light": {
+      "$type": "shadow",
+      "$value": {
+        "color": "#ffffff99",
+        "offsetX": "0px",
+        "offsetY": "1px",
+        "blur": "0px",
+        "spread": "0px",
+        "inset": false
+      },
+      "$description": "dark text on light gel",
+      "$extensions": {
+        "com.3gs.css": "--gs-text-shadow-light",
+        "com.3gs.cssValue": "0 1px 0 rgba(255, 255, 255, 0.6)"
+      }
+    },
+    "on-neutral": {
+      "$type": "color",
+      "$value": "#ffffff",
+      "$description": "text on the neutral gel",
+      "$extensions": {
+        "com.3gs.css": "--gs-text-on-neutral"
+      }
+    },
+    "shadow-on-neutral": {
+      "$type": "shadow",
+      "$value": {
+        "color": "#000000b3",
+        "offsetX": "0px",
+        "offsetY": "-1px",
+        "blur": "0px",
+        "spread": "0px",
+        "inset": false
+      },
+      "$extensions": {
+        "com.3gs.css": "--gs-text-shadow-on-neutral",
+        "com.3gs.cssValue": "0 -1px 0 rgba(0, 0, 0, 0.7)",
+        "com.3gs.alias": "--gs-text-shadow-dark"
+      }
+    },
+    "on-bar": {
+      "$type": "color",
+      "$value": "#ffffff",
+      "$description": "bar titles / bar-button labels",
+      "$extensions": {
+        "com.3gs.css": "--gs-text-on-bar"
+      }
+    },
+    "shadow-on-bar": {
+      "$type": "shadow",
+      "$value": {
+        "color": "#000000b3",
+        "offsetX": "0px",
+        "offsetY": "-1px",
+        "blur": "0px",
+        "spread": "0px",
+        "inset": false
+      },
+      "$extensions": {
+        "com.3gs.css": "--gs-text-shadow-on-bar",
+        "com.3gs.cssValue": "0 -1px 0 rgba(0, 0, 0, 0.7)",
+        "com.3gs.alias": "--gs-text-shadow-dark"
+      }
+    },
+    "emboss": {
+      "$type": "shadow",
+      "$value": {
+        "color": "#000000b3",
+        "offsetX": "0px",
+        "offsetY": "-1px",
+        "blur": "0px",
+        "spread": "0px",
+        "inset": false
+      },
+      "$description": "text sitting on --gs-surface (cells, labels)",
+      "$extensions": {
+        "com.3gs.css": "--gs-text-emboss",
+        "com.3gs.cssValue": "0 -1px 0 rgba(0, 0, 0, 0.7)",
+        "com.3gs.alias": "--gs-text-shadow-dark"
+      }
+    }
+  },
+  "blue": {
+    "100": {
+      "$type": "color",
+      "$value": "#9ec4ff",
+      "$extensions": {
+        "com.3gs.css": "--gs-blue-100"
+      }
+    },
+    "300": {
+      "$type": "color",
+      "$value": "#5b9bf0",
+      "$extensions": {
+        "com.3gs.css": "--gs-blue-300"
+      }
+    },
+    "500": {
+      "$type": "color",
+      "$value": "#2f74d8",
+      "$extensions": {
+        "com.3gs.css": "--gs-blue-500"
+      }
+    },
+    "700": {
+      "$type": "color",
+      "$value": "#1d4fa4",
+      "$extensions": {
+        "com.3gs.css": "--gs-blue-700"
+      }
+    },
+    "900": {
+      "$type": "color",
+      "$value": "#12376f",
+      "$extensions": {
+        "com.3gs.css": "--gs-blue-900"
+      }
+    }
+  },
+  "red": {
+    "300": {
+      "$type": "color",
+      "$value": "#ff7b76",
+      "$extensions": {
+        "com.3gs.css": "--gs-red-300"
+      }
+    },
+    "500": {
+      "$type": "color",
+      "$value": "#d8332e",
+      "$extensions": {
+        "com.3gs.css": "--gs-red-500"
+      }
+    },
+    "700": {
+      "$type": "color",
+      "$value": "#9c1712",
+      "$extensions": {
+        "com.3gs.css": "--gs-red-700"
+      }
+    }
+  },
+  "green": {
+    "500": {
+      "$type": "color",
+      "$value": "#4cd964",
+      "$extensions": {
+        "com.3gs.css": "--gs-green-500"
+      }
+    }
+  },
+  "screen": {
+    "bg": {
+      "$type": "color",
+      "$value": "#000000",
+      "$extensions": {
+        "com.3gs.css": "--gs-screen-bg"
+      }
+    }
+  },
+  "pinstripe": {
+    "bg": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#151517",
+          "position": 0
+        },
+        {
+          "color": "#151517",
+          "position": 0.8571
+        },
+        {
+          "color": "#1b1b1e",
+          "position": 0.8571
+        },
+        {
+          "color": "#1b1b1e",
+          "position": 1
+        }
+      ],
+      "$description": "the classic grouped-table pinstripe, dark edition",
+      "$extensions": {
+        "com.3gs.css": "--gs-pinstripe-bg",
+        "com.3gs.angle": 90,
+        "com.3gs.cssValue": "repeating-linear-gradient(to right, #151517 0px, #151517 6px, #1b1b1e 6px, #1b1b1e 7px)",
+        "com.3gs.repeating": true,
+        "com.3gs.period": "7px"
+      }
+    }
+  },
+  "surface": {
+    "default": {
+      "$type": "color",
+      "$value": "#2c2c2f",
+      "$extensions": {
+        "com.3gs.css": "--gs-surface"
+      }
+    },
+    "raised": {
+      "$type": "color",
+      "$value": "#38383c",
+      "$extensions": {
+        "com.3gs.css": "--gs-surface-raised"
+      }
+    },
+    "sunken": {
+      "$type": "color",
+      "$value": "#1a1a1c",
+      "$extensions": {
+        "com.3gs.css": "--gs-surface-sunken"
+      }
+    },
+    "gloss": {
+      "$type": "string",
+      "$value": "none",
+      "$description": "extra highlight over cells (light: subtle)",
+      "$extensions": {
+        "com.3gs.css": "--gs-surface-gloss"
+      }
+    }
+  },
+  "separator": {
+    "default": {
+      "$type": "color",
+      "$value": "#000000d9",
+      "$extensions": {
+        "com.3gs.css": "--gs-separator"
+      }
+    },
+    "light": {
+      "$type": "color",
+      "$value": "#ffffff17",
+      "$extensions": {
+        "com.3gs.css": "--gs-separator-light"
+      }
+    }
+  },
+  "gloss": {
+    "default": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#ffffff4d",
+          "position": 0
+        },
+        {
+          "color": "#ffffff1f",
+          "position": 0.5
+        },
+        {
+          "color": "#ffffff00",
+          "position": 0.505
+        },
+        {
+          "color": "#ffffff00",
+          "position": 1
+        }
+      ],
+      "$description": "glass highlight: hard split at 50% = the signature iOS 3 shine",
+      "$extensions": {
+        "com.3gs.css": "--gs-gloss",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, rgba(255, 255, 255, 0.30) 0%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.00) 50.5%, rgba(255, 255, 255, 0.00) 100%)"
+      }
+    },
+    "soft": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#ffffff2e",
+          "position": 0
+        },
+        {
+          "color": "#ffffff0f",
+          "position": 0.5
+        },
+        {
+          "color": "#ffffff00",
+          "position": 0.51
+        },
+        {
+          "color": "#ffffff00",
+          "position": 1
+        }
+      ],
+      "$extensions": {
+        "com.3gs.css": "--gs-gloss-soft",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0.00) 51%, rgba(255, 255, 255, 0.00) 100%)"
+      }
+    }
+  },
+  "gradient": {
+    "bar": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#6e6e72",
+          "position": 0
+        },
+        {
+          "color": "#4b4b4f",
+          "position": 0.49
+        },
+        {
+          "color": "#333336",
+          "position": 0.5
+        },
+        {
+          "color": "#1f1f22",
+          "position": 1
+        }
+      ],
+      "$description": "black bar (UIBarStyleBlack): nav bar, tab bar, toolbars",
+      "$extensions": {
+        "com.3gs.css": "--gs-gradient-bar",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, #6e6e72 0%, #4b4b4f 49%, #333336 50%, #1f1f22 100%)"
+      }
+    },
+    "dark": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#5a5a5f",
+          "position": 0
+        },
+        {
+          "color": "#414145",
+          "position": 0.49
+        },
+        {
+          "color": "#303034",
+          "position": 0.5
+        },
+        {
+          "color": "#232326",
+          "position": 1
+        }
+      ],
+      "$description": "dark gel: default buttons, raised cells",
+      "$extensions": {
+        "com.3gs.css": "--gs-gradient-dark",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, #5a5a5f 0%, #414145 49%, #303034 50%, #232326 100%)"
+      }
+    },
+    "dark-pressed": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#1c1c1f",
+          "position": 0
+        },
+        {
+          "color": "#26262a",
+          "position": 0.5
+        },
+        {
+          "color": "#2d2d31",
+          "position": 1
+        }
+      ],
+      "$extensions": {
+        "com.3gs.css": "--gs-gradient-dark-pressed",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, #1c1c1f 0%, #26262a 50%, #2d2d31 100%)"
+      }
+    },
+    "blue": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#8fb8f5",
+          "position": 0
+        },
+        {
+          "color": "#4d8ae4",
+          "position": 0.49
+        },
+        {
+          "color": "#2a6bd2",
+          "position": 0.5
+        },
+        {
+          "color": "#1d55b5",
+          "position": 1
+        }
+      ],
+      "$description": "blue gel: primary buttons, switch ON, active tab icons",
+      "$extensions": {
+        "com.3gs.css": "--gs-gradient-blue",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, #8fb8f5 0%, #4d8ae4 49%, #2a6bd2 50%, #1d55b5 100%)"
+      }
+    },
+    "blue-pressed": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#17427f",
+          "position": 0
+        },
+        {
+          "color": "#1f56a8",
+          "position": 0.5
+        },
+        {
+          "color": "#2b66bf",
+          "position": 1
+        }
+      ],
+      "$extensions": {
+        "com.3gs.css": "--gs-gradient-blue-pressed",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, #17427f 0%, #1f56a8 50%, #2b66bf 100%)"
+      }
+    },
+    "red": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#f08a86",
+          "position": 0
+        },
+        {
+          "color": "#d9403b",
+          "position": 0.49
+        },
+        {
+          "color": "#c1221d",
+          "position": 0.5
+        },
+        {
+          "color": "#9a1511",
+          "position": 1
+        }
+      ],
+      "$description": "red gel: destructive",
+      "$extensions": {
+        "com.3gs.css": "--gs-gradient-red",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, #f08a86 0%, #d9403b 49%, #c1221d 50%, #9a1511 100%)"
+      }
+    },
+    "red-pressed": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#6f0e0b",
+          "position": 0
+        },
+        {
+          "color": "#8d1713",
+          "position": 0.5
+        },
+        {
+          "color": "#a11d19",
+          "position": 1
+        }
+      ],
+      "$extensions": {
+        "com.3gs.css": "--gs-gradient-red-pressed",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, #6f0e0b 0%, #8d1713 50%, #a11d19 100%)"
+      }
+    },
+    "barbutton": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#5a5a5f",
+          "position": 0
+        },
+        {
+          "color": "#414145",
+          "position": 0.49
+        },
+        {
+          "color": "#303034",
+          "position": 0.5
+        },
+        {
+          "color": "#232326",
+          "position": 1
+        }
+      ],
+      "$description": "BarButton / SegmentedControl gel inside bars",
+      "$extensions": {
+        "com.3gs.css": "--gs-gradient-barbutton",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, #5a5a5f 0%, #414145 49%, #303034 50%, #232326 100%)",
+        "com.3gs.alias": "--gs-gradient-dark"
+      }
+    },
+    "barbutton-pressed": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#1c1c1f",
+          "position": 0
+        },
+        {
+          "color": "#26262a",
+          "position": 0.5
+        },
+        {
+          "color": "#2d2d31",
+          "position": 1
+        }
+      ],
+      "$extensions": {
+        "com.3gs.css": "--gs-gradient-barbutton-pressed",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, #1c1c1f 0%, #26262a 50%, #2d2d31 100%)",
+        "com.3gs.alias": "--gs-gradient-dark-pressed"
+      }
+    },
+    "neutral": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#5a5a5f",
+          "position": 0
+        },
+        {
+          "color": "#414145",
+          "position": 0.49
+        },
+        {
+          "color": "#303034",
+          "position": 0.5
+        },
+        {
+          "color": "#232326",
+          "position": 1
+        }
+      ],
+      "$description": "default Button / standalone neutral gel",
+      "$extensions": {
+        "com.3gs.css": "--gs-gradient-neutral",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, #5a5a5f 0%, #414145 49%, #303034 50%, #232326 100%)",
+        "com.3gs.alias": "--gs-gradient-dark"
+      }
+    },
+    "neutral-pressed": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#1c1c1f",
+          "position": 0
+        },
+        {
+          "color": "#26262a",
+          "position": 0.5
+        },
+        {
+          "color": "#2d2d31",
+          "position": 1
+        }
+      ],
+      "$extensions": {
+        "com.3gs.css": "--gs-gradient-neutral-pressed",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, #1c1c1f 0%, #26262a 50%, #2d2d31 100%)",
+        "com.3gs.alias": "--gs-gradient-dark-pressed"
+      }
+    }
+  },
+  "icon": {
+    "inactive-top": {
+      "$type": "color",
+      "$value": "#b9b9be",
+      "$description": "icon gradients (used by <Icon> via SVG defs)",
+      "$extensions": {
+        "com.3gs.css": "--gs-icon-inactive-top"
+      }
+    },
+    "inactive-bottom": {
+      "$type": "color",
+      "$value": "#5f5f64",
+      "$extensions": {
+        "com.3gs.css": "--gs-icon-inactive-bottom"
+      }
+    },
+    "active-top": {
+      "$type": "color",
+      "$value": "#a6d0ff",
+      "$extensions": {
+        "com.3gs.css": "--gs-icon-active-top"
+      }
+    },
+    "active-bottom": {
+      "$type": "color",
+      "$value": "#2a70e0",
+      "$extensions": {
+        "com.3gs.css": "--gs-icon-active-bottom"
+      }
+    }
+  },
+  "radius": {
+    "sm": {
+      "$type": "dimension",
+      "$value": "5px",
+      "$extensions": {
+        "com.3gs.css": "--gs-radius-sm"
+      }
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": "8px",
+      "$description": "buttons",
+      "$extensions": {
+        "com.3gs.css": "--gs-radius-md"
+      }
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": "10px",
+      "$description": "grouped cells, alerts",
+      "$extensions": {
+        "com.3gs.css": "--gs-radius-lg"
+      }
+    },
+    "pill": {
+      "$type": "dimension",
+      "$value": "999px",
+      "$extensions": {
+        "com.3gs.css": "--gs-radius-pill"
+      }
+    }
+  },
+  "rim": {
+    "light": {
+      "$type": "shadow",
+      "$value": {
+        "color": "#ffffff38",
+        "offsetX": "0px",
+        "offsetY": "1px",
+        "blur": "0px",
+        "spread": "0px",
+        "inset": true
+      },
+      "$description": "top inner highlight",
+      "$extensions": {
+        "com.3gs.css": "--gs-rim-light",
+        "com.3gs.cssValue": "inset 0 1px 0 rgba(255, 255, 255, 0.22)"
+      }
+    },
+    "dark": {
+      "$type": "shadow",
+      "$value": {
+        "color": "#000000bf",
+        "offsetX": "0px",
+        "offsetY": "1px",
+        "blur": "0px",
+        "spread": "0px",
+        "inset": false
+      },
+      "$description": "bottom drop edge",
+      "$extensions": {
+        "com.3gs.css": "--gs-rim-dark",
+        "com.3gs.cssValue": "0 1px 0 rgba(0, 0, 0, 0.75)"
+      }
+    }
+  },
+  "emboss": {
+    "$type": "shadow",
+    "$value": [
+      {
+        "color": "#ffffff38",
+        "offsetX": "0px",
+        "offsetY": "1px",
+        "blur": "0px",
+        "spread": "0px",
+        "inset": true
+      },
+      {
+        "color": "#000000bf",
+        "offsetX": "0px",
+        "offsetY": "1px",
+        "blur": "0px",
+        "spread": "0px",
+        "inset": false
+      }
+    ],
+    "$extensions": {
+      "com.3gs.css": "--gs-emboss",
+      "com.3gs.cssValue": "inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 1px 0 rgba(0, 0, 0, 0.75)"
+    }
+  },
+  "inset": {
+    "$type": "shadow",
+    "$value": [
+      {
+        "color": "#000000bf",
+        "offsetX": "0px",
+        "offsetY": "2px",
+        "blur": "5px",
+        "spread": "0px",
+        "inset": true
+      },
+      {
+        "color": "#0000008c",
+        "offsetX": "0px",
+        "offsetY": "0px",
+        "blur": "0px",
+        "spread": "1px",
+        "inset": true
+      }
+    ],
+    "$extensions": {
+      "com.3gs.css": "--gs-inset",
+      "com.3gs.cssValue": "inset 0 2px 5px rgba(0, 0, 0, 0.75), inset 0 0 0 1px rgba(0, 0, 0, 0.55)"
+    }
+  },
+  "shadow": {
+    "pop": {
+      "$type": "shadow",
+      "$value": [
+        {
+          "color": "#000000b3",
+          "offsetX": "0px",
+          "offsetY": "8px",
+          "blur": "24px",
+          "spread": "0px",
+          "inset": false
+        },
+        {
+          "color": "#00000080",
+          "offsetX": "0px",
+          "offsetY": "2px",
+          "blur": "6px",
+          "spread": "0px",
+          "inset": false
+        }
+      ],
+      "$extensions": {
+        "com.3gs.css": "--gs-shadow-pop",
+        "com.3gs.cssValue": "0 8px 24px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.5)"
+      }
+    }
+  },
+  "border": {
+    "default": {
+      "$type": "border",
+      "$value": {
+        "color": "#000000e6",
+        "width": "1px",
+        "style": "solid"
+      },
+      "$extensions": {
+        "com.3gs.css": "--gs-border"
+      }
+    },
+    "light": {
+      "$type": "border",
+      "$value": {
+        "color": "#ffffff24",
+        "width": "1px",
+        "style": "solid"
+      },
+      "$extensions": {
+        "com.3gs.css": "--gs-border-light"
+      }
+    }
+  },
+  "space": {
+    "1": {
+      "$type": "dimension",
+      "$value": "4px",
+      "$extensions": {
+        "com.3gs.css": "--gs-space-1"
+      }
+    },
+    "2": {
+      "$type": "dimension",
+      "$value": "8px",
+      "$extensions": {
+        "com.3gs.css": "--gs-space-2"
+      }
+    },
+    "3": {
+      "$type": "dimension",
+      "$value": "12px",
+      "$extensions": {
+        "com.3gs.css": "--gs-space-3"
+      }
+    },
+    "4": {
+      "$type": "dimension",
+      "$value": "16px",
+      "$extensions": {
+        "com.3gs.css": "--gs-space-4"
+      }
+    },
+    "5": {
+      "$type": "dimension",
+      "$value": "20px",
+      "$extensions": {
+        "com.3gs.css": "--gs-space-5"
+      }
+    }
+  },
+  "control": {
+    "height": {
+      "$type": "dimension",
+      "$value": "44px",
+      "$description": "cells, nav bars, buttons",
+      "$extensions": {
+        "com.3gs.css": "--gs-control-height"
+      }
+    }
+  },
+  "bar": {
+    "height": {
+      "$type": "dimension",
+      "$value": "44px",
+      "$extensions": {
+        "com.3gs.css": "--gs-bar-height"
+      }
+    },
+    "border": {
+      "$type": "color",
+      "$value": "#000000",
+      "$description": "outline of nav/tool bars",
+      "$extensions": {
+        "com.3gs.css": "--gs-bar-border"
+      }
+    },
+    "rim": {
+      "$type": "color",
+      "$value": "#ffffff40",
+      "$description": "light rim inside a bar's top edge",
+      "$extensions": {
+        "com.3gs.css": "--gs-bar-rim"
+      }
+    }
+  },
+  "tabbar": {
+    "height": {
+      "$type": "dimension",
+      "$value": "49px",
+      "$extensions": {
+        "com.3gs.css": "--gs-tabbar-height"
+      }
+    }
+  },
+  "statusbar": {
+    "height": {
+      "$type": "dimension",
+      "$value": "20px",
+      "$extensions": {
+        "com.3gs.css": "--gs-statusbar-height"
+      }
+    },
+    "gradient": {
+      "$type": "gradient",
+      "$value": [
+        {
+          "color": "#464649",
+          "position": 0
+        },
+        {
+          "color": "#2f2f32",
+          "position": 0.49
+        },
+        {
+          "color": "#1f1f21",
+          "position": 0.5
+        },
+        {
+          "color": "#0f0f10",
+          "position": 1
+        }
+      ],
+      "$extensions": {
+        "com.3gs.css": "--gs-statusbar-gradient",
+        "com.3gs.angle": 180,
+        "com.3gs.cssValue": "linear-gradient(to bottom, #464649 0%, #2f2f32 49%, #1f1f21 50%, #0f0f10 100%)"
+      }
+    }
+  },
+  "header": {
+    "text": {
+      "$type": "color",
+      "$value": "#a1a1a6",
+      "$description": "grouped-list section headers",
+      "$extensions": {
+        "com.3gs.css": "--gs-header-text",
+        "com.3gs.alias": "--gs-text-secondary"
+      }
+    }
+  },
+  "ease": {
+    "$type": "cubicBezier",
+    "$value": [
+      0.25,
+      0.1,
+      0.25,
+      1
+    ],
+    "$extensions": {
+      "com.3gs.css": "--gs-ease"
+    }
+  },
+  "duration": {
+    "$type": "duration",
+    "$value": "160ms",
+    "$extensions": {
+      "com.3gs.css": "--gs-duration"
+    }
+  },
+  "focus": {
+    "ring": {
+      "$type": "shadow",
+      "$value": {
+        "color": "#8fb8f5d9",
+        "offsetX": "0px",
+        "offsetY": "0px",
+        "blur": "0px",
+        "spread": "2px",
+        "inset": false
+      },
+      "$extensions": {
+        "com.3gs.css": "--gs-focus-ring",
+        "com.3gs.cssValue": "0 0 0 2px rgba(143, 184, 245, 0.85)"
+      }
+    }
+  }
+}

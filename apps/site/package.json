@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node ../../scripts/extract-props.mjs",
     "dev": "vite",
+    "prebuild": "node ../../scripts/extract-props.mjs",
     "build": "tsc --noEmit -p tsconfig.json && vite build",
+    "props": "node ../../scripts/extract-props.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "preview": "vite preview"
   },

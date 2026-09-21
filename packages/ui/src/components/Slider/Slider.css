@@ -34,8 +34,8 @@
     0 0 0 1px rgba(0, 0, 0, 0.85),
     0 1px 2px rgba(0, 0, 0, 0.6),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  /* blue fill width: from the track's left edge to the knob's centre. The knob
-     travels over (track − knob) px, so a plain percentage would drift under it. */
+  /* blue fill width: from the track's inline-start edge to the knob's centre. The
+     knob travels over (track − knob) px, so a plain percentage would drift under it. */
   --gs-slider-fill: calc(
     var(--gs-slider-thumb) / 2 +
       (100% - var(--gs-slider-thumb)) * var(--gs-slider-pct) / 100
@@ -99,6 +99,16 @@
   box-shadow: var(--gs-inset);
 }
 
+/* right-to-left: a native range runs min → max from the right, so the fill
+   layer is anchored to the right edge instead of the (default) left one */
+:is([dir="rtl"] .gs-slider__input, .gs-slider__input:dir(rtl))::-webkit-slider-runnable-track {
+  background-position: 100% 0;
+}
+
+:is([dir="rtl"] .gs-slider__input, .gs-slider__input:dir(rtl))::-moz-range-track {
+  background-position: 100% 0;
+}
+
 /* ---- thumb: the silver gel knob ---------------------------------------- */
 .gs-slider__input::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -157,7 +167,7 @@
   font-weight: 400;
   font-variant-numeric: tabular-nums;
   color: var(--gs-text-secondary);
-  text-align: right;
+  text-align: end;
   text-shadow: var(--gs-text-emboss);
 }
 

@@ -7,7 +7,18 @@ export interface DemoMeta {
   description: string;
   /** Minimal JSX usage snippet shown next to the phone. */
   usage: string;
-  /** Prop names worth calling out, shown as a compact list. */
+  /**
+   * Exported prop interfaces to document, e.g. `["ListProps", "ListItemProps"]`.
+   * Their tables are generated from the library's TypeScript types
+   * (`pnpm --filter site props` → `generated/props.json`).
+   */
+  propTypes?: string[];
+  /**
+   * Hand-written hints. With `propTypes` set, a hint whose `name` matches a
+   * generated row (`"variant"`, `"header / footer"`, `"TabBarItem.badge"`) is
+   * appended to that row's description; without `propTypes` they render as
+   * the compact list.
+   */
   props?: Array<{ name: string; type: string; note?: string }>;
 }
 

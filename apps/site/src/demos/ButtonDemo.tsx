@@ -10,6 +10,7 @@ export const meta: DemoMeta = {
     "Gel push buttons in the three iOS 3 tints — dark, blue (\"Done\") and red (\"Delete Contact\"). " +
     "Vertical gradient with the hard 50 % highlight, black outline, light inner rim; pressing drops the gloss and sinks the gel.",
   usage: `<Button variant="primary" icon={Check}>Done</Button>`,
+  propTypes: ["ButtonProps"],
   props: [
     { name: "variant", type: '"default" | "primary" | "destructive"', note: "dark / blue / red gel" },
     { name: "size", type: '"sm" | "md" | "lg"', note: "30 / 44 / 50 px tall" },

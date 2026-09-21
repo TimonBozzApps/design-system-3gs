@@ -7,6 +7,7 @@ import {
   type MouseEvent,
 } from "react";
 import { cn } from "../../lib/cn";
+import { useGsStrings } from "../../lib/i18n";
 import "./PageControl.css";
 
 export type PageControlSize =
@@ -23,7 +24,7 @@ export interface PageControlProps extends Omit<HTMLAttributes<HTMLDivElement>, "
   /** Uncontrolled initial page, 0-based. Default `0`. */
   defaultValue?: number;
   onChange?: (page: number) => void;
-  /** `aria-label` for the tablist. Default `"Pages"`. */
+  /** `aria-label` for the tablist. Default `strings.pages` ("Pages"). */
   label?: string;
   /** Render nothing for 0 or 1 pages (`UIPageControl.hidesForSinglePage`). Default `true`. */
   hideForSinglePage?: boolean;
@@ -53,7 +54,7 @@ export const PageControl = forwardRef<HTMLDivElement, PageControlProps>(function
     value,
     defaultValue = 0,
     onChange,
-    label = "Pages",
+    label,
     hideForSinglePage = true,
     size = "sm",
     className,
@@ -63,6 +64,7 @@ export const PageControl = forwardRef<HTMLDivElement, PageControlProps>(function
   },
   ref,
 ) {
+  const strings = useGsStrings();
   const isControlled = value !== undefined;
   const [internal, setInternal] = useState(defaultValue);
   const current = clampPage(isControlled ? value : internal, count);
@@ -123,7 +125,7 @@ export const PageControl = forwardRef<HTMLDivElement, PageControlProps>(function
     <div
       ref={ref}
       role="tablist"
-      aria-label={label}
+      aria-label={label ?? strings.pages}
       aria-orientation="horizontal"
       className={cn("gs-pagecontrol", `gs-pagecontrol--${size}`, className)}
       onClick={handleClick}
@@ -138,7 +140,7 @@ export const PageControl = forwardRef<HTMLDivElement, PageControlProps>(function
             type="button"
             role="tab"
             aria-selected={selected}
-            aria-label={`Page ${index + 1} of ${pages.length}`}
+            aria-label={strings.pageOf(index + 1, pages.length)}
             tabIndex={selected ? 0 : -1}
             className={cn("gs-pagecontrol__page", selected && "gs-pagecontrol__page--current")}
             onClick={() => select(index)}

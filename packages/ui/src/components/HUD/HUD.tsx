@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useRef, type HTMLAttributes, type ReactNode } fr
 import { createPortal } from "react-dom";
 import { Check, X } from "lucide-react";
 import { cn } from "../../lib/cn";
+import { useGsStrings } from "../../lib/i18n";
 import { Icon } from "../Icon";
 import { ActivityIndicator, ProgressBar } from "../Progress";
 import "./HUD.css";
@@ -86,6 +87,7 @@ export const HUD = forwardRef<HTMLDivElement, HUDProps>(function HUD(
 ) {
   // Keep the latest onClose reachable from the timer without restarting it
   // on every render (callers usually pass an inline arrow).
+  const strings = useGsStrings();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
@@ -116,7 +118,7 @@ export const HUD = forwardRef<HTMLDivElement, HUDProps>(function HUD(
             value={progress}
             size="md"
             tint="gray"
-            label={typeof title === "string" ? title : "Progress"}
+            label={typeof title === "string" ? title : strings.progress}
           />
         </div>
       );

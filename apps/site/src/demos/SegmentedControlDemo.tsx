@@ -13,6 +13,7 @@ export const meta: DemoMeta = {
   <Segment value="week">Week</Segment>
   <Segment value="month">Month</Segment>
 </SegmentedControl>`,
+  propTypes: ["SegmentedControlProps", "SegmentProps"],
   props: [
     { name: "value", type: "string", note: "controlled selected segment" },
     {

@@ -8,6 +8,7 @@ export const meta: DemoMeta = {
   description:
     "The 320×216 on-screen keyboard in its dark alert appearance (UIKeyboardAppearanceAlert): gel letter keys, darker function keys, the enlarged popup bubble over a pressed key, shift / caps lock, and the blue return key for Go / Search / Done / Send / Next. Bind it to a value and it types.",
   usage: `<Keyboard value={text} onChange={setText} returnKey="Send" autoCapitalize onReturn={send} />`,
+  propTypes: ["KeyboardProps"],
   props: [
     { name: "value", type: "string", note: "high-level binding: the keyboard appends / backspaces this string" },
     { name: "onChange", type: "(value: string) => void", note: "receives the edited string" },

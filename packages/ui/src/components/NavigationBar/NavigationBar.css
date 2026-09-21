@@ -81,7 +81,7 @@
   --gs-barbutton-gel: var(--gs-gradient-barbutton);
   --gs-barbutton-gel-pressed: var(--gs-gradient-barbutton-pressed);
   --gs-barbutton-text-shadow: var(--gs-text-shadow-on-bar);
-  /* how far the back button's arrow sticks out to the left */
+  /* how far the back button's arrow sticks out on the inline-start side */
   --gs-barbutton-point: 9px;
 
   position: relative;
@@ -157,7 +157,7 @@
      be reused): black on the black bar, the bar's own outline colour in light */
   --gs-barbutton-outline: var(--gs-black);
 
-  padding-left: 16px;
+  padding-inline-start: 16px; /* room for the point, on the inline-start side */
   border: 0;
   background: none;
   box-shadow: none;
@@ -217,4 +217,15 @@
 
 .gs-barbutton--back:focus-visible {
   box-shadow: var(--gs-focus-ring);
+}
+
+/* --- right-to-left ---------------------------------------------------------
+   The point belongs on the inline-start side, which is the right edge in RTL.
+   Both clipped layers are flipped in place (their gradients and rims are
+   vertical, so nothing else changes); the label is not a child of either
+   pseudo-element, so it keeps its glyphs the right way round, and the
+   padding-inline-start above already moved the extra room to the right. */
+:is([dir="rtl"] .gs-barbutton--back, .gs-barbutton--back:dir(rtl))::before,
+:is([dir="rtl"] .gs-barbutton--back, .gs-barbutton--back:dir(rtl))::after {
+  transform: scaleX(-1);
 }

@@ -10,6 +10,7 @@ import {
 } from "react";
 import { ArrowBigUp, Delete } from "lucide-react";
 import { cn } from "../../lib/cn";
+import { useGsStrings, type GsStrings } from "../../lib/i18n";
 import { Icon } from "../Icon";
 import "./Keyboard.css";
 
@@ -26,7 +27,10 @@ export interface KeyboardProps
   onKey?: (key: string) => void;
   onBackspace?: () => void;
   onReturn?: () => void;
-  /** Label of the return key. Anything but `"return"` renders as the blue gel key (`UIReturnKeyType`). */
+  /**
+   * The return key's type (`UIReturnKeyType`). Anything but `"return"` renders as the blue gel key.
+   * The visible text is looked up in the provider strings (`return`, `go`, `search`, `done`, `send`, `next`).
+   */
   returnKey?: KeyboardReturnKey;
   /** Controlled layer. Leave undefined to let the keyboard manage its own, starting at `"letters"`. */
   layer?: KeyboardLayer;
@@ -36,7 +40,7 @@ export interface KeyboardProps
   /** Shift auto-enables on an empty value or after `". "`. Only acts through the `value`/`onChange` binding. */
   autoCapitalize?: boolean;
   disabled?: boolean;
-  /** Accessible name (`aria-label`). Default `"Keyboard"`. */
+  /** Accessible name (`aria-label`). Default `strings.keyboard` ("Keyboard"). */
   label?: string;
 }
 
@@ -81,10 +85,24 @@ const LAYOUTS: Record<KeyboardLayer, KeyDef[][]> = {
   ],
 };
 
-const LAYER_LABEL: Record<KeyboardLayer, string> = {
+/** Keys of `GsStrings` whose value is plain text (not the `pageOf` formatter). */
+type TextKey = { [K in keyof GsStrings]: GsStrings[K] extends string ? K : never }[keyof GsStrings];
+
+/** Provider-string key behind each layer's `aria-label`. */
+const LAYER_LABEL: Record<KeyboardLayer, TextKey> = {
   letters: "letters",
   numbers: "numbers",
   symbols: "symbols",
+};
+
+/** Provider-string key behind each return-key type's visible text. */
+const RETURN_LABEL: Record<KeyboardReturnKey, TextKey> = {
+  return: "return",
+  Go: "go",
+  Search: "search",
+  Done: "done",
+  Send: "send",
+  Next: "next",
 };
 
 const POPUP_WIDTH = 46;
@@ -126,12 +144,13 @@ export const Keyboard = forwardRef<HTMLDivElement, KeyboardProps>(function Keybo
     defaultShift = false,
     autoCapitalize = false,
     disabled = false,
-    label = "Keyboard",
+    label,
     className,
     ...rest
   },
   ref,
 ) {
+  const strings = useGsStrings();
   const rootRef = useRef<HTMLDivElement>(null);
   useImperativeHandle(ref, () => rootRef.current as HTMLDivElement, []);
 
@@ -345,7 +364,7 @@ export const Keyboard = forwardRef<HTMLDivElement, KeyboardProps>(function Keybo
           <button
             key={id}
             {...common}
-            aria-label="shift"
+            aria-label={strings.shift}
             aria-pressed={shift !== "off"}
             className={cn(
               "gs-keyboard__key",
@@ -371,7 +390,7 @@ export const Keyboard = forwardRef<HTMLDivElement, KeyboardProps>(function Keybo
           <button
             key={id}
             {...common}
-            aria-label="delete"
+            aria-label={strings.delete}
             className={cn(
               "gs-keyboard__key",
               "gs-keyboard__key--fn",
@@ -393,7 +412,7 @@ export const Keyboard = forwardRef<HTMLDivElement, KeyboardProps>(function Keybo
           <button
             key={id}
             {...common}
-            aria-label={LAYER_LABEL[key.to]}
+            aria-label={strings[LAYER_LABEL[key.to]]}
             className={cn(
               "gs-keyboard__key",
               "gs-keyboard__key--fn",
@@ -409,22 +428,23 @@ export const Keyboard = forwardRef<HTMLDivElement, KeyboardProps>(function Keybo
           <button
             key={id}
             {...common}
-            aria-label="space"
+            aria-label={strings.space}
             className={cn(
               "gs-keyboard__key",
               "gs-keyboard__key--space",
               isPressed && "gs-keyboard__key--pressed",
             )}
           >
-            space
+            {strings.space}
           </button>
         );
-      case "return":
+      case "return": {
+        const text = strings[RETURN_LABEL[returnKey]];
         return (
           <button
             key={id}
             {...common}
-            aria-label={returnKey}
+            aria-label={text}
             className={cn(
               "gs-keyboard__key",
               "gs-keyboard__key--return",
@@ -432,9 +452,10 @@ export const Keyboard = forwardRef<HTMLDivElement, KeyboardProps>(function Keybo
               isPressed && "gs-keyboard__key--pressed",
             )}
           >
-            {returnKey}
+            {text}
           </button>
         );
+      }
     }
   };
 
@@ -442,7 +463,7 @@ export const Keyboard = forwardRef<HTMLDivElement, KeyboardProps>(function Keybo
     <div
       ref={rootRef}
       role="group"
-      aria-label={label}
+      aria-label={label ?? strings.keyboard}
       aria-disabled={disabled || undefined}
       className={cn("gs-keyboard", disabled && "gs-keyboard--disabled", className)}
       {...rest}

@@ -1,5 +1,6 @@
 import { forwardRef, useState, type ButtonHTMLAttributes, type MouseEvent } from "react";
 import { cn } from "../../lib/cn";
+import { useGsStrings } from "../../lib/i18n";
 import "./Switch.css";
 
 export interface SwitchProps
@@ -10,9 +11,9 @@ export interface SwitchProps
   defaultChecked?: boolean;
   onChange?: (checked: boolean) => void;
   disabled?: boolean;
-  /** Text on the blue half. Default `"ON"`. */
+  /** Text on the blue half. Default `strings.on` ("ON"). */
   onLabel?: string;
-  /** Text on the dark half. Default `"OFF"`. */
+  /** Text on the dark half. Default `strings.off` ("OFF"). */
   offLabel?: string;
   /** Accessible name (`aria-label`) when there is no visible label. */
   label?: string;
@@ -34,8 +35,8 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function Switch
     defaultChecked = false,
     onChange,
     disabled = false,
-    onLabel = "ON",
-    offLabel = "OFF",
+    onLabel,
+    offLabel,
     label,
     name,
     className,
@@ -44,6 +45,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function Switch
   },
   ref,
 ) {
+  const strings = useGsStrings();
   const isControlled = checked !== undefined;
   const [internal, setInternal] = useState(defaultChecked);
   const isOn = isControlled ? checked : internal;
@@ -76,8 +78,8 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function Switch
       >
         <span className="gs-switch__track" aria-hidden="true">
           <span className="gs-switch__strip">
-            <span className="gs-switch__on">{onLabel}</span>
-            <span className="gs-switch__off">{offLabel}</span>
+            <span className="gs-switch__on">{onLabel ?? strings.on}</span>
+            <span className="gs-switch__off">{offLabel ?? strings.off}</span>
           </span>
         </span>
         <span className="gs-switch__knob" aria-hidden="true" />
