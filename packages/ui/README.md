@@ -40,4 +40,4 @@ export function Screen() {
   NotificationBanner, plus the `Icon` and `Badge` foundation.
 - **Peer deps:** React 18 or 19.
 
-Showcase, tokens gallery and source: https://github.com/timonfranke/design-system-3gs
+Showcase, tokens gallery and source: https://github.com/TimonBozzApps/design-system-3gs

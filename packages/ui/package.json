@@ -16,14 +16,14 @@
   ],
   "license": "MIT",
   "author": "Timon Franke",
-  "homepage": "https://github.com/timonfranke/design-system-3gs#readme",
+  "homepage": "https://github.com/TimonBozzApps/design-system-3gs#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/timonfranke/design-system-3gs.git",
+    "url": "git+https://github.com/TimonBozzApps/design-system-3gs.git",
     "directory": "packages/ui"
   },
   "bugs": {
-    "url": "https://github.com/timonfranke/design-system-3gs/issues"
+    "url": "https://github.com/TimonBozzApps/design-system-3gs/issues"
   },
   "type": "module",
   "sideEffects": [
