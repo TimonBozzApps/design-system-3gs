@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@3gs/ui": "workspace:*",
+    "html-to-image": "^1.11.13",
     "lucide-react": "^0.460.0",
     "posthog-js": "^1.434.4",
     "react": "^19.0.0",

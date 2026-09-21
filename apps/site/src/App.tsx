@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Switch } from "@3gs/ui";
 import { PhoneFrame } from "./shell/PhoneFrame";
 import { TokensSection } from "./TokensSection";
+import { PreviewSection } from "./Preview/PreviewSection";
 import { capture, trackOutboundClicks, trackSectionViews } from "./analytics";
 import { AppStoreScreen } from "./shell/AppStoreScreen";
 import { PropsTable } from "./PropsTable";
@@ -83,6 +84,9 @@ export function App() {
         <nav>
           <ul>
             <li>
+              <a href="#try-it">Try it on your site</a>
+            </li>
+            <li>
               <a href="#tokens">Tokens</a>
             </li>
             {demos.map(({ meta }) => (
@@ -123,6 +127,8 @@ export function App() {
             </PhoneFrame>
           </div>
         </header>
+
+        <PreviewSection theme={theme} dir={dir} />
 
         <TokensSection theme={theme} />
 

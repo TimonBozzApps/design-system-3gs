@@ -5,17 +5,22 @@
   "scripts": {
     "dev": "pnpm --filter site dev",
     "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm -r typecheck && pnpm typecheck:api",
     "props": "pnpm --filter site props",
     "preview": "pnpm --filter site preview",
     "changeset": "changeset",
     "release": "pnpm build && changeset publish",
     "pack:check": "pnpm --filter @3gs/ui build && cd packages/ui && pnpm pack --pack-destination ../../.packs && cd ../.. && tar -tzf .packs/*.tgz | sort",
     "design:export": "node scripts/export-tokens.mjs && node scripts/figma-sheet.mjs",
-    "changeset:version": "changeset version"
+    "changeset:version": "changeset version",
+    "typecheck:api": "tsc -p api"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
+    "@types/node": "^26.6.2",
     "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "node-html-parser": "^9.0.4"
   }
 }
