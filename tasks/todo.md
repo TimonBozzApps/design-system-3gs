@@ -76,3 +76,6 @@ Library `@3gs/ui` (packages/ui) + showcase site (apps/site). Icons via lucide-re
 - [ ] Tokens docs section on the site
 - [ ] Site theme toggle (sidebar switch → data-theme on every phone screen) — main agent
 - [ ] Integrate, verify both themes, commit
+- Batch 4 review: light theme verified on all 20 screens (grid captures), dark spot-checked unchanged;
+  DatePicker time mode + ModalSheet focus/Escape + tokens gallery (64 cards) verified. Lib 71 kB JS /
+  72 kB CSS, 32 exports. Repo initialised; 3 commits.
