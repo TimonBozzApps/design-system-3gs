@@ -39,6 +39,17 @@ export interface SpecTab {
   label: string;
   icon: IconName;
   badge?: number | string;
+  /** Internal page this tab opens (absolute URL); the client fetches its preview on select. */
+  href?: string;
+}
+
+/** A content block: a heading with the paragraph that follows it (the page's actual copy). */
+export interface SpecSection {
+  heading: string;
+  /** ≤ ~240 chars of lead text under the heading, when present. */
+  text?: string;
+  /** Internal link when the heading itself linked somewhere. */
+  href?: string;
 }
 
 export interface SpecAction {
@@ -63,6 +74,8 @@ export interface ScreenSpec {
   themeColor?: string;
   /** 2–5 tabs. */
   tabs: SpecTab[];
+  /** Content blocks in page order (headline + lead copy) — rendered as text cells. */
+  sections: SpecSection[];
   /** Grouped table sections, in order. */
   groups: SpecGroup[];
   /** Gel buttons (max 3). */

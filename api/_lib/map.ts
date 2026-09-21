@@ -4,7 +4,7 @@
  * It must never throw: every input is optional and every list is clamped.
  */
 import type { Extracted, ExtractedLink } from "./extract.js";
-import type { IconName, ScreenSpec, SpecAction, SpecGroup, SpecRow, SpecTab } from "./spec.js";
+import type { IconName, ScreenSpec, SpecAction, SpecGroup, SpecRow, SpecSection, SpecTab } from "./spec.js";
 
 export interface MapContext {
   /** Site icon as a data: URI, when it could be fetched. */
@@ -149,6 +149,7 @@ export function mapToSpec(extracted: Extracted, ctx: MapContext = {}): ScreenSpe
     ctas: extracted.ctas ?? [],
     footerLinks: extracted.footerLinks ?? [],
     iconCandidates: extracted.iconCandidates ?? [],
+    sections: extracted.sections ?? [],
   };
   const host = stripWww(x.host || safeHost(x.url));
   const pageTitle = x.title ? titleHead(x.title) : undefined;
@@ -163,6 +164,7 @@ export function mapToSpec(extracted: Extracted, ctx: MapContext = {}): ScreenSpe
   if (x.clientRendered) notes.unshift("Client-rendered page — showing metadata only.");
 
   const groups = buildGroups(x, { siteName, description, usedHrefs, ctx });
+  const sections = buildSections(x, { title: x.ogTitle || x.title, description });
   const actions = buildActions(x.ctas, host, x.url);
   const search = x.search ? buildSearch(x.search.placeholder, siteName, x.navLinks) : undefined;
 
@@ -176,6 +178,7 @@ export function mapToSpec(extracted: Extracted, ctx: MapContext = {}): ScreenSpe
     imageDataUri: ctx.imageDataUri,
     themeColor: x.themeColor,
     tabs,
+    sections,
     groups,
     actions,
     search,
@@ -183,6 +186,21 @@ export function mapToSpec(extracted: Extracted, ctx: MapContext = {}): ScreenSpe
     generator: "heuristic",
     generatedAt: (ctx.now ?? new Date()).toISOString(),
   };
+}
+
+/** Content blocks: skip a heading that merely repeats the hero title / description. */
+function buildSections(x: Extracted, hero: { title?: string; description?: string }): SpecSection[] {
+  const norm = (t?: string) => (t ?? "").toLowerCase().replace(/\s+/g, " ").trim();
+  const heroTitle = norm(hero.title ? titleHead(hero.title) : undefined);
+  const heroDesc = norm(hero.description);
+  const out: SpecSection[] = [];
+  for (const s of x.sections) {
+    const h = norm(s.heading);
+    if (!h || h === heroTitle || (heroDesc && norm(s.text) === heroDesc)) continue;
+    out.push({ heading: truncate(s.heading, 60), text: s.text, href: s.href });
+    if (out.length >= 6) break;
+  }
+  return out;
 }
 
 function safeHost(url: string): string {
@@ -233,7 +251,7 @@ function buildTabs(navLinks: ExtractedLink[]): { tabs: SpecTab[]; usedHrefs: Set
       const label = truncate(tidyLabel(c.link.text), MAX_TAB_LABEL);
       if (usedLabels.has(label.toLowerCase())) continue;
       if (!allowDuplicateIcon && usedIcons.has(c.icon)) continue;
-      tabs.push({ label, icon: c.icon });
+      tabs.push({ label, icon: c.icon, href: c.link.external ? undefined : c.link.href });
       usedHrefs.add(c.link.href);
       usedIcons.add(c.icon);
       usedLabels.add(label.toLowerCase());

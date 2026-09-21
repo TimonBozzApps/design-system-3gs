@@ -19,7 +19,7 @@ const ERROR_STATUS: Record<PreviewErrorCode, number> = {
   not_html: 415,
 };
 
-const RATE_LIMIT = 12;
+const RATE_LIMIT = 40; // in-phone navigation makes several calls per visitor
 const RATE_WINDOW_MS = 60_000;
 /** ip → request timestamps within the window (sliding window). */
 const hits = new Map<string, number[]>();

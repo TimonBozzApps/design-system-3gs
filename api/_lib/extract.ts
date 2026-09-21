@@ -19,6 +19,14 @@ export interface ExtractedHeading {
   text: string;
 }
 
+/** A heading with the lead paragraph that follows it — the page's actual copy. */
+export interface ExtractedSection {
+  heading: string;
+  text?: string;
+  /** Internal link when the heading itself was a link. */
+  href?: string;
+}
+
 export interface Extracted {
   /** Final URL (after redirects). */
   url: string;
@@ -37,6 +45,7 @@ export interface Extracted {
   imageUrl?: string;
   navLinks: ExtractedLink[];
   headings: ExtractedHeading[];
+  sections: ExtractedSection[];
   ctas: ExtractedLink[];
   search?: { placeholder?: string; action?: string };
   footerLinks: ExtractedLink[];
@@ -48,6 +57,9 @@ export interface Extracted {
 
 const MAX_NAV_LINKS = 12;
 const MAX_HEADINGS = 8;
+const MAX_SECTIONS = 8;
+const SECTION_TEXT_MIN = 40;
+const SECTION_TEXT_MAX = 240;
 const MAX_CTAS = 4;
 const MAX_FOOTER_LINKS = 6;
 const CLIENT_RENDERED_TEXT_THRESHOLD = 200;
@@ -97,6 +109,7 @@ export function extract(html: string, finalUrl: string): Extracted {
 
   const navLinks = collectNavLinks(root, allAnchors, html.length, links);
   const headings = collectHeadings(root);
+  const sections = collectSections(root, links);
   const ctas = collectCtas(root, links);
   const search = detectSearch(root, base);
   const footerLinks = collectFooterLinks(root, allAnchors, html.length, links, navLinks);
@@ -118,6 +131,7 @@ export function extract(html: string, finalUrl: string): Extracted {
     imageUrl,
     navLinks,
     headings,
+    sections,
     ctas,
     search,
     footerLinks,
@@ -129,6 +143,19 @@ export function extract(html: string, finalUrl: string): Extracted {
 /* ------------------------------------------------------------------ */
 /* helpers                                                             */
 /* ------------------------------------------------------------------ */
+
+/** Text content with a space between child elements so inline spans don't glue ("Set up" + "for free"). */
+function spacedText(el: HTMLElement): string {
+  return el.childNodes
+    .map((n) => {
+      if (n instanceof HTMLElement) {
+        if (/^(SCRIPT|STYLE|NOSCRIPT|SVG|TEMPLATE)$/.test(n.tagName)) return "";
+        return spacedText(n);
+      }
+      return n.text;
+    })
+    .join(" ");
+}
 
 function clean(text: string | null | undefined): string | undefined {
   if (!text) return undefined;
@@ -352,6 +379,52 @@ function collectHeadings(root: HTMLElement): ExtractedHeading[] {
     seen.add(key);
     out.push({ level: h.tagName === "H1" ? 1 : 2, text });
     if (out.length >= MAX_HEADINGS) break;
+  }
+  return out;
+}
+
+/**
+ * Content blocks: each h1–h3 (outside nav/header/footer) with the first
+ * substantial text that follows it before the next heading. Prefers <main> /
+ * <article> when present so chrome and cookie banners don't leak in.
+ */
+function collectSections(root: HTMLElement, links: LinkCollector): ExtractedSection[] {
+  const CHROME = new Set(["NAV", "HEADER", "FOOTER", "ASIDE"]);
+  const scope = root.querySelector("main, article, [role=main]") ?? root;
+  const all = inDocumentOrder(scope.querySelectorAll("h1, h2, h3, p, li, blockquote, dd, figcaption, div, section"));
+  const isHeading = (el: HTMLElement) => /^H[1-3]$/.test(el.tagName);
+  const BLOCK = "p, div, section, ul, ol, h1, h2, h3, h4, table, figure, pre, blockquote, article";
+  // text of a leaf-ish element (no block descendants) — containers are skipped, their children come later
+  const leafText = (el: HTMLElement) => (el.querySelector(BLOCK) ? undefined : clean(spacedText(el)));
+
+  const out: ExtractedSection[] = [];
+  const seen = new Set<string>();
+  for (let i = 0; i < all.length && out.length < MAX_SECTIONS; i++) {
+    const h = all[i];
+    if (!isHeading(h) || hasAncestor(h, CHROME)) continue;
+    const heading = clean(spacedText(h));
+    if (!heading || heading.length < 2 || heading.length > 100) continue;
+    const key = heading.toLowerCase();
+    if (seen.has(key)) continue;
+
+    let text: string | undefined;
+    for (let j = i + 1; j < all.length; j++) {
+      const el = all[j];
+      if (isHeading(el)) break;
+      if (hasAncestor(el, CHROME)) continue;
+      if (el.tagName === "PRE") continue; // code blocks aren't copy
+      const t = leafText(el);
+      if (t && t.length >= SECTION_TEXT_MIN) {
+        text = t.length > SECTION_TEXT_MAX ? `${t.slice(0, SECTION_TEXT_MAX - 1).replace(/\s+\S*$/, "")}…` : t;
+        break;
+      }
+    }
+    // headings that are pure link lists without copy are navigation, not content
+    const anchor = h.querySelector("a[href]") ?? (h.parentNode instanceof HTMLElement && h.parentNode.tagName === "A" ? h.parentNode : null);
+    const link = anchor ? links.toLink(anchor, { minText: 1, maxText: 200 }) : undefined;
+    if (!text && link?.external) continue;
+    seen.add(key);
+    out.push({ heading, text, href: link && !link.external ? link.href : undefined });
   }
   return out;
 }
