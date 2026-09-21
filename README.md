@@ -1,5 +1,7 @@
 # 3GS UI
 
+**Live showcase → [design-system-3gs.vercel.app](https://design-system-3gs.vercel.app)** · npm: [`@3gs/ui`](https://www.npmjs.com/package/@3gs/ui)
+
 A React design system that reproduces the **iPhone 3GS / iOS 3** look — glossy
 "gel" skeuomorphism — recast in **dark mode**. Vertical gradients with the hard
 50 % highlight, 1 px black outlines with an inner light rim, embossed type,
