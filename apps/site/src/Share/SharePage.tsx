@@ -4,7 +4,7 @@ import type { PreviewErrorCode, PreviewResult, ScreenSpec } from "../../../../ap
 import { capture } from "../analytics";
 import { PhoneFrame } from "../shell/PhoneFrame";
 import { SpecScreen, normalizeSpec } from "../Preview/SpecScreen";
-import { hostOf, siteFromLocation } from "../Preview/shareLink";
+import { hostOf, siteFromLocation , carrierFor } from "../Preview/shareLink";
 // The `.spec-*` rules SpecScreen renders against still live next to the docs
 // section (hero card, text cells, gel button row). Imported, never edited —
 // when they move to a stylesheet SpecScreen imports itself, drop this line.
@@ -71,7 +71,7 @@ export function SharePage() {
   const previousTitle = stack.length > 1 ? normalizeSpec(stack[stack.length - 2]).title : undefined;
 
   const host = (spec.host || inputHost).replace(/^www\./, "");
-  const carrier = host.length > 18 ? `${host.slice(0, 17)}…` : host || "3GS";
+  const carrier = carrierFor(host);
   const originalHref = /^https?:\/\//i.test(spec.url) ? spec.url : host ? `https://${host}/` : "https://design-system-3gs.vercel.app/";
 
   // The poster backdrop follows ?theme so the page around the phone matches it.

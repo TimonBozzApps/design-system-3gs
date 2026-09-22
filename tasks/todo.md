@@ -116,3 +116,5 @@ Library `@3gs/ui` (packages/ui) + showcase site (apps/site). Icons via lucide-re
   wikipedia 6→27, tailwind 6→26); every page now has copy to read. Share page /p/<site> with injected
   og:title/description/image + /api/image proxy; phone scales up on large screens. Smoke: positives ok
   (0.2–2.2 s), negatives rejected (the 4 MB page is truncated, not rejected — expectation updated).
+- [x] Feed/index pages (HN, changelogs, blog indexes): structural-signature item detection → a feed
+      group with title + meta rows; feed titles wrap to 2 lines; status-bar carrier drops when too long

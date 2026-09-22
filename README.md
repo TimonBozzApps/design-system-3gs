@@ -127,7 +127,9 @@ links, headings, CTAs and search forms, and maps them to a `ScreenSpec`
 navigable: tabs and rows fetch that page and push real screens (with a Back
 button), and every page carries its actual content — paragraphs, bullet lists,
 prices and stats, FAQ pairs, pull quotes, in-page images and code — rendered as
-iOS grouped-table cells. Export a PNG, copy the generated JSX, or share
+iOS grouped-table cells. Feed pages (Hacker News, changelogs, blog indexes) are
+detected structurally and become a news-app list: headline plus a "382 points ·
+101 comments" meta line. Export a PNG, copy the generated JSX, or share
 **`/p/<site>`**: a standalone page with nothing but the phone, its own unfurl
 card (`/api/share` injects the meta tags, `/api/image` serves the site's image). Results are cached (1 h) and rate-limited (12/min/IP).
 Deep link: `?site=vercel.com`. The mapper is a pure function so an AI-designed one

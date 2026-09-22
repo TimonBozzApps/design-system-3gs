@@ -33,6 +33,12 @@ export interface SpecGroup {
   header?: string;
   rows: SpecRow[];
   footer?: string;
+  /**
+   * `"feed"`: the page's repeated item list (news stories, blog posts,
+   * changelog entries) rather than navigation. Renders like any other group —
+   * clients may style it differently, and tooling uses it to tell the two apart.
+   */
+  kind?: "feed";
 }
 
 export interface SpecTab {

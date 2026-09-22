@@ -54,6 +54,8 @@ export interface NormalizedGroup {
   header?: string;
   footer?: string;
   rows: NormalizedRow[];
+  /** Feed groups (news lists) wrap their titles over two lines instead of ellipsising. */
+  feed?: boolean;
 }
 
 /**
@@ -256,7 +258,7 @@ export function normalizeSpec(spec: ScreenSpec): NormalizedSpec {
   for (const group of list<ScreenSpec["groups"][number]>(spec.groups)) {
     const rows = list<SpecRow>(group?.rows).map(normalizeRow).filter((r): r is NormalizedRow => r !== null);
     if (rows.length === 0) continue;
-    groups.push({ header: str(group.header), footer: str(group.footer), rows });
+    groups.push({ header: str(group.header), footer: str(group.footer), rows, feed: group.kind === "feed" });
   }
 
   const actions: NormalizedAction[] = [];
@@ -573,7 +575,7 @@ export function SpecScreen({ spec, siteUrl, tabs, tab, onTab, previousTitle, onB
   };
 
   const renderGroup = (group: NormalizedGroup, gi: number) => (
-    <List key={gi} header={group.header} footer={group.footer}>
+    <List key={gi} className={group.feed ? "spec-feed" : undefined} header={group.header} footer={group.footer}>
       {group.rows.map((row, ri) => (
         <ListItem
           key={ri}

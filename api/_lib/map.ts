@@ -170,14 +170,18 @@ export function mapToSpec(extracted: Extracted, ctx: MapContext = {}): ScreenSpe
 
   const { tabs, usedHrefs, padded } = buildTabs(x.navLinks);
 
+  const feed = buildFeedGroup(x, ctx);
+  const feedHrefs = new Set((feed?.rows ?? []).map((r) => r.href).filter((h): h is string => Boolean(h)));
   const sections = buildSections(x, { title: x.ogTitle || x.title, description }, ctx);
   const intro = toSpecBlocks(x.intro, ctx.inlineImages);
   const sectionHrefs = new Set(sections.map((s) => s.href).filter((h): h is string => Boolean(h)));
-  const groups = buildGroups(x, { siteName, description, usedHrefs, sectionHrefs, ctx });
+  const groups = buildGroups(x, { siteName, description, usedHrefs, sectionHrefs, feedHrefs, ctx });
+  if (feed) groups.unshift(feed);
   const actions = buildActions(x.ctas, host, x.url);
   const search = x.search ? buildSearch(x.search.placeholder, siteName, x.navLinks) : undefined;
 
-  if (x.clientRendered) notes.push("Client-rendered page — showing metadata only.");
+  // A page whose list of items came through is not "metadata only", however little prose it has.
+  if (x.clientRendered && !feed) notes.push("Client-rendered page — showing metadata only.");
   if (x.sectionsFound > sections.length && sections.length >= 3) {
     notes.push(`Long page — showing the first ${sections.length} sections.`);
   }
@@ -225,9 +229,10 @@ function toSpecBlocks(blocks: ExtractedBlock[], images?: Map<string, string>): S
 }
 
 /**
- * Keep the payload sendable: drop trailing in-page images first, then trailing
- * sections. Only the content counts — the icon and the og:image are the screen's
- * identity and are already capped at 350 KB each by the fetcher.
+ * Keep the payload sendable: drop trailing in-page images first, then feed
+ * thumbnails (those rows still read fine with an icon), then trailing sections.
+ * Only the content counts — the icon and the og:image are the screen's identity
+ * and are already capped at 350 KB each by the fetcher.
  */
 function enforceSize(spec: ScreenSpec): void {
   const content = () => JSON.stringify(spec.sections).length + JSON.stringify(spec.intro ?? []).length;
@@ -239,6 +244,18 @@ function enforceSize(spec: ScreenSpec): void {
     for (let i = blocks.length - 1; i >= 0; i--) {
       if (blocks[i].kind !== "image") continue;
       blocks.splice(i, 1);
+      if (!overBudget()) return;
+    }
+  }
+  for (const group of spec.groups) {
+    if (group.kind !== "feed") continue;
+    const fallback = group.rows.find((r) => r.icon)?.icon ?? "newspaper";
+    for (let i = group.rows.length - 1; i >= 0; i--) {
+      const row = group.rows[i];
+      if (!row.imageDataUri) continue;
+      delete row.imageDataUri;
+      row.icon = fallback;
+      row.tile = "gray";
       if (!overBudget()) return;
     }
   }
@@ -342,6 +359,61 @@ function buildTabs(navLinks: ExtractedLink[]): { tabs: SpecTab[]; usedHrefs: Set
   return { tabs: tabs.slice(0, MAX_TABS), usedHrefs, padded };
 }
 
+/* feed --------------------------------------------------------------- */
+
+/** What the footer calls the things in the list. */
+const FEED_NOUN_RULES: [RegExp, string][] = [
+  [/\b(news|stories|story|headlines?|front page|hacker|top|ask|show)\b/i, "stories"],
+  [/\b(changelog|releases?|updates?|what'?s new|shipped)\b/i, "updates"],
+  [/\b(blog|posts?|articles?|writing|essays?)\b/i, "posts"],
+  [/\b(repos?|repositories|projects?|packages?)\b/i, "repos"],
+  [/\b(jobs?|positions?|roles?|openings?)\b/i, "jobs"],
+  [/\b(videos?|episodes?|talks?)\b/i, "videos"],
+];
+
+function feedNoun(label: string, host: string): string {
+  for (const [re, noun] of FEED_NOUN_RULES) if (re.test(label) || re.test(host)) return noun;
+  return "items";
+}
+
+/**
+ * The page's repeated item list as a plain group of rows: headline, the item's
+ * own small print underneath, a thumbnail when one could be fetched. It leads
+ * the screen, the way a 2009 news app opened straight onto its list.
+ */
+function buildFeedGroup(x: Extracted, ctx: MapContext): SpecGroup | undefined {
+  const items = x.feed?.items ?? [];
+  if (!items.length) return undefined;
+  // Unnamed lists are "Latest" — a default, not a keyword, so they keep the generic icon.
+  const named = x.feed?.label ? truncate(tidyLabel(x.feed.label), 40) : undefined;
+  const label = named ?? "Latest";
+  const icon = (named ? iconForLink({ text: named, href: x.url }) : undefined) ?? "newspaper";
+
+  const rows: SpecRow[] = [];
+  const seen = new Set<string>();
+  for (const item of items) {
+    const title = truncate(item.title, MAX_ROW_TITLE);
+    const key = item.href.replace(/\/$/, "").toLowerCase();
+    if (!title || seen.has(key)) continue;
+    seen.add(key);
+    const row: SpecRow = { title, href: item.href, accessory: item.external ? "detail" : "chevron" };
+    if (item.meta) row.subtitle = truncate(item.meta, MAX_SUBTITLE);
+    const thumb = item.imgSrc ? ctx.inlineImages?.get(item.imgSrc) : undefined;
+    if (thumb) row.imageDataUri = thumb;
+    else {
+      row.icon = icon;
+      row.tile = "gray";
+    }
+    rows.push(row);
+  }
+  if (!rows.length) return undefined;
+
+  const group: SpecGroup = { header: label, rows, kind: "feed" };
+  const total = x.feed?.total ?? rows.length;
+  if (total > rows.length) group.footer = `Top ${rows.length} of ${total} ${feedNoun(label, x.host || x.url)}`;
+  return group;
+}
+
 /* groups ------------------------------------------------------------- */
 
 interface GroupInputs {
@@ -350,6 +422,8 @@ interface GroupInputs {
   usedHrefs: Set<string>;
   /** Links a content section already points at — no need to repeat them in Browse. */
   sectionHrefs: Set<string>;
+  /** Links the feed already lists — never repeat an item as a Browse row. */
+  feedHrefs: Set<string>;
   ctx: MapContext;
 }
 
@@ -374,7 +448,7 @@ function buildGroups(x: Extracted, g: GroupInputs): SpecGroup[] {
   const browseRows: SpecRow[] = [];
   const seen = new Set<string>();
   for (const link of x.navLinks) {
-    if (link.isHome || g.usedHrefs.has(link.href) || g.sectionHrefs.has(link.href)) continue;
+    if (link.isHome || g.usedHrefs.has(link.href) || g.sectionHrefs.has(link.href) || g.feedHrefs.has(link.href)) continue;
     const key = link.text.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
@@ -394,7 +468,7 @@ function buildGroups(x: Extracted, g: GroupInputs): SpecGroup[] {
   // 3. Links — footer
   const footerRows: SpecRow[] = [];
   for (const link of x.footerLinks) {
-    if (g.usedHrefs.has(link.href) || seen.has(link.text.toLowerCase())) continue;
+    if (g.usedHrefs.has(link.href) || g.feedHrefs.has(link.href) || seen.has(link.text.toLowerCase())) continue;
     seen.add(link.text.toLowerCase());
     footerRows.push({
       title: truncate(tidyLabel(link.text), MAX_ROW_TITLE),

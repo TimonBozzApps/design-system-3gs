@@ -38,6 +38,9 @@ const PAGES = [
   "https://example.com",
 ];
 
+/** Rows of the feed group (the page's repeated item list), if the mapper found one. */
+const FEED_ROWS = 5;
+
 const EXCERPT = 70;
 const args = process.argv.slice(2);
 const pages = args.length ? args : PAGES;
@@ -75,7 +78,7 @@ function report(url, ms, result) {
   console.log(`\n${"═".repeat(96)}\n${url}  (${ms} ms)`);
   if (!result.ok) {
     console.log(`  FAILED ${result.code}: ${result.error}`);
-    return { blocks: 0, sections: 0 };
+    return { blocks: 0, sections: 0, feed: 0 };
   }
   const { spec } = result;
   const sections = spec.sections ?? [];
@@ -90,7 +93,16 @@ function report(url, ms, result) {
       `[${Object.entries(kinds).map(([k, n]) => `${k}:${n}`).join(" ")}] spec=${kb} KB` +
       `${spec.notes?.length ? ` notes=${JSON.stringify(spec.notes)}` : ""}`,
   );
-  console.log(`  groups=[${spec.groups.map((g) => `${g.header ?? "-"}(${g.rows.length})`).join(" ")}]`);
+  console.log(`  groups=[${spec.groups.map((g) => `${g.kind === "feed" ? "feed " : ""}${g.header ?? "-"}(${g.rows.length})`).join(" ")}]`);
+
+  const feed = spec.groups.find((g) => g.kind === "feed");
+  if (feed) {
+    console.log(`\n  ≡ FEED "${feed.header ?? ""}" — ${feed.rows.length} rows${feed.footer ? ` (${feed.footer})` : ""}`);
+    for (const row of feed.rows.slice(0, FEED_ROWS)) {
+      console.log(`      ${row.imageDataUri ? "▣" : "·"} ${cut(row.title, 64)}${row.accessory === "detail" ? "  ↗" : ""}`);
+      console.log(`        ${row.subtitle ? cut(row.subtitle, 90) : "(no meta)"}`);
+    }
+  }
 
   if (intro.length) {
     console.log(`\n  ¶ INTRO`);
@@ -104,7 +116,7 @@ function report(url, ms, result) {
   if (process.env.BLOCKS) {
     console.log(JSON.stringify({ intro, sections }, (k, v) => (k === "dataUri" ? `${String(v).slice(0, 32)}…` : v), 2));
   }
-  return { blocks, sections: sections.length };
+  return { blocks, sections: sections.length, feed: feed ? feed.rows.length : 0 };
 }
 
 const started = performance.now();
@@ -120,6 +132,8 @@ const totals = results.map(({ url, ms, result }) => ({ url, ms, ...report(url, m
 
 console.log(`\n${"═".repeat(96)}\nSummary (${Math.round(performance.now() - started)} ms wall clock)\n`);
 for (const t of totals) {
-  console.log(`  ${String(t.blocks).padStart(3)} blocks  ${String(t.sections).padStart(2)} sections  ${String(t.ms).padStart(5)} ms  ${t.url}`);
+  console.log(
+    `  ${String(t.blocks).padStart(3)} blocks  ${String(t.sections).padStart(2)} sections  ${String(t.feed).padStart(2)} feed  ${String(t.ms).padStart(5)} ms  ${t.url}`,
+  );
 }
 console.log(`\n  total blocks: ${totals.reduce((n, t) => n + t.blocks, 0)}\n`);

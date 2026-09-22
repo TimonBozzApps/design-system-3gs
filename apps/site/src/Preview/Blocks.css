@@ -242,3 +242,23 @@
   font-size: 15px;
   line-height: 1.25;
 }
+
+/* ---- feed rows: a news list wraps its headline over two lines ------------ */
+.spec-feed .gs-list-item__title {
+  white-space: normal;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.spec-feed .gs-list-item {
+  align-items: flex-start;
+  padding-block: 8px;
+}
+
+.spec-feed .gs-list-item__accessory {
+  align-self: center;
+}

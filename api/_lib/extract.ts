@@ -45,6 +45,26 @@ export interface ExtractedSection {
   href?: string;
 }
 
+/** One entry of a page's repeated item pattern (a story, a post, a release). */
+export interface ExtractedFeedItem {
+  title: string;
+  href: string;
+  /** The item's own small print, collapsed into one line ("382 points · 214 comments · 5h ago"). */
+  meta?: string;
+  external: boolean;
+  /** Absolute URL of the card's thumbnail, for the first few items only. */
+  imgSrc?: string;
+}
+
+/** The page's dominant repeated item pattern: what makes an index page an index page. */
+export interface ExtractedFeed {
+  items: ExtractedFeedItem[];
+  /** Nearest preceding heading / the page's h1 / "Latest". */
+  label?: string;
+  /** How many items the pattern really had, before the cap. */
+  total: number;
+}
+
 export interface Extracted {
   /** Final URL (after redirects). */
   url: string;
@@ -64,6 +84,8 @@ export interface Extracted {
   navLinks: ExtractedLink[];
   headings: ExtractedHeading[];
   sections: ExtractedSection[];
+  /** The repeated item list a feed / index page is made of, when there is one. */
+  feed?: ExtractedFeed;
   /** Copy that appears before the first heading. */
   intro: ExtractedBlock[];
   /** How many sections the page really has (before the mapper's cap). */
@@ -131,13 +153,38 @@ export function extract(html: string, finalUrl: string): Extracted {
 
   const navLinks = collectNavLinks(root, allAnchors, html.length, links);
   const headings = collectHeadings(root);
-  const content = collectContent(root, body, links, base, { title: ogTitle ?? title, description });
+  const visibleText = clean(body.structuredText) ?? "";
+  const found = collectFeed(root, allAnchors, links, base, visibleText.length);
+  const feed = found?.feed;
+  const content = collectContent(root, body, links, base, { title: ogTitle ?? title, description }, Boolean(feed));
+  // An index page's items are headings, list rows and thumbnails too — the feed already shows them.
+  if (found) {
+    const feedImages = new Set(found.feed.items.map((i) => i.imgSrc).filter((s): s is string => Boolean(s)));
+    for (const section of content.sections) {
+      section.blocks = section.blocks.filter((b) => !repeatsFeed(b, found.titles, feedImages));
+      const lead = section.blocks.find((b) => b.kind === "text");
+      section.text = lead?.kind === "text" ? lead.text : undefined;
+    }
+    // The section the list came out of is the list: it is on screen already.
+    const feedHeading = normKey(found.feed.label ?? "");
+    content.sections = content.sections.filter(
+      (s) =>
+        !found.titles.has(normKey(s.heading)) &&
+        normKey(s.heading) !== feedHeading &&
+        (s.blocks.length > 0 || Boolean(s.href)),
+    );
+    content.sectionsFound = content.sections.length;
+    content.intro = content.intro.filter((b) => !repeatsFeed(b, found.titles, feedImages));
+  }
   const ctas = collectCtas(root, links);
   const search = detectSearch(root, base);
   const footerLinks = collectFooterLinks(root, allAnchors, html.length, links, navLinks);
 
-  const visibleText = clean(body.structuredText) ?? "";
   const clientRendered = visibleText.length < CLIENT_RENDERED_TEXT_THRESHOLD || isBareSpaMount(body);
+  // A feed page's thumbnails are its substance; they get the inline-image budget first.
+  const inlineImages = [
+    ...new Set([...(feed?.items ?? []).map((i) => i.imgSrc).filter((s): s is string => Boolean(s)), ...content.inlineImages]),
+  ].slice(0, MAX_INLINE_IMAGES);
 
   return {
     url: page.href,
@@ -154,9 +201,10 @@ export function extract(html: string, finalUrl: string): Extracted {
     navLinks,
     headings,
     sections: content.sections,
+    feed,
     intro: content.intro,
     sectionsFound: content.sectionsFound,
-    inlineImages: content.inlineImages,
+    inlineImages,
     ctas,
     search,
     footerLinks,
@@ -336,17 +384,24 @@ class LinkCollector {
     this.base = base;
   }
 
-  toLink(el: HTMLElement, opts: { minText: number; maxText: number }): ExtractedLink | undefined {
+  /** Where an anchor points, without looking at its text. */
+  target(el: HTMLElement): { href: string; external: boolean; isHome: boolean } | undefined {
     const rawHref = el.getAttribute("href")?.trim() ?? "";
     if (!rawHref || rawHref.startsWith("#") || /^(javascript|mailto|tel|sms|data|blob):/i.test(rawHref)) return undefined;
     const url = absolute(rawHref, this.base);
     if (!url) return undefined;
+    url.hash = "";
+    const isHome = (url.pathname === "/" || url.pathname === "") && !url.search && isInternal(url, this.page);
+    return { href: url.href, external: !isInternal(url, this.page), isHome };
+  }
+
+  toLink(el: HTMLElement, opts: { minText: number; maxText: number }): ExtractedLink | undefined {
+    const target = this.target(el);
+    if (!target) return undefined;
     const text = labelOf(el);
     if (!text || text.length < opts.minText || text.length > opts.maxText) return undefined;
     if (SKIP_LINK_RE.test(text)) return undefined;
-    url.hash = "";
-    const isHome = (url.pathname === "/" || url.pathname === "") && !url.search && isInternal(url, this.page);
-    return { text, href: url.href, external: !isInternal(url, this.page), isHome };
+    return { text, href: target.href, external: target.external, isHome: target.isHome };
   }
 
   dedupe(links: ExtractedLink[], max: number, exclude?: Set<string>): ExtractedLink[] {
@@ -617,13 +672,16 @@ function hasBlockDescendant(el: HTMLElement): boolean {
   return false;
 }
 
-/** Fraction of an element's text that sits inside links — high means navigation. */
+/** Links, buttons and menu items: text a reader taps, not text a reader reads. */
+const CONTROL_SELECTOR = "a[href], button, [role=button], [role=menuitem], [role=tab], summary";
+
+/** Fraction of an element's text that sits inside controls — high means navigation. */
 function linkDensity(el: HTMLElement): number {
   const total = clean(el.structuredText)?.length ?? 0;
   if (!total) return 0;
-  let inLinks = 0;
-  for (const a of el.querySelectorAll("a[href]")) inLinks += clean(a.structuredText)?.length ?? 0;
-  return inLinks / total;
+  let inControls = 0;
+  for (const c of el.querySelectorAll(CONTROL_SELECTOR)) inControls += clean(c.structuredText)?.length ?? 0;
+  return inControls / total;
 }
 
 /** A `header`/`footer` that is site chrome (link soup) rather than an article's own header. */
@@ -999,7 +1057,7 @@ function buildBlocks(seg: Segment, ctx: BuildCtx): ExtractedBlock[] {
     }
 
     // Link soup that slipped through as a "leaf" is navigation, not copy.
-    if (el.querySelectorAll("a[href]").length >= 2 && linkDensity(el) > 0.6) continue;
+    if (el.querySelectorAll(CONTROL_SELECTOR).length >= 2 && linkDensity(el) > 0.6) continue;
 
     if (tryStat(text, i)) continue;
     pushText(text, el);
@@ -1065,6 +1123,7 @@ function collectContent(
   links: LinkCollector,
   base: URL,
   page: { title?: string; description?: string },
+  hasFeed = false,
 ): ContentResult {
   const scope = contentRoot(root, body);
   const segments = segmentContent(scope);
@@ -1105,7 +1164,8 @@ function collectContent(
   // A heading with nothing under it is only worth a row when it goes somewhere.
   const filtered = sections.filter((s) => s.blocks.length > 0 || s.href || sections.length < 3);
 
-  if (!filtered.length && intro.length < 2) {
+  // The feed already is the list of titles — repeating it as intro copy just doubles it up.
+  if (!filtered.length && intro.length < 2 && !hasFeed) {
     const list = fallbackList(scope);
     if (list) intro = [...intro, list].slice(0, MAX_INTRO_BLOCKS);
   }
@@ -1122,4 +1182,479 @@ function collectContent(
   intro = prune(intro);
 
   return { sections: filtered, intro, sectionsFound: filtered.length, inlineImages: ranked };
+}
+
+/* ------------------------------------------------------------------ */
+/* feed: the page's dominant repeated item pattern                     */
+/* ------------------------------------------------------------------ */
+
+const FEED_MIN_ITEMS = 5;
+const FEED_MAX_ITEMS = 15;
+const FEED_TITLE_MIN = 12;
+const FEED_TITLE_MAX = 140;
+const FEED_META_MAX = 90;
+/** Thumbnails cost a fetch each, so only the top of the list gets one. */
+const FEED_THUMBS = 3;
+/** How many ancestors make up an item's structural signature. */
+const FEED_SIGNATURE_DEPTH = 3;
+/** How far above the anchor an item's card may sit. */
+const FEED_CARD_MAX_LEVELS = 5;
+/** The items must together carry a real share of the page's words — otherwise they are a widget. */
+const FEED_MIN_TEXT_SHARE = 0.06;
+/** More nav-shaped titles than this share means navigation, not a feed. */
+const FEED_MAX_SHORT_SHARE = 0.6;
+/** Items packed into less markup than this sit in one small box, not across a page. */
+const FEED_MIN_SPAN = 600;
+/** Characters an item must carry beyond its headline for short titles to still be items. */
+const FEED_MIN_ITEM_EXTRA = 24;
+/** Items sampled when judging how much each one says. */
+const FEED_RICHNESS_SAMPLE = 5;
+/** A page with less text than this has no list worth reading. */
+const FEED_MIN_PAGE_TEXT = 200;
+/** An item's card stops growing here: past it we are swallowing the section around it. */
+const FEED_CARD_MAX_TEXT = 600;
+/** A card's next sibling this long is the next item, not this item's second row. */
+const FEED_SIBLING_MAX_TEXT = 240;
+
+/** Containers whose repeated links are never a feed. */
+const FEED_JUNK_RE =
+  /reference|citation|footnote|bibliograph|cookie|consent|gdpr|newsletter|promo|advert|sidebar|widget|breadcrumb|pagination|paginate|social|share|related-|recommend|carousel|banner|toc\b|table-of/i;
+/** Class / id of the small print that belongs to an item. */
+const FEED_META_RE =
+  /subtext|meta|byline|score|points|comment|author|date|time|source|domain|site|host|posted|published|excerpt|summary|snippet|teaser|dek\b|caption|tagline|detail|info/i;
+/** Segments of small print that are controls, not information. */
+const FEED_META_JUNK_RE =
+  /^(hide|flag|share|save|saved|reply|replies|discuss|past|favorite|favourite|context|parent|permalink|edit|delete|report|link|caches?|archive(\.org)?|ghostarchive|more|read more|comments?|reactions?|\d{1,5}[.)]?|\W*)$/i;
+/** Buttons and icon labels dressed as spans — controls, not small print. */
+const FEED_CONTROL_CLASS_RE = /(^|[\s_-])(btn|button|cta|sr-only|visually-hidden|screen-reader|tooltip)/i;
+/** Headings that name what is left over rather than the list itself. */
+const FEED_LABEL_JUNK_RE = /^(everything else|the rest|more|others?|all (posts|articles|stories|updates)|archives?|index)$/i;
+/** Elements that hold running copy: a link inside one is a word in a sentence, not an item. */
+const FEED_PROSE_TAGS = new Set(["P", "LI", "DD", "DT", "BLOCKQUOTE", "FIGCAPTION", "TD", "TH", "SUMMARY"]);
+/** How much longer than its link a paragraph may be before the link is just part of the copy. */
+const FEED_PROSE_RATIO = 2.5;
+/** Share of items whose headline must lead their card (the rest of the card comes after it). */
+const FEED_MIN_LEADING = 0.6;
+/** Item containers whose own `header` / `footer` is part of the item, not page chrome. */
+const FEED_ITEM_ANCESTORS = new Set(["ARTICLE", "LI", "TR", "TD"]);
+/** Subtrees that never hold an item's small print. */
+const FEED_META_SKIP_TAGS = new Set([
+  "DETAILS", "SUMMARY", "NAV", "FORM", "BUTTON", "SELECT", "TEXTAREA", "SCRIPT", "STYLE", "TEMPLATE", "SVG", "IFRAME",
+  "UL", "OL",
+]);
+
+interface FeedCandidate {
+  a: HTMLElement;
+  title: string;
+  href: string;
+  external: boolean;
+}
+
+/** The element's ancestors, nearest first, at most `max` of them. */
+function ancestorsOf(el: HTMLElement, max: number): HTMLElement[] {
+  const out: HTMLElement[] = [];
+  let p = el.parentNode;
+  while (p && p.tagName && out.length < max) {
+    out.push(p);
+    p = p.parentNode;
+  }
+  return out;
+}
+
+function isAncestorOf(ancestor: HTMLElement, el: HTMLElement): boolean {
+  let p = el.parentNode;
+  while (p && p.tagName) {
+    if (p === ancestor) return true;
+    p = p.parentNode;
+  }
+  return false;
+}
+
+/**
+ * A link that is a word inside a sentence ("uses <a>direct manipulation</a> to…")
+ * rather than a line of its own. Walking up stops at the first block: only a
+ * paragraph-ish ancestor that says much more than the link makes it prose.
+ */
+function inRunningText(el: HTMLElement, titleLength: number): boolean {
+  for (const p of ancestorsOf(el, 6)) {
+    if (FEED_PROSE_TAGS.has(p.tagName)) return (clean(p.structuredText)?.length ?? 0) > titleLength * FEED_PROSE_RATIO;
+    if (BLOCK_TAGS.has(p.tagName)) return false;
+  }
+  return false;
+}
+
+/** Site navigation / page header / footer — the page's chrome, never its items. */
+function inPageChrome(el: HTMLElement): boolean {
+  for (const p of ancestorsOf(el, 24)) {
+    const tag = p.tagName;
+    if (tag === "NAV" || tag === "ASIDE") return true;
+    const role = (p.getAttribute("role") ?? "").trim().toLowerCase();
+    if (role === "navigation" || role === "banner" || role === "contentinfo" || role === "search") return true;
+    // An `article`'s own header is part of the item; the page's header is not.
+    if ((tag === "HEADER" || tag === "FOOTER") && !hasAncestor(p, FEED_ITEM_ANCESTORS)) return true;
+  }
+  return false;
+}
+
+/** Reference lists, cookie bars, "related posts" rails: repeated links that are not the page. */
+function inFeedJunk(el: HTMLElement): boolean {
+  for (const p of ancestorsOf(el, 12)) {
+    const idClass = `${p.getAttribute("id") ?? ""} ${p.getAttribute("class") ?? ""}`;
+    if (idClass.length > 200) continue; // utility-class soup carries no meaning
+    if (FEED_JUNK_RE.test(idClass) || JUNK_ID_RE.test(idClass) || JUNK_CLASS_RE.test(idClass)) return true;
+  }
+  return false;
+}
+
+/**
+ * The part of a class list that says what an element *is*. Generated names
+ * (`css-1x2y3z`, `Post_title__aB12`) and utility soup (`flex items-center …`)
+ * carry no structure, so they collapse to "".
+ */
+function stableClass(el: HTMLElement): string {
+  const raw = (el.getAttribute("class") ?? "").trim();
+  if (!raw) return "";
+  const classes = raw.split(/\s+/).filter(Boolean);
+  if (classes.length > 4) return "";
+  for (const c of classes) {
+    const name = c.toLowerCase().replace(/__[a-z0-9_-]{4,}$/, "").replace(/[-_]?\d+$/, "");
+    if (name.length < 2 || name.length > 40) continue;
+    if (/\d{2,}|[a-f0-9]{6,}$|^(css|sc|jsx|svelte|emotion|chakra|mui|styles?)[-_]/.test(name)) continue;
+    return name;
+  }
+  return "";
+}
+
+function nodeKey(el: HTMLElement): string {
+  const cls = stableClass(el);
+  return cls ? `${el.tagName}.${cls}` : el.tagName;
+}
+
+/** `a.u-url<SPAN.link<DIV.details<DIV.story_liner` — what makes two links "the same kind of thing". */
+function feedSignature(a: HTMLElement): string {
+  return [a, ...ancestorsOf(a, FEED_SIGNATURE_DEPTH)].map(nodeKey).join("<");
+}
+
+/** The headline of an item link: an inner heading, the whole label, or its first line. */
+function feedTitle(a: HTMLElement): string | undefined {
+  const heading = a.querySelector("h1, h2, h3, h4, h5, h6");
+  if (heading) {
+    const t = clean(spacedText(heading));
+    if (t && t.length >= FEED_TITLE_MIN) return t;
+  }
+  const whole = clean(spacedText(a));
+  if (whole && whole.length <= FEED_TITLE_MAX) return whole;
+  return (a.structuredText ?? "")
+    .split(/\n+/)
+    .map((l) => clean(l))
+    .find((l): l is string => Boolean(l));
+}
+
+/**
+ * A "navigation-shaped" label: a couple of words and short with it ("Pricing",
+ * "Contact sales"). Long two-word titles ("anthropics / financial-services")
+ * are real items, so length has a say as well as word count.
+ */
+function isShortTitle(text: string): boolean {
+  const words = text.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+  return words <= 3 && text.length < 30;
+}
+
+/** Drop the headline wherever it shows up inside an item's small print. */
+function stripTitle(text: string, title: string): string {
+  let out = clean(text) ?? "";
+  const needle = title.toLowerCase();
+  for (let i = out.toLowerCase().indexOf(needle); i !== -1; i = out.toLowerCase().indexOf(needle)) {
+    out = `${out.slice(0, i)} ${out.slice(i + title.length)}`;
+  }
+  return out;
+}
+
+/** Text of an element, minus the child sub-trees that only ever hold controls or tag lists. */
+function metaText(el: HTMLElement): string {
+  return el.childNodes
+    .map((n) => {
+      if (!(n instanceof HTMLElement)) return n.text;
+      if (FEED_META_SKIP_TAGS.has(n.tagName)) return "";
+      const cls = n.getAttribute("class") ?? "";
+      if (cls.length <= 120 && FEED_CONTROL_CLASS_RE.test(cls)) return ""; // "Star", "Sponsor", "Copy"
+      return metaText(n);
+    })
+    .join(" ");
+}
+
+/** The item's own description, where a card keeps one. */
+function firstParagraph(card: HTMLElement, title: string): string | undefined {
+  for (const p of card.querySelectorAll("p")) {
+    const text = clean(stripTitle(metaText(p), title));
+    if (text && text.length >= 20) return text;
+  }
+  return undefined;
+}
+
+/** "382 points by pg 5 hours ago | hide | 93 comments" → "382 points by pg 5 hours ago · 93 comments". */
+function tidyMeta(raw: string, title: string): string | undefined {
+  // A machine timestamp reads as a date on a phone: "2026-09-22 00:23:55" → "2026-09-22".
+  const text = clean(stripTitle(raw, title).replace(/(\d{4}-\d{2}-\d{2})[T ]\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:?\d{2})?/g, "$1"));
+  if (!text) return undefined;
+  const seen = new Set<string>();
+  const segments: string[] = [];
+  for (const part of text.split(/\s*[|•·‧–—]\s*|\s{2,}/)) {
+    const seg = clean(part)?.replace(/^[(\[\s,;:·•|]+|[)\]\s,;:·•|]+$/g, "").trim();
+    if (!seg || FEED_META_JUNK_RE.test(seg)) continue;
+    const key = seg.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    segments.push(seg);
+    if (segments.join(" · ").length >= FEED_META_MAX) break;
+  }
+  // Responsive markup prints the same date twice (one copy per breakpoint).
+  const meta = segments.join(" · ").replace(/\b(.{4,40}?)\s+\1\b/g, "$1");
+  if (meta.length < 2 || normKey(meta) === normKey(title)) return undefined;
+  return truncateWords(meta, FEED_META_MAX);
+}
+
+/**
+ * The parts of an item's small print that say what they are: `<time>` and
+ * elements classed `subtext` / `byline` / `score` / `date` …, outermost first.
+ */
+function metaParts(scope: HTMLElement, title: string): string[] {
+  const parts: string[] = [];
+  const taken: HTMLElement[] = [];
+  for (const el of scope.querySelectorAll("time, [class], [id]")) {
+    if (el.tagName !== "TIME") {
+      const idClass = `${el.getAttribute("class") ?? ""} ${el.getAttribute("id") ?? ""}`;
+      if (idClass.length > 120 || !FEED_META_RE.test(idClass)) continue;
+    }
+    if (taken.some((t) => isAncestorOf(t, el))) continue;
+    const text = clean(stripTitle(metaText(el), title));
+    if (!text || text.length < 2) continue;
+    taken.push(el);
+    parts.push(text);
+    if (parts.join(" · ").length > FEED_META_MAX * 2) break;
+  }
+  return parts;
+}
+
+/**
+ * One line of small print for an item. Labelled parts win; when the card holds
+ * none, whatever it says besides the headline does. A layout table splits an
+ * item over two rows (HN), so the card's plain next sibling counts as part of it.
+ */
+function itemMeta(card: HTMLElement, sibling: HTMLElement | undefined, title: string): string | undefined {
+  const parts = [...metaParts(card, title), ...(sibling ? metaParts(sibling, title) : [])];
+  if (parts.length) return tidyMeta(parts.join(" · "), title);
+  const own = firstParagraph(card, title) ?? metaText(card);
+  return tidyMeta(own, title) ?? (sibling ? tidyMeta(metaText(sibling), title) : undefined);
+}
+
+/** The highest ancestor that still belongs to this item alone. */
+function itemCard(a: HTMLElement, members: Map<HTMLElement, number>, titleLength: number): HTMLElement {
+  const maxText = Math.max(FEED_CARD_MAX_TEXT, titleLength * 10);
+  let card = a;
+  for (const p of ancestorsOf(a, FEED_CARD_MAX_LEVELS)) {
+    const tag = p.tagName;
+    if (tag === "BODY" || tag === "HTML" || tag === "MAIN") break;
+    if ((members.get(p) ?? 0) > 1) break; // it already holds the next item
+    if ((clean(p.structuredText)?.length ?? 0) > maxText) break;
+    card = p;
+  }
+  return card;
+}
+
+/** The element after the card, when it is that item's second row (HN's `subtext` tr). */
+function metaSibling(card: HTMLElement, members: Set<HTMLElement>): HTMLElement | undefined {
+  const parent = card.parentNode;
+  if (!parent || !parent.tagName) return undefined;
+  const siblings = childElements(parent);
+  const next = siblings[siblings.indexOf(card) + 1];
+  if (!next || (clean(next.structuredText)?.length ?? 0) > FEED_SIBLING_MAX_TEXT) return undefined;
+  for (const a of next.querySelectorAll("a[href]")) if (members.has(a)) return undefined;
+  return next;
+}
+
+function itemImage(card: HTMLElement, base: URL): string | undefined {
+  for (const el of card.querySelectorAll("img, picture")) {
+    const cand = imageCandidate(el, base, undefined, false);
+    if (cand) return cand.src;
+  }
+  return undefined;
+}
+
+/** A heading this list is filed under: short, real copy, not one of the items. */
+function headingText(h: HTMLElement, itemTitles: Set<string>): string | undefined {
+  const t = clean(spacedText(h));
+  if (!t || t.length < 2 || t.length > 40 || SKIP_TEXT_RE.test(t) || itemTitles.has(normKey(t))) return undefined;
+  if (FEED_LABEL_JUNK_RE.test(t)) return undefined;
+  return t;
+}
+
+/**
+ * What the page calls the list: the heading right before it, or the page's h1.
+ * A list that runs past other headings belongs to the page, not to the section
+ * it happens to start in — then the h1 is the honest label. `undefined` when
+ * the page says nothing; naming it is then the mapper's business.
+ */
+function feedLabel(root: HTMLElement, items: FeedCandidate[], itemTitles: Set<string>): string | undefined {
+  const start = items[0].a.range[0];
+  const end = items[items.length - 1].a.range[0];
+  let preceding: string | undefined;
+  let spansSections = false;
+  for (const h of inDocumentOrder(root.querySelectorAll("h1, h2, h3"))) {
+    if (h.range[1] > start && h.range[0] < end) spansSections = spansSections || Boolean(headingText(h, itemTitles));
+    if (h.range[0] >= start) continue;
+    if (h.range[1] > start) continue; // the heading wraps the first item itself
+    preceding = headingText(h, itemTitles) ?? preceding;
+  }
+  const h1 = root.querySelector("h1");
+  const pageHeading = h1 ? headingText(h1, itemTitles) : undefined;
+  return spansSections ? pageHeading ?? preceding : preceding ?? pageHeading;
+}
+
+/** How many of a group's items sit under each ancestor — that is where one card ends. */
+function ancestorCounts(items: FeedCandidate[]): Map<HTMLElement, number> {
+  const counts = new Map<HTMLElement, number>();
+  for (const c of items) {
+    for (const p of ancestorsOf(c.a, FEED_CARD_MAX_LEVELS + 1)) counts.set(p, (counts.get(p) ?? 0) + 1);
+  }
+  return counts;
+}
+
+/**
+ * What a group's cards look like, from a sample of them:
+ * `extra` — characters the average item carries beyond its headline (an excerpt,
+ * a byline, a star count); menus and link lists carry none, which is what tells
+ * a short-titled feed ("owner / repo") from navigation.
+ * `leading` — the share of items whose headline leads their card. A card that
+ * says everything *before* its link is a section with a call to action, not an item.
+ */
+function sampleCards(items: FeedCandidate[]): { extra: number; leading: number } {
+  const counts = ancestorCounts(items);
+  const sample = items.slice(0, FEED_RICHNESS_SAMPLE);
+  let extra = 0;
+  let leads = 0;
+  for (const c of sample) {
+    const card = itemCard(c.a, counts, c.title.length);
+    const text = clean(card.structuredText) ?? "";
+    extra += Math.max(0, text.length - c.title.length);
+    const at = text.toLowerCase().indexOf(c.title.toLowerCase());
+    if (at === -1 || text.length - at - c.title.length + 8 >= at) leads++;
+  }
+  return { extra: extra / sample.length, leading: leads / sample.length };
+}
+
+/**
+ * Find the page's dominant repeated item pattern (HN's story rows, a blog
+ * index's cards, a changelog's entries) and read it as a list of items.
+ *
+ * Anchors are grouped by a structural signature — their own tag/class plus
+ * three ancestors — and the biggest, wordiest group wins, provided it looks
+ * like content: at least five items, real titles (not 1–3-word nav labels),
+ * spread across the markup, and carrying a noticeable share of the page's text.
+ */
+function collectFeed(
+  root: HTMLElement,
+  allAnchors: HTMLElement[],
+  links: LinkCollector,
+  base: URL,
+  pageTextLength: number,
+): { feed: ExtractedFeed; titles: Set<string> } | undefined {
+  if (pageTextLength < FEED_MIN_PAGE_TEXT || allAnchors.length < FEED_MIN_ITEMS) return undefined;
+
+  const groups = new Map<string, FeedCandidate[]>();
+  for (const a of allAnchors) {
+    const target = links.target(a);
+    if (!target || target.isHome) continue;
+    const title = feedTitle(a);
+    if (!title || title.length < FEED_TITLE_MIN || title.length > FEED_TITLE_MAX) continue;
+    if (SKIP_TEXT_RE.test(title) || READ_MORE_RE.test(title) || JUNK_COPY_RE.test(title)) continue;
+    if (inRunningText(a, title.length) || inPageChrome(a) || inFeedJunk(a)) continue;
+    const sig = feedSignature(a);
+    const bucket = groups.get(sig);
+    const candidate: FeedCandidate = { a, title, href: target.href, external: target.external };
+    if (bucket) bucket.push(candidate);
+    else groups.set(sig, [candidate]);
+  }
+
+  let best: FeedCandidate[] | undefined;
+  let bestScore = 0;
+  for (const bucket of groups.values()) {
+    if (bucket.length < FEED_MIN_ITEMS) continue;
+    const items = dedupeCandidates(bucket);
+    if (items.length < FEED_MIN_ITEMS) continue;
+    const { extra, leading } = sampleCards(items);
+    // A card that says everything before its link is a section with a call to action.
+    if (leading < FEED_MIN_LEADING) continue;
+    // Mostly short titles means navigation — unless every item carries small print of its own.
+    const short = items.filter((i) => isShortTitle(i.title)).length;
+    if (short > items.length * FEED_MAX_SHORT_SHARE && extra < FEED_MIN_ITEM_EXTRA) continue;
+    // Items packed into a few hundred characters of markup are one box, not a page of items.
+    if (items[items.length - 1].a.range[0] - items[0].a.range[0] < FEED_MIN_SPAN) continue;
+    const textLength = items.reduce((n, i) => n + i.title.length, 0);
+    // What the items say together — headlines plus their small print — against what the page says.
+    if ((textLength + extra * items.length) / pageTextLength < FEED_MIN_TEXT_SHARE) continue;
+    const score = items.length + textLength / 100;
+    if (score > bestScore) {
+      bestScore = score;
+      best = items;
+    }
+  }
+  if (!best) return undefined;
+
+  const memberSet = new Set(best.map((c) => c.a));
+  const memberCounts = ancestorCounts(best);
+
+  const titles = new Set(best.map((c) => normKey(c.title)));
+  const items: ExtractedFeedItem[] = [];
+  let thumbs = 0;
+  for (const c of best.slice(0, FEED_MAX_ITEMS)) {
+    const card = itemCard(c.a, memberCounts, c.title.length);
+    const item: ExtractedFeedItem = { title: c.title, href: c.href, external: c.external };
+    const meta = itemMeta(card, metaSibling(card, memberSet), c.title);
+    if (meta) item.meta = meta;
+    if (thumbs < FEED_THUMBS) {
+      const src = itemImage(card, base);
+      if (src) {
+        item.imgSrc = src;
+        thumbs++;
+      }
+    }
+    items.push(item);
+  }
+
+  const feed: ExtractedFeed = { items, total: best.length };
+  const label = feedLabel(root, best, titles);
+  if (label) feed.label = label;
+  return { feed, titles };
+}
+
+/** Copy that is really the item list in another shape (the stories as a plain `<ol>`, a card's thumbnail). */
+function repeatsFeed(block: ExtractedBlock, titles: Set<string>, images: Set<string>): boolean {
+  if (block.kind === "image") return images.has(block.src);
+  const matches = (text: string): boolean => {
+    const key = normKey(text);
+    if (titles.has(key)) return true;
+    for (const t of titles) if (t.length >= FEED_TITLE_MIN && key.includes(t)) return true;
+    return false;
+  };
+  if (block.kind === "list") return block.items.filter(matches).length >= Math.max(2, block.items.length / 2);
+  if (block.kind === "text") return matches(block.text);
+  if (block.kind === "link") return matches(block.text);
+  return false;
+}
+
+/** One entry per URL and per headline, in document order. */
+function dedupeCandidates(bucket: FeedCandidate[]): FeedCandidate[] {
+  const seenHref = new Set<string>();
+  const seenTitle = new Set<string>();
+  const out: FeedCandidate[] = [];
+  for (const c of bucket) {
+    const hrefKey = c.href.replace(/\/$/, "").toLowerCase();
+    const titleKey = normKey(c.title);
+    if (seenHref.has(hrefKey) || seenTitle.has(titleKey)) continue;
+    seenHref.add(hrefKey);
+    seenTitle.add(titleKey);
+    out.push(c);
+  }
+  return out;
 }

@@ -42,3 +42,13 @@ export function hostOf(input: string): string {
     return raw.split(/[/?#]/)[0] ?? "";
   }
 }
+
+/**
+ * Status-bar carrier text. The bar is 320 px wide and shares it with the 3G
+ * glyph, the clock and the battery, so a long host is dropped rather than
+ * squeezing the clock ("news.ycombinator.com" → no carrier).
+ */
+export function carrierFor(host: string): string | undefined {
+  const name = host.replace(/^www\./i, "");
+  return name && name.length <= 13 ? name : undefined;
+}

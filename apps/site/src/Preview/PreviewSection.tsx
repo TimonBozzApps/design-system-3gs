@@ -6,7 +6,7 @@ import { PhoneFrame } from "../shell/PhoneFrame";
 import { downloadPng } from "./exportPng";
 import { FIXTURE } from "./fixture";
 import { SpecScreen, normalizeSpec, urlKey } from "./SpecScreen";
-import { shareUrlFor } from "./shareLink";
+import { carrierFor, shareUrlFor } from "./shareLink";
 import { specToJsx } from "./specToJsx";
 import "./PreviewSection.css";
 
@@ -97,10 +97,7 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
   const previousTitle = stack.length > 1 ? normalizeSpec(stack[stack.length - 2]).title : undefined;
   const rootTabs = useMemo(() => normalizeSpec(home).tabs, [home]);
   const jsx = useMemo(() => specToJsx(spec), [spec]);
-  const carrier = useMemo(() => {
-    const host = (home.host || "").replace(/^www\./, "");
-    return host.length > 18 ? `${host.slice(0, 17)}…` : host || "3GS";
-  }, [home.host]);
+  const carrier = useMemo(() => carrierFor(home.host || ""), [home.host]);
 
   /** Drop an in-flight fetch — a newer navigation supersedes it. */
   const cancel = useCallback(() => {
