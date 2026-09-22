@@ -17,6 +17,8 @@ const CACHE_TTL_MS = 60 * 60 * 1000;
 const TOTAL_BUDGET_MS = 12_000;
 /** How many icon candidates to try (in parallel) before giving up. */
 const ICON_ATTEMPTS = 3;
+/** In-page images inlined per preview (extraction already ranked them). */
+const INLINE_IMAGE_ATTEMPTS = 3;
 
 const cache = new LruCache<ScreenSpec>(CACHE_ENTRIES, CACHE_TTL_MS);
 /** Coalesces concurrent requests for the same URL into one fetch. */
@@ -70,12 +72,13 @@ async function build(target: URL): Promise<ScreenSpec> {
   const extracted = extract(page.html, page.url);
 
   // Images are decoration: fetch them in parallel, bounded by the remaining budget, never fatal.
-  const [iconDataUri, imageDataUri] = await Promise.all([
+  const [iconDataUri, imageDataUri, inlineImages] = await Promise.all([
     pickIcon(extracted.iconCandidates, budget),
     extracted.imageUrl ? fetchImageDataUri(extracted.imageUrl, budget) : Promise.resolve(undefined),
+    fetchInlineImages(extracted.inlineImages, budget),
   ]);
 
-  const spec = mapToSpec(extracted, { iconDataUri, imageDataUri });
+  const spec = mapToSpec(extracted, { iconDataUri, imageDataUri, inlineImages });
   if (page.truncated) spec.notes = [...spec.notes, "Large page — only the first 4 MB was read."].slice(0, 3);
   return spec;
 }
@@ -84,6 +87,15 @@ async function build(target: URL): Promise<ScreenSpec> {
 async function pickIcon(candidates: string[], signal: AbortSignal): Promise<string | undefined> {
   const results = await Promise.all(candidates.slice(0, ICON_ATTEMPTS).map((c) => fetchImageDataUri(c, signal)));
   return results.find((r): r is string => Boolean(r));
+}
+
+/** The in-page images, fetched together with the icon; failures just drop out. */
+async function fetchInlineImages(srcs: string[], signal: AbortSignal): Promise<Map<string, string>> {
+  const wanted = (srcs ?? []).slice(0, INLINE_IMAGE_ATTEMPTS);
+  const results = await Promise.all(wanted.map(async (src) => [src, await fetchImageDataUri(src, signal)] as const));
+  const out = new Map<string, string>();
+  for (const [src, dataUri] of results) if (dataUri) out.set(src, dataUri);
+  return out;
 }
 
 function toError(e: unknown): PreviewResult {

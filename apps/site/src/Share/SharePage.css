@@ -1,0 +1,148 @@
+/* The standalone /p/<site> poster: wordmark, one phone, one line of links. */
+
+.share {
+  /* the phone's own height (74 + 480 screen + 78 bezel) — the scale compensation below needs it */
+  --share-phone-h: 632px;
+  --share-scale: 1;
+  --share-ink: var(--site-muted);
+  --share-ink-strong: var(--site-text);
+  --share-glow: rgba(77, 138, 228, 0.22);
+  --share-base: var(--site-bg);
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  gap: clamp(16px, 4vh, 40px);
+  padding: clamp(16px, 3vh, 28px) 16px clamp(20px, 4vh, 36px);
+  background:
+    radial-gradient(900px 620px at 50% -12%, var(--share-glow), transparent 70%),
+    radial-gradient(620px 460px at 12% 96%, rgba(29, 85, 181, 0.16), transparent 72%),
+    var(--share-base);
+}
+
+/* ---- wordmark --------------------------------------------------------- */
+
+.share__bar {
+  width: 100%;
+  max-width: 1040px;
+  display: flex;
+}
+
+/* reuses the docs sidebar's gel wordmark (.site__brand) minus its stacked spacing */
+.share__brand {
+  margin: 0;
+  opacity: 0.9;
+  transition: opacity 0.15s ease;
+}
+
+.share__brand:hover {
+  opacity: 1;
+}
+
+/* ---- the phone -------------------------------------------------------- */
+
+.share__stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.share__phone {
+  transform: scale(var(--share-scale));
+  transform-origin: top center;
+  /* scaling doesn't shrink the box — give the layout the height back */
+  margin-bottom: calc(var(--share-phone-h) * (var(--share-scale) - 1));
+}
+
+/* ---- links ------------------------------------------------------------ */
+
+.share__links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--share-ink);
+}
+
+.share__links a {
+  color: inherit;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.share__links a:hover {
+  color: var(--share-ink-strong);
+  border-bottom-color: currentColor;
+}
+
+.share__dot {
+  opacity: 0.5;
+}
+
+/* ---- light poster ----------------------------------------------------- */
+
+:root[data-share-theme="light"] {
+  color-scheme: light;
+  background: #e7e9ee;
+}
+
+:root[data-share-theme="light"] body {
+  background: transparent;
+  color: #1b1b20;
+}
+
+.share[data-theme="light"] {
+  --share-ink: #5c5c66;
+  --share-ink-strong: #17171b;
+  --share-glow: rgba(77, 138, 228, 0.2);
+  --share-base: #e7e9ee;
+}
+
+.share[data-theme="light"] .site__brand-text {
+  color: #5c5c66;
+}
+
+/* ---- roomy screens: the phone is the poster, so let it fill more of it ---- */
+@media (min-width: 900px) and (min-height: 820px) {
+  .share {
+    --share-scale: 1.25;
+  }
+}
+
+@media (min-width: 1200px) and (min-height: 1000px) {
+  .share {
+    --share-scale: 1.45;
+  }
+}
+
+/* ---- narrow screens: scale the phone down, it has a fixed 320px screen -- */
+
+@media (max-width: 400px) {
+  .share {
+    --share-scale: 0.92;
+  }
+}
+
+@media (max-width: 370px) {
+  .share {
+    --share-scale: 0.84;
+  }
+}
+
+@media (max-width: 340px) {
+  .share {
+    --share-scale: 0.76;
+  }
+}
+
+/* very short viewports (landscape phones): let the page scroll instead of clipping */
+@media (max-height: 680px) {
+  .share {
+    gap: 14px;
+  }
+}

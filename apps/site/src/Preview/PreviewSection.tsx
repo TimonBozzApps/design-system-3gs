@@ -6,6 +6,7 @@ import { PhoneFrame } from "../shell/PhoneFrame";
 import { downloadPng } from "./exportPng";
 import { FIXTURE } from "./fixture";
 import { SpecScreen, normalizeSpec, urlKey } from "./SpecScreen";
+import { shareUrlFor } from "./shareLink";
 import { specToJsx } from "./specToJsx";
 import "./PreviewSection.css";
 
@@ -83,6 +84,7 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
   const [error, setError] = useState<PreviewErrorCode | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [shared, setShared] = useState(false);
 
   const phoneRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -363,6 +365,21 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
           </Button>
           <Button size="sm" onClick={onCopy} disabled={loading} aria-live="polite">
             {copied ? "Copied" : "Copy JSX"}
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => {
+              const link = shareUrlFor(spec.url || spec.host);
+              void navigator.clipboard?.writeText(link).catch(() => undefined);
+              capture("preview_share_copied", { host: spec.host });
+              setShared(true);
+              window.setTimeout(() => setShared(false), 1500);
+            }}
+            disabled={loading}
+            aria-live="polite"
+            title="A page with just the phone — good for posting"
+          >
+            {shared ? "Link copied" : "Copy share link"}
           </Button>
           <a className="gs-button gs-button--default gs-button--sm" href={originalHref} target="_blank" rel="noopener noreferrer">
             <span className="gs-button__label">Open original ↗</span>

@@ -108,7 +108,11 @@ Library `@3gs/ui` (packages/ui) + showcase site (apps/site). Icons via lucide-re
 
 ## Batch 7 (2026-09-22) — more content + shareable page
 - [x] Contract: `SpecBlock` union (text/list/stat/qa/quote/image/code/link), `SpecSection.blocks`, `ScreenSpec.intro`; /p/ rewrite in vercel.json
-- [ ] Server: rich extraction (paragraphs, bullets, prices/stats, FAQ, quotes, in-page images, code), 10 sections × 8 blocks, drop the redundant Highlights group — agent
-- [ ] Client: render every block kind as iOS grouped-table cells — agent
-- [ ] Share page `/p/<site>`: phone only, meta injection via api/share.ts, og image proxy api/image.ts, dev parity — agent
-- [ ] Integrate: Share button in the preview UI, typecheck, build, deploy, verify unfurl
+- [x] Server: rich extraction (paragraphs, bullets, prices/stats, FAQ, quotes, in-page images, code), 10 sections × 8 blocks, drop the redundant Highlights group — agent
+- [x] Client: render every block kind as iOS grouped-table cells — agent
+- [x] Share page `/p/<site>`: phone only, meta injection via api/share.ts, og image proxy api/image.ts, dev parity — agent
+- [x] Integrate: Share button in the preview UI, typecheck, build, deploy, verify unfurl
+- Batch 7 review: content blocks 26 → 143 across 8 test pages (posthog/pricing 6→19, stripe 1→42,
+  wikipedia 6→27, tailwind 6→26); every page now has copy to read. Share page /p/<site> with injected
+  og:title/description/image + /api/image proxy; phone scales up on large screens. Smoke: positives ok
+  (0.2–2.2 s), negatives rejected (the 4 MB page is truncated, not rejected — expectation updated).

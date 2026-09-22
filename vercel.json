@@ -5,5 +5,15 @@
   "outputDirectory": "apps/site/dist",
   "framework": null,
   "cleanUrls": true,
-  "rewrites": [{ "source": "/p/(.*)", "destination": "/api/share" }]
+  "rewrites": [
+    {
+      "source": "/p/(.*)",
+      "destination": "/api/share"
+    }
+  ],
+  "functions": {
+    "api/share.ts": {
+      "includeFiles": "apps/site/dist/index.html"
+    }
+  }
 }

@@ -1,0 +1,244 @@
+/* ==========================================================================
+   Preview content blocks — the page's real copy inside the 320 px screen.
+
+   The server sends typed `SpecBlock`s per section; `SpecScreen` renders each
+   section as one grouped <List> (header = the heading) whose cells are these
+   blocks. Everything here is scoped under `.spec-blocks` — the class the
+   renderer puts on those lists — so the library's own List CSS is untouched.
+   Plain CSS only: a long page is ~10 sections × 8 blocks and must stay smooth.
+   ========================================================================== */
+
+.spec-blocks {
+  /* --gs-surface-sunken is white in the light theme, so the wells (quote and
+     code) need a block-local token to keep their contrast in both themes. */
+  --spec-well: var(--gs-surface-sunken);
+  --spec-well-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.55);
+  --spec-glyph: var(--gs-blue-300);
+}
+
+.gs-root[data-theme="light"] .spec-blocks,
+.gs-theme-light .spec-blocks {
+  --spec-well: #e7eaf0;
+  --spec-well-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.16);
+  --spec-glyph: #2f74d8;
+}
+
+/* a long heading wraps instead of overflowing the 300 px group */
+.spec-blocks .gs-list__header {
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+/* ---- every block cell ---------------------------------------------------- */
+/* Cells are multi-line here, so they hang from the top instead of centering,
+   and their text wraps (the library's cells are single-line + ellipsis). */
+.spec-blocks .spec-block {
+  align-items: flex-start;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.spec-blocks .spec-block .gs-list-item__title,
+.spec-blocks .spec-block .gs-list-item__subtitle {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+}
+
+/* ---- text: body copy ----------------------------------------------------- */
+.spec-blocks .spec-block--text .gs-list-item__title {
+  -webkit-line-clamp: 6;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--gs-text);
+  text-shadow: var(--gs-text-emboss);
+}
+
+/* the intro group's lead paragraph reads a touch stronger */
+.spec-blocks.spec-intro .spec-block--text:first-child .gs-list-item__title {
+  font-weight: 500;
+}
+
+/* ---- list: a bullet / checklist row -------------------------------------- */
+.spec-blocks .spec-block--bullet .gs-list-item__icon {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: var(--spec-glyph);
+}
+
+.spec-blocks .spec-block--bullet .gs-list-item__title {
+  -webkit-line-clamp: 4;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--gs-text);
+  text-shadow: var(--gs-text-emboss);
+}
+
+/* ---- stat: "$0 · Free forever" ------------------------------------------- */
+.spec-blocks .spec-block--stat {
+  align-items: center;
+}
+
+/* the icon slot carries the number: wide, bold, tabular */
+.spec-blocks .spec-block--stat .gs-list-item__icon {
+  width: auto;
+  height: auto;
+  min-width: 52px;
+  max-width: 46%;
+  justify-content: flex-start;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--gs-text);
+  text-shadow: var(--gs-text-emboss);
+  overflow-wrap: anywhere;
+}
+
+.spec-blocks .spec-block--stat .gs-list-item__title {
+  -webkit-line-clamp: 2;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.spec-blocks .spec-block--stat .gs-list-item__subtitle {
+  -webkit-line-clamp: 3;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+/* ---- qa: question + indented answer -------------------------------------- */
+.spec-blocks .spec-block--qa .gs-list-item__title {
+  -webkit-line-clamp: 3;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.spec-blocks .spec-block--qa .gs-list-item__subtitle {
+  -webkit-line-clamp: 6;
+  margin-top: 3px;
+  padding-inline-start: 10px;
+  border-inline-start: 2px solid var(--gs-separator);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+/* ---- quote: a pull quote in a sunken well -------------------------------- */
+.spec-blocks .spec-block--quote {
+  background: var(--spec-well);
+  box-shadow: var(--spec-well-shadow);
+}
+
+.spec-blocks .spec-block--quote .gs-list-item__title {
+  -webkit-line-clamp: 6;
+  font-size: 15px;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--gs-text);
+  text-shadow: var(--gs-text-emboss);
+}
+
+.spec-blocks .spec-block--quote .gs-list-item__subtitle {
+  -webkit-line-clamp: 2;
+  margin-top: 5px;
+  font-size: 13px;
+  text-align: end;
+}
+
+/* ---- image: a glossy photo card, the hero treatment at cell size ---------- */
+.spec-blocks .spec-block--image {
+  padding: 5px;
+}
+
+.spec-blocks .spec-block--image .gs-list-item__body {
+  display: block;
+}
+
+.spec-blocks .spec-block--image .gs-list-item__title {
+  display: block;
+  position: relative;
+  line-height: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: var(--gs-border);
+  box-shadow: var(--gs-emboss);
+  background: var(--gs-gradient-dark);
+}
+
+.spec-blocks .spec-block--image .gs-list-item__title::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gs-gloss-soft);
+  pointer-events: none;
+}
+
+.spec-blocks .spec-block__img {
+  display: block;
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+}
+
+/* ---- code: a monospace well that scrolls sideways ------------------------ */
+.spec-blocks .spec-block--code {
+  padding: 8px;
+}
+
+.spec-blocks .spec-block--code .gs-list-item__body {
+  display: block;
+}
+
+.spec-blocks .spec-block--code .gs-list-item__title {
+  display: block;
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--gs-radius-sm);
+  background: var(--spec-well);
+  box-shadow: var(--spec-well-shadow);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--gs-text);
+  text-shadow: none;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.spec-blocks .spec-block--code .gs-list-item__title::-webkit-scrollbar {
+  height: 4px;
+}
+
+.spec-blocks .spec-block--code .gs-list-item__title::-webkit-scrollbar-thumb {
+  background: rgba(127, 127, 127, 0.5);
+  border-radius: 2px;
+}
+
+/* ---- link: an ordinary cell with a glyph and a disclosure ---------------- */
+.spec-blocks .spec-block--link {
+  align-items: center;
+}
+
+.spec-blocks .spec-block--link .gs-list-item__icon {
+  width: 18px;
+  height: 18px;
+  color: var(--spec-glyph);
+}
+
+.spec-blocks .spec-block--link .gs-list-item__title {
+  -webkit-line-clamp: 2;
+  font-size: 15px;
+  line-height: 1.25;
+}

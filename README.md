@@ -125,8 +125,11 @@ redirect hop, 8 s timeout, 4 MB read cap), extracts title, icons, OG image, nav
 links, headings, CTAs and search forms, and maps them to a `ScreenSpec`
 (`api/_lib/spec.ts`) that the site renders with the library. The phone is
 navigable: tabs and rows fetch that page and push real screens (with a Back
-button), and pages show their own copy (headline + lead text sections), hero
-image, buttons and search — plus PNG export and the generated JSX to copy. Results are cached (1 h) and rate-limited (12/min/IP).
+button), and every page carries its actual content — paragraphs, bullet lists,
+prices and stats, FAQ pairs, pull quotes, in-page images and code — rendered as
+iOS grouped-table cells. Export a PNG, copy the generated JSX, or share
+**`/p/<site>`**: a standalone page with nothing but the phone, its own unfurl
+card (`/api/share` injects the meta tags, `/api/image` serves the site's image). Results are cached (1 h) and rate-limited (12/min/IP).
 Deep link: `?site=vercel.com`. The mapper is a pure function so an AI-designed one
 can drop in later. Locally, `pnpm dev` serves the same endpoint through a Vite
 middleware; `node scripts/preview-smoke.mjs` runs the positive/negative cases.

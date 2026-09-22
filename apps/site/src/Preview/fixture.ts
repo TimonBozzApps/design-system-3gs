@@ -26,6 +26,30 @@ const HERO = svgUri(`
   </svg>
 `);
 
+// A stand-in in-page screenshot for an `image` block: a preview deployment with a comment pin.
+const SHOT = svgUri(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 300">
+    <rect width="580" height="300" fill="#f4f4f6"/>
+    <rect width="580" height="46" fill="#ffffff"/>
+    <circle cx="26" cy="23" r="6" fill="#ff5f57"/><circle cx="46" cy="23" r="6" fill="#febc2e"/><circle cx="66" cy="23" r="6" fill="#28c840"/>
+    <rect x="92" y="13" width="300" height="20" rx="10" fill="#ececf0"/>
+    <text x="106" y="28" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#8b8b92">acme-git-redesign.vercel.app</text>
+    <rect x="28" y="74" width="230" height="22" rx="4" fill="#1c1c1f"/>
+    <rect x="28" y="108" width="330" height="12" rx="4" fill="#cfcfd6"/>
+    <rect x="28" y="130" width="280" height="12" rx="4" fill="#cfcfd6"/>
+    <rect x="28" y="164" width="132" height="34" rx="6" fill="#1c1c1f"/>
+    <text x="52" y="186" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#ffffff">Deploy now</text>
+    <rect x="360" y="150" width="192" height="104" rx="10" fill="#ffffff" stroke="#dcdce2"/>
+    <circle cx="384" cy="174" r="12" fill="#2f74d8"/>
+    <text x="378" y="179" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#ffffff">R</text>
+    <rect x="404" y="166" width="90" height="10" rx="5" fill="#1c1c1f"/>
+    <rect x="404" y="186" width="126" height="9" rx="4" fill="#d3d3da"/>
+    <rect x="404" y="203" width="106" height="9" rx="4" fill="#d3d3da"/>
+    <rect x="376" y="224" width="76" height="22" rx="6" fill="#2f74d8"/>
+    <text x="392" y="239" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11" fill="#ffffff">Resolve</text>
+  </svg>
+`);
+
 /**
  * What the generator produces for vercel.com's front page — the screen shown
  * before the visitor submits anything, in the server's shape: hero row, content
@@ -47,25 +71,72 @@ export const FIXTURE: ScreenSpec = {
     { label: "Blog", icon: "newspaper", badge: 3, href: "https://vercel.com/blog" },
     { label: "Account", icon: "log-in", href: "https://vercel.com/login" },
   ],
+  intro: [
+    {
+      kind: "text",
+      text: "Vercel gives developers the frameworks, workflows and infrastructure to build a faster, more personalized web — without managing a single server.",
+    },
+  ],
   sections: [
     {
       heading: "Build and deploy on the AI Cloud",
       text: "Vercel provides the developer tools and cloud infrastructure to build, scale, and secure a faster, more personalized web.",
+      blocks: [
+        {
+          kind: "list",
+          items: [
+            "Deploy straight from a git push — no pipeline to write",
+            "Every commit gets its own preview URL",
+            "Automatic HTTPS, caching and image optimization",
+            "Scales to zero when nobody is visiting",
+          ],
+        },
+        { kind: "stat", value: "300 ms", label: "Median global response", note: "Measured across 100+ edge regions" },
+      ],
     },
     {
       heading: "Git-connected deploys",
       text: "From localhost to https, in seconds. Deploy from git or your CLI — every push gets a preview URL.",
       href: "https://vercel.com/docs/deployments",
+      blocks: [
+        {
+          kind: "code",
+          text: "$ vercel deploy --prod\n  Inspecting  https://vercel.com/acme/site/7Fk2\n  Production  https://acme.com  [3s]",
+        },
+        { kind: "link", text: "Read the deployment docs", href: "https://vercel.com/docs/deployments", external: false },
+      ],
     },
     {
       heading: "Collaborative pre-production",
       text: "Every deploy is remarkable. Chat with your team on real, production-grade UI, not just designs.",
       href: "https://vercel.com/docs/comments",
+      blocks: [
+        { kind: "image", dataUri: SHOT, alt: "A preview deployment with an inline review comment" },
+        {
+          kind: "quote",
+          text: "We shipped the redesign in six weeks instead of six months — every pull request was a real URL the whole team could click.",
+          source: "Head of Engineering, Sonos",
+        },
+      ],
     },
     {
       heading: "Scale your enterprise without compromising security",
       text: "Turbocharge your teams with a platform built for the unique needs of the enterprise.",
       href: "https://vercel.com/enterprise",
+      blocks: [
+        { kind: "stat", value: "$0", label: "Free forever", note: "Hobby projects — no credit card" },
+        { kind: "stat", value: "99.99%", label: "Uptime SLA", note: "Enterprise plans" },
+        {
+          kind: "qa",
+          question: "Do I need a credit card to start?",
+          answer: "No. The Hobby plan is free forever and includes preview deployments, HTTPS and 100 GB of bandwidth every month.",
+        },
+        {
+          kind: "qa",
+          question: "Can I bring my own domain?",
+          answer: "Yes — add a domain on any plan. Certificates are issued and renewed for you.",
+        },
+      ],
     },
   ],
   groups: [

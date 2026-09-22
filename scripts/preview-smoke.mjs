@@ -52,7 +52,8 @@ const NEGATIVE = [
   ["", "invalid_url"],
   ["https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", "not_html"],
   ["https://upload.wikimedia.org/wikipedia/commons/3/3f/Fronalpstock_big.jpg", "not_html"],
-  ["https://html.spec.whatwg.org/", "too_large"],
+  // A huge page is truncated at the read cap, not rejected — it must still preview.
+  ["https://html.spec.whatwg.org/", "ok"],
 ];
 
 const args = process.argv.slice(2);

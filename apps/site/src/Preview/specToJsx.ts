@@ -1,6 +1,14 @@
 import type { ScreenSpec } from "../../../../api/_lib/spec";
 import { iconExportName, isKnownIcon } from "./icons";
-import { heroGroupCount, normalizeSpec, type NormalizedGroup, type NormalizedRow } from "./SpecScreen";
+import {
+  heroGroupCount,
+  normalizeSpec,
+  urlKey,
+  type NormalizedBlock,
+  type NormalizedGroup,
+  type NormalizedRow,
+  type NormalizedSection,
+} from "./SpecScreen";
 
 /* ---- JSX string helpers ------------------------------------------------ */
 
@@ -61,6 +69,72 @@ function rowIconProps(row: NormalizedRow, usedIcons: Set<string>): Array<string 
   usedIcons.add(iconExportName(name));
   // `green` isn't a library tint yet — the phone paints it with a CSS override, the paste-able code uses gray.
   return ["iconTile", `iconTint="${row.tint}"`, `icon={<Icon icon={${iconExportName(name)}} variant="flat" size={18} />}`];
+}
+
+/** The class that gives a block cell its look; the CSS is the demo's Blocks.css. */
+const blockClass = (kind: string) => `className="spec-block spec-block--${kind}"`;
+
+/**
+ * The cells of one section, in page order — the same `<ListItem>` structures
+ * `<SpecScreen>` renders, so what is copied is what the phone shows.
+ */
+function blockCells(
+  blocks: NormalizedBlock[],
+  indent: string,
+  components: Set<string>,
+  icons: Set<string>,
+): string[] {
+  const cells: string[] = [];
+  const cell = (props: Array<string | null>) => cells.push(element("ListItem", props, undefined, indent));
+
+  for (const block of blocks) {
+    switch (block.kind) {
+      case "text":
+        cell([blockClass("text"), attr("title", block.text)]);
+        break;
+      case "list":
+        components.add("Icon");
+        icons.add("Check");
+        for (const item of block.items) {
+          cell([
+            blockClass("bullet"),
+            'icon={<Icon icon={Check} variant="flat" size={16} strokeWidth={3} />}',
+            attr("title", item),
+          ]);
+        }
+        break;
+      case "stat":
+        cell([blockClass("stat"), attr("icon", block.value), attr("title", block.label ?? ""), attr("subtitle", block.note)]);
+        break;
+      case "qa":
+        cell([blockClass("qa"), attr("title", block.question), attr("subtitle", block.answer)]);
+        break;
+      case "quote":
+        cell([blockClass("quote"), attr("title", block.text), attr("subtitle", block.source ? `— ${block.source}` : undefined)]);
+        break;
+      case "image":
+        cell([
+          blockClass("image"),
+          `title={<img className="spec-block__img" src=${DATA_URI} alt=${JSON.stringify(block.alt ?? "")} />}`,
+        ]);
+        break;
+      case "code":
+        cell([blockClass("code"), `title={<code>{${JSON.stringify(block.text)}}</code>}`]);
+        break;
+      case "link":
+        components.add("Icon");
+        icons.add("Link");
+        cell([
+          blockClass("link"),
+          'icon={<Icon icon={Link} variant="flat" size={16} />}',
+          attr("title", block.text),
+          `accessory="${block.external ? "detail" : "chevron"}"`,
+          attr("href", block.href),
+        ]);
+        break;
+    }
+  }
+  return cells;
 }
 
 /**
@@ -128,9 +202,18 @@ export function specToJsx(spec: ScreenSpec): string {
   const heroGroups = heroGroupCount(s);
   s.groups.slice(0, heroGroups).forEach(group);
 
-  if (s.sections.length > 0) {
+  if (s.intro.length > 0) {
     components.add("List").add("ListItem");
-    const cells = s.sections.map((section) =>
+    body.push(element("List", [], blockCells(s.intro, `${I}  `, components, icons), I));
+  }
+
+  // One grouped list per section, headed by its heading; headings the server
+  // sent no content for stay plain cells and share a single group.
+  let bare: NormalizedSection[] = [];
+  const flushBare = () => {
+    if (bare.length === 0) return;
+    components.add("List").add("ListItem");
+    const cells = bare.map((section) =>
       element(
         "ListItem",
         [
@@ -143,8 +226,44 @@ export function specToJsx(spec: ScreenSpec): string {
         `${I}  `,
       ),
     );
+    bare = [];
     body.push(element("List", [], cells, I));
+  };
+
+  for (const section of s.sections) {
+    if (section.blocks.length === 0) {
+      bare.push(section);
+      continue;
+    }
+    flushBare();
+    components.add("List").add("ListItem");
+    const cells = blockCells(section.blocks, `${I}  `, components, icons);
+    const linked = section.href;
+    if (
+      linked &&
+      urlKey(linked) !== urlKey(s.url) &&
+      !section.blocks.some((b) => b.kind === "link" && urlKey(b.href) === urlKey(linked))
+    ) {
+      components.add("Icon");
+      icons.add("Link");
+      cells.push(
+        element(
+          "ListItem",
+          [
+            blockClass("link"),
+            'icon={<Icon icon={Link} variant="flat" size={16} />}',
+            'title="Read more"',
+            'accessory="chevron"',
+            attr("href", linked),
+          ],
+          undefined,
+          `${I}  `,
+        ),
+      );
+    }
+    body.push(element("List", [attr("header", section.heading)], cells, I));
   }
+  flushBare();
 
   s.groups.slice(heroGroups).forEach(group);
 
@@ -203,8 +322,10 @@ export function specToJsx(spec: ScreenSpec): string {
   return `${imports}
 ${tabTable}
 // ${spec.host || "site"} as a 2009 iPhone app — generated by 3GS UI.
-// Layout: nav bar (+ search) pinned on top, hero row, content sections, link
-// groups and buttons in a scrolling pinstripe body, tab bar pinned to the bottom.
+// Layout: nav bar (+ search) pinned on top, hero row, intro copy, one grouped
+// list per section, link groups and buttons in a scrolling pinstripe body, tab
+// bar pinned to the bottom. The \`spec-block--*\` classes on the content cells
+// carry the block styles (see Blocks.css); drop them for plain library cells.
 export function ${componentName(spec.host || "")}() {
   return (
     <>
