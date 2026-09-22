@@ -43,11 +43,32 @@ export interface SpecTab {
   href?: string;
 }
 
-/** A content block: a heading with the paragraph that follows it (the page's actual copy). */
+/** One piece of page content inside a section. */
+export type SpecBlock =
+  /** A paragraph of copy. */
+  | { kind: "text"; text: string }
+  /** A bullet / checklist ("Unlimited projects", "SSO"). */
+  | { kind: "list"; items: string[] }
+  /** A number that stands alone: price, metric, stat. `label` is what it measures. */
+  | { kind: "stat"; value: string; label?: string; note?: string }
+  /** A question/answer pair (FAQ, definition list). */
+  | { kind: "qa"; question: string; answer: string }
+  /** A pull quote / testimonial. */
+  | { kind: "quote"; text: string; source?: string }
+  /** An in-page image (data: URI, already size-capped). */
+  | { kind: "image"; dataUri: string; alt?: string }
+  /** A code / command snippet. */
+  | { kind: "code"; text: string }
+  /** A link that belongs to this section's copy. */
+  | { kind: "link"; text: string; href: string; external: boolean };
+
+/** A chunk of the page: its heading plus the content that follows it. */
 export interface SpecSection {
   heading: string;
-  /** ≤ ~240 chars of lead text under the heading, when present. */
+  /** Lead text (the first paragraph) — kept for compatibility and quick rendering. */
   text?: string;
+  /** Everything else under this heading, in page order. */
+  blocks: SpecBlock[];
   /** Internal link when the heading itself linked somewhere. */
   href?: string;
 }
@@ -82,6 +103,8 @@ export interface ScreenSpec {
   actions: SpecAction[];
   /** Present when the site has a search form. */
   search?: { placeholder: string; scopes?: string[] };
+  /** Content that appears before the first heading (intro copy). */
+  intro?: SpecBlock[];
   /** Caveats for the UI ("client-rendered page, metadata only", …). */
   notes: string[];
   /** Which mapper produced it. */

@@ -105,3 +105,10 @@ Library `@3gs/ui` (packages/ui) + showcase site (apps/site). Icons via lucide-re
   link labels (first text chunk), title from <title> head, ?site= deep link (Vite reserves ?url).
 - [x] Navigable phone: tabs replace the root page, rows push screens with Back, pages render
       `sections` (heading + lead copy); subpage hero image deduped against the site's; "Open original ↗"
+
+## Batch 7 (2026-09-22) — more content + shareable page
+- [x] Contract: `SpecBlock` union (text/list/stat/qa/quote/image/code/link), `SpecSection.blocks`, `ScreenSpec.intro`; /p/ rewrite in vercel.json
+- [ ] Server: rich extraction (paragraphs, bullets, prices/stats, FAQ, quotes, in-page images, code), 10 sections × 8 blocks, drop the redundant Highlights group — agent
+- [ ] Client: render every block kind as iOS grouped-table cells — agent
+- [ ] Share page `/p/<site>`: phone only, meta injection via api/share.ts, og image proxy api/image.ts, dev parity — agent
+- [ ] Integrate: Share button in the preview UI, typecheck, build, deploy, verify unfurl

@@ -4,5 +4,6 @@
   "buildCommand": "pnpm --filter site build",
   "outputDirectory": "apps/site/dist",
   "framework": null,
-  "cleanUrls": true
+  "cleanUrls": true,
+  "rewrites": [{ "source": "/p/(.*)", "destination": "/api/share" }]
 }
