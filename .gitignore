@@ -6,6 +6,7 @@ dist
 .playwright-mcp
 *.png
 !apps/site/public/**
+!marketing/assets/**
 .packs
 .vercel
 .env*
