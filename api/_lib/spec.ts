@@ -79,6 +79,57 @@ export interface SpecSection {
   href?: string;
 }
 
+/** A scope button under the search field; `href` makes it navigate. */
+export interface SpecScope {
+  label: string;
+  href?: string;
+}
+
+export interface SpecSearch {
+  placeholder: string;
+  scopes?: SpecScope[];
+  /** Absolute URL the query is sent to (GET forms only; POST forms are not submitted). */
+  action?: string;
+  method?: "get" | "post";
+  /** Query parameter name, e.g. "q". */
+  param?: string;
+  /** Hidden fields the form carries (kept so the built URL matches the real one). */
+  hidden?: Array<{ name: string; value: string }>;
+}
+
+/** One control of a form on the page. */
+export type SpecField =
+  | {
+      kind: "text";
+      name: string;
+      label: string;
+      inputType: "text" | "email" | "password" | "search" | "tel" | "url" | "number" | "date";
+      placeholder?: string;
+      value?: string;
+      required?: boolean;
+    }
+  | { kind: "textarea"; name: string; label: string; placeholder?: string; value?: string; required?: boolean }
+  | { kind: "toggle"; name: string; label: string; value?: boolean }
+  /** A select or a radio group: `segmented` for ≤ 3 short options, `picker` otherwise. */
+  | {
+      kind: "choice";
+      name: string;
+      label: string;
+      options: Array<{ label: string; value: string }>;
+      value?: string;
+      style: "segmented" | "picker";
+    };
+
+export interface SpecForm {
+  /** Heading the form sits under, e.g. "Contact us". */
+  title?: string;
+  /** Absolute action URL; GET forms can be submitted (we preview the result page). */
+  action?: string;
+  method: "get" | "post";
+  fields: SpecField[];
+  submitLabel?: string;
+}
+
 export interface SpecAction {
   label: string;
   variant: "default" | "primary" | "destructive";
@@ -108,7 +159,9 @@ export interface ScreenSpec {
   /** Gel buttons (max 3). */
   actions: SpecAction[];
   /** Present when the site has a search form. */
-  search?: { placeholder: string; scopes?: string[] };
+  search?: SpecSearch;
+  /** Interactive forms found on the page (contact, sign-up, settings, filters). */
+  forms?: SpecForm[];
   /** Content that appears before the first heading (intro copy). */
   intro?: SpecBlock[];
   /** Caveats for the UI ("client-rendered page, metadata only", …). */

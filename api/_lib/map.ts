@@ -508,11 +508,12 @@ function buildActions(ctas: ExtractedLink[], host: string, url: string): SpecAct
 /* search ------------------------------------------------------------- */
 
 function buildSearch(placeholder: string | undefined, siteName: string, navLinks: ExtractedLink[]): ScreenSpec["search"] {
+  // Scopes double as navigation: each keeps the link it came from.
   const scopes = navLinks
-    .filter((l) => !l.isHome)
-    .map((l) => tidyLabel(l.text))
-    .filter((t) => t.length <= 10)
-    .filter((t, i, arr) => arr.findIndex((o) => o.toLowerCase() === t.toLowerCase()) === i)
+    .filter((l) => !l.isHome && !l.external)
+    .map((l) => ({ label: tidyLabel(l.text), href: l.href }))
+    .filter((s) => s.label.length <= 10)
+    .filter((s, i, arr) => arr.findIndex((o) => o.label.toLowerCase() === s.label.toLowerCase()) === i)
     .slice(0, 3);
   const search: NonNullable<ScreenSpec["search"]> = {
     placeholder: placeholder && placeholder.length <= 40 ? placeholder : truncate(`Search ${siteName}`, 32),

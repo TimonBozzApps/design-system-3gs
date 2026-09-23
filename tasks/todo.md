@@ -118,3 +118,9 @@ Library `@3gs/ui` (packages/ui) + showcase site (apps/site). Icons via lucide-re
   (0.2–2.2 s), negatives rejected (the 4 MB page is truncated, not rejected — expectation updated).
 - [x] Feed/index pages (HN, changelogs, blog indexes): structural-signature item detection → a feed
       group with title + meta rows; feed titles wrap to 2 lines; status-bar carrier drops when too long
+
+## Batch 8 (2026-09-23) — interactive phone
+- [x] Contract: `SpecSearch` (action/method/param/hidden), `SpecScope {label, href}`, `SpecField`/`SpecForm`, `ScreenSpec.forms`
+- [ ] Server: real search target (form action, param, hidden fields, search-link sites like HN→Algolia) + page form extraction — agent
+- [ ] Client: scope buttons navigate, search submits and pushes the result page, form fields render as editable 3GS controls, GET forms submit — agent
+- [ ] Integrate: typecheck, smoke, deploy, verify HN search + scopes end to end
