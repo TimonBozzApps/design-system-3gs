@@ -121,6 +121,11 @@ Library `@3gs/ui` (packages/ui) + showcase site (apps/site). Icons via lucide-re
 
 ## Batch 8 (2026-09-23) — interactive phone
 - [x] Contract: `SpecSearch` (action/method/param/hidden), `SpecScope {label, href}`, `SpecField`/`SpecForm`, `ScreenSpec.forms`
-- [ ] Server: real search target (form action, param, hidden fields, search-link sites like HN→Algolia) + page form extraction — agent
-- [ ] Client: scope buttons navigate, search submits and pushes the result page, form fields render as editable 3GS controls, GET forms submit — agent
-- [ ] Integrate: typecheck, smoke, deploy, verify HN search + scopes end to end
+- [x] Server: real search target (form action, param, hidden fields, search-link sites like HN→Algolia) + page form extraction — agent
+- [x] Client: scope buttons navigate, search submits and pushes the result page, form fields render as editable 3GS controls, GET forms submit — agent
+- [x] Integrate: typecheck, smoke, deploy, verify HN search + scopes end to end
+- Batch 8 review: HN search → hn.algolia.com?q=…, Wikipedia → Special:Search with its hidden field;
+  scopes navigate (new/past/comments → real HN pages); page forms extracted (GitHub signup, httpbin
+  pizza form, Wikipedia login) and editable in the phone, GET forms submit for real.
+- PostHog dashboard "3GS UI — site & previews" (id 969655, pinned): traffic, referrers, preview funnel,
+  sites previewed, success/failure, sections read, share/export intent, outbound clicks, theme/RTL, errors.

@@ -185,7 +185,69 @@ export const FIXTURE: ScreenSpec = {
     { label: "Start Deploying", variant: "primary", href: "https://vercel.com/new" },
     { label: "Get a Demo", variant: "default", href: "https://vercel.com/contact/sales" },
   ],
-  search: { placeholder: "Search docs and templates", scopes: ["Docs", "Templates", "Blog"] },
+  // A GET search form: typing here really loads `…/templates?q=<query>`.
+  search: {
+    placeholder: "Search templates",
+    scopes: [
+      { label: "Docs", href: "https://vercel.com/docs" },
+      { label: "Templates", href: "https://vercel.com/templates" },
+      { label: "Blog", href: "https://vercel.com/blog" },
+    ],
+    action: "https://vercel.com/templates",
+    method: "get",
+    param: "q",
+  },
+  // Two forms, one of each kind: the filter really submits (GET + action),
+  // the contact form can only be shown (POST).
+  forms: [
+    {
+      title: "Find a template",
+      action: "https://vercel.com/templates",
+      method: "get",
+      submitLabel: "Show templates",
+      fields: [
+        { kind: "text", name: "q", label: "Search", inputType: "search", placeholder: "blog, commerce, ai…" },
+        {
+          kind: "choice",
+          name: "framework",
+          label: "Framework",
+          style: "picker",
+          value: "next.js",
+          options: [
+            { label: "Next.js", value: "next.js" },
+            { label: "Svelte", value: "svelte" },
+            { label: "Nuxt", value: "nuxt" },
+            { label: "Astro", value: "astro" },
+            { label: "Remix", value: "remix" },
+          ],
+        },
+        {
+          kind: "choice",
+          name: "type",
+          label: "Type",
+          style: "segmented",
+          value: "site",
+          options: [
+            { label: "Site", value: "site" },
+            { label: "App", value: "app" },
+            { label: "API", value: "api" },
+          ],
+        },
+        { kind: "toggle", name: "free", label: "Free only", value: true },
+      ],
+    },
+    {
+      title: "Talk to an expert",
+      action: "https://vercel.com/contact/sales",
+      method: "post",
+      submitLabel: "Contact sales",
+      fields: [
+        { kind: "text", name: "name", label: "Name", inputType: "text", placeholder: "Ada Lovelace", required: true },
+        { kind: "text", name: "email", label: "Email", inputType: "email", placeholder: "you@company.com", required: true },
+        { kind: "textarea", name: "message", label: "Message", placeholder: "What are you building?" },
+      ],
+    },
+  ],
   notes: ["Sample — paste a URL above to generate a real one."],
   generator: "heuristic",
   generatedAt: "2026-09-21T09:41:00.000Z",

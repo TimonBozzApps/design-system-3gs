@@ -3,8 +3,8 @@
  * I/O, so an AI-backed mapper can replace it behind the same signature.
  * It must never throw: every input is optional and every list is clamped.
  */
-import type { Extracted, ExtractedBlock, ExtractedLink } from "./extract.js";
-import type { IconName, ScreenSpec, SpecAction, SpecBlock, SpecGroup, SpecRow, SpecSection, SpecTab } from "./spec.js";
+import type { Extracted, ExtractedBlock, ExtractedForm, ExtractedLink, ExtractedSearch } from "./extract.js";
+import type { IconName, ScreenSpec, SpecAction, SpecBlock, SpecForm, SpecGroup, SpecRow, SpecScope, SpecSection, SpecTab } from "./spec.js";
 
 export interface MapContext {
   /** Site icon as a data: URI, when it could be fetched. */
@@ -31,6 +31,12 @@ const MAX_ACTION_LABEL = 22;
 const MAX_ROW_TITLE = 64;
 const MAX_SUBTITLE = 120;
 const MAX_NOTES = 2;
+const MAX_FORMS = 3;
+const MAX_FORM_FIELDS = 8;
+const MAX_FORM_TITLE = 40;
+const MAX_SCOPES = 3;
+const MAX_SCOPE_LABEL = 12;
+const MAX_HIDDEN_INPUTS = 5;
 
 /* ------------------------------------------------------------------ */
 /* keyword → icon                                                      */
@@ -158,6 +164,7 @@ export function mapToSpec(extracted: Extracted, ctx: MapContext = {}): ScreenSpe
     sections: extracted.sections ?? [],
     intro: extracted.intro ?? [],
     inlineImages: extracted.inlineImages ?? [],
+    forms: extracted.forms ?? [],
     sectionsFound: extracted.sectionsFound ?? (extracted.sections ?? []).length,
   };
   const host = stripWww(x.host || safeHost(x.url));
@@ -178,14 +185,18 @@ export function mapToSpec(extracted: Extracted, ctx: MapContext = {}): ScreenSpe
   const groups = buildGroups(x, { siteName, description, usedHrefs, sectionHrefs, feedHrefs, ctx });
   if (feed) groups.unshift(feed);
   const actions = buildActions(x.ctas, host, x.url);
-  const search = x.search ? buildSearch(x.search.placeholder, siteName, x.navLinks) : undefined;
+  const search = x.search ? buildSearch(x.search, siteName, x.navLinks) : undefined;
+  const forms = buildForms(x.forms);
 
-  // A page whose list of items came through is not "metadata only", however little prose it has.
-  if (x.clientRendered && !feed) notes.push("Client-rendered page — showing metadata only.");
+  // A page whose list of items — or whose form — came through is not "metadata only",
+  // however little prose it has.
+  if (x.clientRendered && !feed && !forms.length) notes.push("Client-rendered page — showing metadata only.");
   if (x.sectionsFound > sections.length && sections.length >= 3) {
     notes.push(`Long page — showing the first ${sections.length} sections.`);
   }
   if (padded) notes.push("No navigation found; tabs are generic.");
+  // A GET form can be submitted for real (the result page previews); a POST one cannot.
+  if (forms.length && forms.every((f) => f.method === "post")) notes.push("Forms are previews — submitting opens the site.");
 
   const spec: ScreenSpec = {
     url: x.url,
@@ -206,6 +217,7 @@ export function mapToSpec(extracted: Extracted, ctx: MapContext = {}): ScreenSpe
     generatedAt: (ctx.now ?? new Date()).toISOString(),
   };
   if (intro.length) spec.intro = intro;
+  if (forms.length) spec.forms = forms;
   enforceSize(spec);
   return spec;
 }
@@ -507,17 +519,62 @@ function buildActions(ctas: ExtractedLink[], host: string, url: string): SpecAct
 
 /* search ------------------------------------------------------------- */
 
-function buildSearch(placeholder: string | undefined, siteName: string, navLinks: ExtractedLink[]): ScreenSpec["search"] {
-  // Scopes double as navigation: each keeps the link it came from.
-  const scopes = navLinks
+/**
+ * The search bar: what it says, where a query goes, and what sits under it.
+ * Scopes come from the search form's own filters when it has any (they belong
+ * to the search); otherwise nav links double as scopes and keep their hrefs.
+ */
+function buildSearch(search: ExtractedSearch, siteName: string, navLinks: ExtractedLink[]): ScreenSpec["search"] {
+  const out: NonNullable<ScreenSpec["search"]> = {
+    placeholder:
+      search.placeholder && search.placeholder.length <= 40 ? search.placeholder : truncate(`Search ${siteName}`, 32),
+  };
+  if (search.action) {
+    out.action = search.action;
+    // A POST search cannot be submitted from the phone; the client disables it.
+    out.method = search.method;
+    out.param = search.param || "q";
+    if (search.hidden?.length) out.hidden = search.hidden.slice(0, MAX_HIDDEN_INPUTS);
+  }
+  const scopes = formScopes(search.scopes) ?? navScopes(navLinks);
+  if (scopes.length >= 2) out.scopes = scopes;
+  return out;
+}
+
+/** Filters inside the search form: real scopes, so they navigate nowhere on their own. */
+function formScopes(labels: string[] | undefined): SpecScope[] | undefined {
+  if (!labels?.length) return undefined;
+  const scopes = labels
+    .map((label) => ({ label: truncate(tidyLabel(label), MAX_SCOPE_LABEL) }))
+    .filter((s, i, arr) => s.label.length >= 1 && arr.findIndex((o) => o.label.toLowerCase() === s.label.toLowerCase()) === i)
+    .slice(0, MAX_SCOPES);
+  return scopes.length >= 2 ? scopes : undefined;
+}
+
+/** Scopes double as navigation: each keeps the link it came from. */
+function navScopes(navLinks: ExtractedLink[]): SpecScope[] {
+  return navLinks
     .filter((l) => !l.isHome && !l.external)
     .map((l) => ({ label: tidyLabel(l.text), href: l.href }))
     .filter((s) => s.label.length <= 10)
     .filter((s, i, arr) => arr.findIndex((o) => o.label.toLowerCase() === s.label.toLowerCase()) === i)
-    .slice(0, 3);
-  const search: NonNullable<ScreenSpec["search"]> = {
-    placeholder: placeholder && placeholder.length <= 40 ? placeholder : truncate(`Search ${siteName}`, 32),
-  };
-  if (scopes.length >= 2) search.scopes = scopes;
-  return search;
+    .slice(0, MAX_SCOPES);
+}
+
+/* forms -------------------------------------------------------------- */
+
+/** The page's forms, the one with the most to fill in first. */
+function buildForms(forms: ExtractedForm[]): SpecForm[] {
+  return forms
+    .filter((f) => f.fields.length > 0)
+    .map((form, order) => ({ form, order }))
+    .sort((a, b) => b.form.fields.length - a.form.fields.length || a.order - b.order)
+    .slice(0, MAX_FORMS)
+    .map(({ form }) => {
+      const out: SpecForm = { method: form.method, fields: form.fields.slice(0, MAX_FORM_FIELDS) };
+      if (form.title) out.title = truncate(form.title, MAX_FORM_TITLE);
+      if (form.action) out.action = form.action;
+      out.submitLabel = form.submitLabel ?? "Submit";
+      return out;
+    });
 }

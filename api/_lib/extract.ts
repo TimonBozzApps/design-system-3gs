@@ -65,6 +65,52 @@ export interface ExtractedFeed {
   total: number;
 }
 
+/** Everything needed to run the site's own search from the phone. */
+export interface ExtractedSearch {
+  placeholder?: string;
+  /** Absolute URL a query is sent to; absent when the page only shows a search box. */
+  action?: string;
+  method: "get" | "post";
+  /** Query parameter name — the field's own `name`, or "q". */
+  param: string;
+  /** Hidden inputs the form carries, so a built URL matches the real one. */
+  hidden?: Array<{ name: string; value: string }>;
+  /** Filter labels found inside the search form (a radio group / a `select`). */
+  scopes?: string[];
+}
+
+/** One control of a page form. Mirrors `SpecField` (spec.ts). */
+export type ExtractedField =
+  | {
+      kind: "text";
+      name: string;
+      label: string;
+      inputType: "text" | "email" | "password" | "search" | "tel" | "url" | "number" | "date";
+      placeholder?: string;
+      value?: string;
+      required?: boolean;
+    }
+  | { kind: "textarea"; name: string; label: string; placeholder?: string; value?: string; required?: boolean }
+  | { kind: "toggle"; name: string; label: string; value?: boolean }
+  | {
+      kind: "choice";
+      name: string;
+      label: string;
+      options: Array<{ label: string; value: string }>;
+      value?: string;
+      style: "segmented" | "picker";
+    };
+
+/** A form the page shows a visitor. Mirrors `SpecForm` (spec.ts). */
+export interface ExtractedForm {
+  title?: string;
+  /** Absolute action URL; a GET form's hidden inputs are already folded into its query. */
+  action?: string;
+  method: "get" | "post";
+  fields: ExtractedField[];
+  submitLabel?: string;
+}
+
 export interface Extracted {
   /** Final URL (after redirects). */
   url: string;
@@ -93,7 +139,9 @@ export interface Extracted {
   /** Absolute URLs of the in-page images worth fetching, best first (≤ 3). */
   inlineImages: string[];
   ctas: ExtractedLink[];
-  search?: { placeholder?: string; action?: string };
+  search?: ExtractedSearch;
+  /** Forms a visitor can fill in (contact, sign-up, settings, filters), most substantial first. */
+  forms: ExtractedForm[];
   footerLinks: ExtractedLink[];
   /** Visible text (script/style/noscript excluded) is tiny or the body is a bare SPA mount point. */
   clientRendered: boolean;
@@ -177,7 +225,9 @@ export function extract(html: string, finalUrl: string): Extracted {
     content.intro = content.intro.filter((b) => !repeatsFeed(b, found.titles, feedImages));
   }
   const ctas = collectCtas(root, links);
-  const search = detectSearch(root, base);
+  const foundSearch = detectSearch(root, allAnchors, links, page, base);
+  const search = foundSearch?.search;
+  const forms = collectForms(root, page, base, foundSearch?.form);
   const footerLinks = collectFooterLinks(root, allAnchors, html.length, links, navLinks);
 
   const clientRendered = visibleText.length < CLIENT_RENDERED_TEXT_THRESHOLD || isBareSpaMount(body);
@@ -207,6 +257,7 @@ export function extract(html: string, finalUrl: string): Extracted {
     inlineImages,
     ctas,
     search,
+    forms,
     footerLinks,
     clientRendered,
     textLength: visibleText.length,
@@ -478,40 +529,6 @@ function collectCtas(root: HTMLElement, links: LinkCollector): ExtractedLink[] {
     if (out.length >= MAX_CTAS) break;
   }
   return out;
-}
-
-function detectSearch(root: HTMLElement, base: URL): Extracted["search"] | undefined {
-  const inputs = root.querySelectorAll("input");
-  let match: HTMLElement | undefined;
-  for (const input of inputs) {
-    const type = (input.getAttribute("type") ?? "").toLowerCase();
-    if (type === "search") {
-      match = input;
-      break;
-    }
-  }
-  if (!match) {
-    for (const input of inputs) {
-      const type = (input.getAttribute("type") ?? "").toLowerCase();
-      if (!SEARCH_INPUT_TYPES.has(type)) continue;
-      const hay = [input.getAttribute("name"), input.getAttribute("placeholder"), input.getAttribute("aria-label"), input.getAttribute("id")]
-        .filter(Boolean)
-        .join(" ");
-      if (SEARCH_RE.test(hay) || hasAncestor(input, new Set(["FORM"])) && input.closest("form[role=search]")) {
-        match = input;
-        break;
-      }
-    }
-  }
-  if (!match) {
-    const form = root.querySelector("form[role=search]");
-    if (!form) return undefined;
-    match = form.querySelector("input") ?? form;
-  }
-  const form = match.closest("form");
-  const action = form ? absolute(form.getAttribute("action") ?? "", base)?.href : undefined;
-  const placeholder = clean(match.getAttribute("placeholder")) ?? clean(match.getAttribute("aria-label"));
-  return { placeholder: placeholder && placeholder.length <= 40 ? placeholder : undefined, action };
 }
 
 function collectFooterLinks(
@@ -1657,4 +1674,661 @@ function dedupeCandidates(bucket: FeedCandidate[]): FeedCandidate[] {
     out.push(c);
   }
   return out;
+}
+
+/* ------------------------------------------------------------------ */
+/* search + forms: the page's interactive parts                        */
+/* ------------------------------------------------------------------ */
+
+const MAX_FORMS = 3;
+const MAX_FORM_FIELDS = 8;
+const MAX_FIELD_OPTIONS = 12;
+const MAX_HIDDEN_INPUTS = 5;
+const MAX_FIELD_LABEL = 32;
+const MAX_FIELD_VALUE = 120;
+const MAX_HIDDEN_VALUE = 512;
+const MAX_FORM_TITLE = 60;
+const MAX_SUBMIT_LABEL = 32;
+/** Forms looked at before we stop scanning (cookie walls and trackers add many). */
+const MAX_FORMS_SCANNED = 16;
+/** A choice this small, with labels this short, fits a segmented control. */
+const SEGMENTED_MAX_OPTIONS = 3;
+const SEGMENTED_MAX_LABEL = 10;
+/** Scope buttons are two or three short words; longer filters stay inside the form. */
+const SCOPE_MAX_LABEL = 12;
+const MAX_SCOPES = 3;
+/** A heading longer than this belongs to the page, not to the form under it. */
+const FORM_HEADING_MAX = 48;
+
+/** Names a query field goes by even when nothing else on it says "search". */
+const SEARCH_PARAM_NAMES = new Set([
+  "q", "s", "query", "search", "searchterm", "search_query", "keyword", "keywords", "term", "suche",
+]);
+/** `<a>Search</a>` — where the site's search lives when the page has no search form. */
+const SEARCH_LINK_TEXT_RE = /^(search|suche|buscar|recherche|site search|search (?:the )?(?:site|docs|website))\b/i;
+/** A path that IS a search page. */
+const SEARCH_PATH_RE = /(^|\/)(search|suche|recherche|buscar)(\/|\.\w{2,4})?$/i;
+/** "search" as a whole word in a host or path — `search.debian.org`, yes; `/research/`, no. */
+const SEARCH_WORD_RE = /(^|[^a-z])(search|suche|recherche|buscar)([^a-z]|$)/i;
+/** Input types that never become a field. */
+const SKIP_INPUT_TYPES = new Set(["hidden", "file", "submit", "reset", "button", "image"]);
+/** `input` types that map straight onto a text field; everything else textual falls back to "text". */
+const TEXT_INPUT_TYPES = new Set(["text", "email", "password", "search", "tel", "url", "number", "date"]);
+/** Spam traps: never shown to a human, never worth showing on a phone. */
+const HONEYPOT_RE = /honeypot|hp_|url_check|(^|[_\-\[])bot([_\-\]]|$)/i;
+/** One class token that means "not on screen" — `overflow-hidden` is not one of them. */
+const HIDDEN_CLASS_RE =
+  /^(?:is-|js-)?(?:hidden|hide|invisible|d-none)$|^(?:sr-only|visually-?hidden|screen-?reader(?:-only|-text)?|a11y-hidden)$/i;
+/** A one-field email box is a newsletter sign-up, not the page's form. */
+const NEWSLETTER_RE = /newsletter|subscribe|mailing|mailchimp|substack|beehiiv|convertkit|klaviyo/i;
+/** Text inside a `<label>` that belongs to a control, not to the label's own words. */
+const LABEL_SKIP_TAGS = new Set([
+  "SELECT", "TEXTAREA", "BUTTON", "INPUT", "SCRIPT", "STYLE", "NOSCRIPT", "SVG", "TEMPLATE", "DATALIST", "OPTION",
+]);
+/** "(required)" / "*" at the end of a label: a flag, not part of the name. */
+const REQUIRED_SUFFIX_RE =
+  /\s*(?:[*✱﹡]+|\(\s*(?:required|pflichtfeld|erforderlich|obligatoire|obligatorio)\s*\)|\brequired\b)\s*$/i;
+const OPTIONAL_SUFFIX_RE = /\s*\(\s*(?:optional|freiwillig|opcional|facultatif)\s*\)\s*$/i;
+
+function lowerAttr(el: HTMLElement, name: string): string {
+  return (el.getAttribute(name) ?? "").trim().toLowerCase();
+}
+
+/** A `<form>`'s target, absolute. No action means the form posts back to the page itself. */
+function formAction(form: HTMLElement, page: URL, base: URL): string | undefined {
+  const raw = (form.getAttribute("action") ?? "").trim();
+  if (!raw) return page.href;
+  if (raw.startsWith("#") || /^(javascript|data|mailto|tel|blob):/i.test(raw)) return undefined;
+  const url = absolute(raw, base);
+  if (!url) return undefined;
+  url.hash = "";
+  return url.href;
+}
+
+function formMethod(form: HTMLElement): "get" | "post" {
+  const m = lowerAttr(form, "method");
+  return m && m !== "get" ? "post" : "get";
+}
+
+/** Style / class / attribute that takes an element off the screen. */
+function isHiddenish(el: HTMLElement): boolean {
+  if (el.getAttribute("hidden") !== undefined) return true;
+  if (lowerAttr(el, "aria-hidden") === "true") return true;
+  const style = lowerAttr(el, "style");
+  if (style && /(^|;)\s*(display\s*:\s*none|visibility\s*:\s*hidden)/.test(style)) return true;
+  const cls = el.getAttribute("class") ?? "";
+  if (!cls || cls.length > 240) return false;
+  return cls.split(/\s+/).some((c) => c && HIDDEN_CLASS_RE.test(c));
+}
+
+/** The label's own words: a nested `select`'s options are not part of them. */
+function labelText(el: HTMLElement | undefined): string | undefined {
+  if (!el) return undefined;
+  const parts: string[] = [];
+  const walk = (node: HTMLElement): void => {
+    for (const n of node.childNodes) {
+      if (n instanceof HTMLElement) {
+        if (LABEL_SKIP_TAGS.has(n.tagName)) continue;
+        walk(n);
+      } else {
+        parts.push(n.text);
+      }
+    }
+  };
+  walk(el);
+  return clean(parts.join(" "));
+}
+
+/** `label[for]` → the label, built once per form. */
+function formLabels(form: HTMLElement): Map<string, HTMLElement> {
+  const out = new Map<string, HTMLElement>();
+  for (const label of form.querySelectorAll("label[for]")) {
+    const target = label.getAttribute("for");
+    if (target && !out.has(target)) out.set(target, label);
+  }
+  return out;
+}
+
+function labelledBy(el: HTMLElement, root: HTMLElement): string | undefined {
+  const ids = (el.getAttribute("aria-labelledby") ?? "").trim().split(/\s+/).filter(Boolean).slice(0, 3);
+  if (!ids.length) return undefined;
+  const parts = ids.map((id) => labelText(root.getElementById(id) ?? undefined)).filter(Boolean);
+  return clean(parts.join(" "));
+}
+
+/** "first_name" → "First name", "user[email]" → "Email". */
+function humaniseName(name: string | null | undefined): string | undefined {
+  const raw = clean(name);
+  if (!raw) return undefined;
+  const last = raw.split(/[[\].]+/).filter(Boolean).pop() ?? raw;
+  const words = last
+    .replace(/[_\-+]+/g, " ")
+    .replace(/([a-z\d])([A-Z])/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!words || !/[a-z]/i.test(words)) return undefined;
+  const lower = words.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
+/** Drop the decoration a label carries: a trailing colon, an asterisk, "(required)". */
+function tidyFieldLabel(raw: string): { label: string; required: boolean } {
+  let text = clean(raw) ?? "";
+  let required = false;
+  if (/^[*✱]\s*/.test(text)) {
+    required = true;
+    text = text.replace(/^[*✱]\s*/, "");
+  }
+  for (let i = 0; i < 4; i++) {
+    const before = text;
+    if (REQUIRED_SUFFIX_RE.test(text)) {
+      required = true;
+      text = text.replace(REQUIRED_SUFFIX_RE, "");
+    }
+    text = text.replace(OPTIONAL_SUFFIX_RE, "").replace(/[:：]\s*$/, "").trim();
+    if (text === before) break;
+  }
+  const label = truncateWords(text || (clean(raw) ?? ""), MAX_FIELD_LABEL);
+  return { label, required };
+}
+
+/**
+ * What a control is called, in the order a browser would: `label[for]`, the
+ * `label` around it, `aria-label(ledby)`, the placeholder, and — last — its
+ * own `name` made readable. `weak` marks a name so short it says nothing.
+ */
+function fieldLabel(el: HTMLElement, labels: Map<string, HTMLElement>, root: HTMLElement): { text: string; weak: boolean } | undefined {
+  const id = el.getAttribute("id");
+  let text = id ? labelText(labels.get(id)) : undefined;
+  if (!text) text = labelText(ancestorsOf(el, 4).find((p) => p.tagName === "LABEL"));
+  if (!text) text = clean(el.getAttribute("aria-label"));
+  if (!text) text = labelledBy(el, root);
+  if (!text) text = clean(el.getAttribute("placeholder"));
+  if (text) return { text, weak: false };
+  const humanised = humaniseName(el.getAttribute("name") ?? el.getAttribute("id"));
+  return humanised ? { text: humanised, weak: humanised.length < 3 } : undefined;
+}
+
+/** The label of a single option inside a group (a radio / a checkbox). */
+function optionLabel(el: HTMLElement, labels: Map<string, HTMLElement>, root: HTMLElement): string | undefined {
+  const found = fieldLabel(el, labels, root);
+  if (!found) return undefined;
+  return tidyFieldLabel(found.text).label || undefined;
+}
+
+function slug(text: string): string {
+  return text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "_").replace(/^_+|_+$/g, "") || "field";
+}
+
+/** 2–3 short options are buttons in a row; anything else is a picker. */
+function choiceStyle(options: Array<{ label: string }>): "segmented" | "picker" {
+  return options.length >= 2 && options.length <= SEGMENTED_MAX_OPTIONS && options.every((o) => o.label.length <= SEGMENTED_MAX_LABEL)
+    ? "segmented"
+    : "picker";
+}
+
+/** Keep the first options, but never lose the one that is actually selected. */
+function capOptions(options: Array<{ label: string; value: string }>, selected: string | undefined): Array<{ label: string; value: string }> {
+  if (options.length <= MAX_FIELD_OPTIONS) return options;
+  const kept = options.slice(0, MAX_FIELD_OPTIONS);
+  if (selected !== undefined && !kept.some((o) => o.value === selected)) {
+    const chosen = options.find((o) => o.value === selected);
+    if (chosen) kept.splice(MAX_FIELD_OPTIONS - 1, 1, chosen);
+  }
+  return kept;
+}
+
+function selectField(el: HTMLElement, name: string, label: string): ExtractedField | undefined {
+  const options: Array<{ label: string; value: string }> = [];
+  let selected: string | undefined;
+  for (const option of el.querySelectorAll("option")) {
+    const text = clean(labelText(option) ?? option.text);
+    const value = option.getAttribute("value") ?? text;
+    if (value === undefined || value === null || value.length > MAX_FIELD_VALUE) continue;
+    const optionLabelText = truncateWords(text ?? value, MAX_FIELD_LABEL);
+    if (!optionLabelText) continue;
+    if (option.getAttribute("selected") !== undefined && selected === undefined) selected = value;
+    options.push({ label: optionLabelText, value });
+  }
+  if (options.length < 2) return undefined;
+  if (selected === undefined) selected = options[0].value;
+  const capped = capOptions(options, selected);
+  const field: ExtractedField = { kind: "choice", name, label, options: capped, style: choiceStyle(capped) };
+  if (selected !== undefined) field.value = selected;
+  return field;
+}
+
+/** A radio group, or a set of checkboxes sharing a name: one control, several options. */
+function groupField(
+  group: HTMLElement[],
+  name: string,
+  label: string,
+  labels: Map<string, HTMLElement>,
+  root: HTMLElement,
+): ExtractedField | undefined {
+  const options: Array<{ label: string; value: string }> = [];
+  let selected: string | undefined;
+  for (const el of group) {
+    const value = el.getAttribute("value") ?? "on";
+    if (value.length > MAX_FIELD_VALUE) continue;
+    const text = optionLabel(el, labels, root) ?? humaniseName(value);
+    if (!text || options.some((o) => o.value === value)) continue;
+    if (el.getAttribute("checked") !== undefined && selected === undefined) selected = value;
+    options.push({ label: text, value });
+  }
+  if (options.length < 2) return undefined;
+  const capped = capOptions(options, selected);
+  const field: ExtractedField = { kind: "choice", name, label, options: capped, style: choiceStyle(capped) };
+  if (selected !== undefined) field.value = selected;
+  return field;
+}
+
+/** The group's own name: its `fieldset`'s legend, a radiogroup's aria-label, or the field name. */
+function groupLabel(el: HTMLElement, name: string, form: HTMLElement): string {
+  for (const p of ancestorsOf(el, 6)) {
+    if (p === form) break;
+    const aria = clean(p.getAttribute("aria-label"));
+    if (aria && (p.tagName === "FIELDSET" || lowerAttr(p, "role") === "radiogroup" || lowerAttr(p, "role") === "group")) return aria;
+    if (p.tagName !== "FIELDSET") continue;
+    const legend = labelText(p.querySelector("legend") ?? undefined);
+    if (legend) return legend;
+  }
+  return humaniseName(name) ?? name;
+}
+
+interface FieldContext {
+  form: HTMLElement;
+  labels: Map<string, HTMLElement>;
+  root: HTMLElement;
+}
+
+/** One control → one field, or `undefined` when there is nothing a reader could make of it. */
+function buildField(el: HTMLElement, ctx: FieldContext, groups: Map<string, HTMLElement[]>): ExtractedField | undefined {
+  const tag = el.tagName;
+  const type = lowerAttr(el, "type");
+  const rawName = clean(el.getAttribute("name"));
+
+  // Radios and same-name checkboxes are one control with several options.
+  const group = rawName && (type === "radio" || type === "checkbox") ? groups.get(`${type}:${rawName}`) : undefined;
+  if (rawName && group && group.length > 1) {
+    const { label } = tidyFieldLabel(groupLabel(el, rawName, ctx.form));
+    return label ? groupField(group, rawName, label, ctx.labels, ctx.root) : undefined;
+  }
+
+  const found = fieldLabel(el, ctx.labels, ctx.root);
+  if (!found || found.weak) return undefined;
+  const { label, required } = tidyFieldLabel(found.text);
+  if (!label) return undefined;
+  const name = rawName ?? clean(el.getAttribute("id")) ?? slug(label);
+  const isRequired = required || el.getAttribute("required") !== undefined || lowerAttr(el, "aria-required") === "true";
+  const placeholder = clean(el.getAttribute("placeholder"));
+
+  if (tag === "SELECT") return selectField(el, name, label);
+
+  if (tag === "TEXTAREA") {
+    const field: ExtractedField = { kind: "textarea", name, label };
+    if (placeholder && placeholder !== label) field.placeholder = truncateWords(placeholder, MAX_FIELD_VALUE);
+    const value = clean(el.structuredText);
+    if (value) field.value = truncateWords(value, MAX_FIELD_VALUE);
+    if (isRequired) field.required = true;
+    return field;
+  }
+
+  // A checkbox, or a radio nobody gave a second option to: one thing, on or off.
+  if (type === "checkbox" || type === "radio") {
+    const field: ExtractedField = { kind: "toggle", name, label };
+    if (el.getAttribute("checked") !== undefined) field.value = true;
+    return field;
+  }
+
+  const inputType = TEXT_INPUT_TYPES.has(type) ? (type as "text") : "text";
+  const field: ExtractedField = { kind: "text", name, label, inputType };
+  if (placeholder && placeholder !== label) field.placeholder = truncateWords(placeholder, MAX_FIELD_VALUE);
+  const value = clean(el.getAttribute("value"));
+  if (value) field.value = truncateWords(value, MAX_FIELD_VALUE);
+  if (isRequired) field.required = true;
+  return field;
+}
+
+/** Hidden inputs a submitted URL must carry (`title=Special:Search`, an index name, a source tag). */
+function hiddenInputs(form: HTMLElement, skip?: string): Array<{ name: string; value: string }> {
+  const out: Array<{ name: string; value: string }> = [];
+  for (const el of form.querySelectorAll("input[type=hidden]")) {
+    const name = clean(el.getAttribute("name"));
+    const value = el.getAttribute("value");
+    if (!name || name === skip || !value || value.length > MAX_HIDDEN_VALUE) continue;
+    if (out.some((h) => h.name === name)) continue;
+    out.push({ name, value });
+    if (out.length >= MAX_HIDDEN_INPUTS) break;
+  }
+  return out;
+}
+
+/** A GET form's hidden inputs belong in the URL it submits to. */
+function withHidden(action: string | undefined, hidden: Array<{ name: string; value: string }>): string | undefined {
+  if (!action || !hidden.length) return action;
+  try {
+    const url = new URL(action);
+    for (const h of hidden) if (!url.searchParams.has(h.name)) url.searchParams.set(h.name, h.value);
+    return url.href;
+  } catch {
+    return action;
+  }
+}
+
+function submitLabel(form: HTMLElement): string | undefined {
+  for (const el of inDocumentOrder(form.querySelectorAll("button, input[type=submit], input[type=image]"))) {
+    const type = lowerAttr(el, "type");
+    if (el.tagName === "BUTTON" && (type === "button" || type === "reset")) continue;
+    const text =
+      el.tagName === "BUTTON"
+        ? labelText(el) ?? clean(el.getAttribute("aria-label"))
+        : clean(el.getAttribute("value")) ?? clean(el.getAttribute("alt")) ?? clean(el.getAttribute("aria-label"));
+    if (text && text.length <= MAX_SUBMIT_LABEL) return text;
+  }
+  return undefined;
+}
+
+/**
+ * What the page calls this form. Its own accessible name wins — a component
+ * page puts the form under whatever section heading happens to precede it
+ * ("The future of building happens together"), and that names the section,
+ * not the form. A heading only stands in when the form says nothing itself,
+ * and only while it is short enough to be about the form.
+ */
+function formTitle(form: HTMLElement, headings: HTMLElement[]): string | undefined {
+  const aria = clean(form.getAttribute("aria-label"));
+  const legends = form.querySelectorAll("legend");
+  const legend = legends.length === 1 ? labelText(legends[0]) : undefined;
+  let preceding: string | undefined;
+  for (const h of headings) {
+    if (h.range[1] > form.range[0]) break;
+    const text = clean(spacedText(h));
+    if (text && text.length >= 2 && text.length <= FORM_HEADING_MAX && !SKIP_TEXT_RE.test(text)) preceding = text;
+  }
+  const title = aria ?? legend ?? preceding;
+  return title ? truncateWords(title, MAX_FORM_TITLE) : undefined;
+}
+
+/** A field that only exists to catch bots, or one parked in an off-screen container. */
+function isHoneypot(el: HTMLElement, form: HTMLElement): boolean {
+  if (HONEYPOT_RE.test(`${el.getAttribute("name") ?? ""} ${el.getAttribute("id") ?? ""}`)) return true;
+  if (isHiddenish(el)) return true;
+  for (const p of ancestorsOf(el, 6)) {
+    if (p === form) break;
+    if (isHiddenish(p)) return true;
+  }
+  return false;
+}
+
+/** Controls that carry a value, in document order. */
+function formControls(form: HTMLElement): HTMLElement[] {
+  return inDocumentOrder(form.querySelectorAll("input, select, textarea"));
+}
+
+/**
+ * How much a `<form>` looks like the site's search box, from the form itself:
+ * `role=search`, where it submits (`search.debian.org`, `/search`), and what its
+ * button says ("Search"). Debian's query field is called `P` — without these
+ * the form around it says nothing at all.
+ */
+function searchFormScore(form: HTMLElement): number {
+  let score = 0;
+  if (lowerAttr(form, "role") === "search") score += 3;
+  const raw = (form.getAttribute("action") ?? "").trim();
+  if (raw) {
+    const [path] = raw.split(/[?#]/);
+    if (SEARCH_PATH_RE.test(path) || SEARCH_WORD_RE.test(path)) score += 2;
+  }
+  // A "Search" button names a search box; on a six-field booking form it names one step of it.
+  const visible = formControls(form).filter((c) => !(c.tagName === "INPUT" && SKIP_INPUT_TYPES.has(lowerAttr(c, "type"))));
+  if (visible.length <= 2) {
+    const submit = submitLabel(form);
+    if (submit && SEARCH_LINK_TEXT_RE.test(submit)) score += 2;
+  }
+  return score;
+}
+
+/** A form whose whole job is search — never shown as a page form. */
+function isSearchForm(form: HTMLElement, controls: HTMLElement[]): boolean {
+  if (searchFormScore(form) >= 2) return true;
+  if (controls.some((c) => c.tagName === "INPUT" && lowerAttr(c, "type") === "search")) return true;
+  const visible = controls.filter((c) => !(c.tagName === "INPUT" && SKIP_INPUT_TYPES.has(lowerAttr(c, "type"))));
+  if (visible.length !== 1) return false;
+  const c = visible[0];
+  if (SEARCH_PARAM_NAMES.has(lowerAttr(c, "name"))) return true;
+  const hay = [c.getAttribute("name"), c.getAttribute("id"), c.getAttribute("placeholder"), c.getAttribute("aria-label")]
+    .filter(Boolean)
+    .join(" ");
+  return SEARCH_RE.test(hay);
+}
+
+interface FormDraft {
+  form: ExtractedForm;
+  /** Field-name signature — two forms with the same one are the same form twice (hero + footer). */
+  key: string;
+  /** A single email box: a newsletter unless the page has nothing else to show. */
+  newsletter: boolean;
+}
+
+function buildForm(form: HTMLElement, o: { root: HTMLElement; page: URL; base: URL; headings: HTMLElement[] }): FormDraft | undefined {
+  const controls = formControls(form);
+  if (!controls.length) return undefined;
+
+  // Radios and checkboxes are grouped by name first: a group is one field, wherever it starts.
+  const groups = new Map<string, HTMLElement[]>();
+  for (const el of controls) {
+    const type = lowerAttr(el, "type");
+    if (el.tagName !== "INPUT" || (type !== "radio" && type !== "checkbox")) continue;
+    const name = clean(el.getAttribute("name"));
+    if (!name) continue;
+    const key = `${type}:${name}`;
+    groups.set(key, [...(groups.get(key) ?? []), el]);
+  }
+
+  const ctx: FieldContext = { form, labels: formLabels(form), root: o.root };
+  const fields: ExtractedField[] = [];
+  const taken = new Set<string>();
+  for (const el of controls) {
+    if (fields.length >= MAX_FORM_FIELDS) break;
+    const type = lowerAttr(el, "type");
+    if (el.tagName === "INPUT" && SKIP_INPUT_TYPES.has(type)) continue;
+    if (isHoneypot(el, form)) continue;
+    const name = clean(el.getAttribute("name"));
+    const groupKey = name && (type === "radio" || type === "checkbox") ? `${type}:${name}` : undefined;
+    if (groupKey) {
+      if (taken.has(groupKey)) continue;
+      taken.add(groupKey);
+    }
+    const field = buildField(el, ctx, groups);
+    if (!field) continue;
+    if (fields.some((f) => f.name === field.name && f.kind === field.kind)) continue;
+    fields.push(field);
+  }
+  if (!fields.length) return undefined;
+
+  const method = formMethod(form);
+  const hidden = hiddenInputs(form);
+  const action = method === "get" ? withHidden(formAction(form, o.page, o.base), hidden) : formAction(form, o.page, o.base);
+  const out: ExtractedForm = { method, fields, submitLabel: submitLabel(form) ?? "Submit" };
+  const title = formTitle(form, o.headings);
+  if (title) out.title = title;
+  if (action) out.action = action;
+
+  const newsletter =
+    fields.length === 1 &&
+    (fields[0].kind === "text" && (fields[0].inputType === "email" || NEWSLETTER_RE.test(`${form.getAttribute("id") ?? ""} ${form.getAttribute("class") ?? ""} ${form.getAttribute("action") ?? ""}`)));
+  return { form: out, key: fields.map((f) => `${f.kind}:${f.name}`).join("|"), newsletter };
+}
+
+/**
+ * The forms a visitor could actually fill in. Search forms are the search bar's
+ * business, off-screen forms are nobody's, and a lone newsletter box only shows
+ * up when the page has nothing better.
+ */
+function collectForms(root: HTMLElement, page: URL, base: URL, searchForm?: HTMLElement): ExtractedForm[] {
+  const headings = inDocumentOrder(root.querySelectorAll("h1, h2, h3"));
+  const drafts: FormDraft[] = [];
+  let scanned = 0;
+  for (const form of inDocumentOrder(root.querySelectorAll("form"))) {
+    if (scanned >= MAX_FORMS_SCANNED) break;
+    scanned++;
+    if (form === searchForm || isHiddenish(form)) continue;
+    const controls = formControls(form);
+    if (!controls.length || isSearchForm(form, controls)) continue;
+    if (ancestorsOf(form, 8).some(isHiddenish)) continue;
+    const draft = buildForm(form, { root, page, base, headings });
+    if (draft) drafts.push(draft);
+  }
+
+  const seen = new Set<string>();
+  const unique = drafts.filter((d) => (seen.has(d.key) ? false : (seen.add(d.key), true)));
+  const substantial = unique.filter((d) => !d.newsletter);
+  return (substantial.length ? substantial : unique)
+    .map((d, order) => ({ d, order }))
+    .sort((a, b) => b.d.form.fields.length - a.d.form.fields.length || a.order - b.order)
+    .slice(0, MAX_FORMS)
+    .map((e) => e.d.form);
+}
+
+/* --- search -------------------------------------------------------- */
+
+/** The field a query is typed into: scored, so the most search-like one on the page wins. */
+function findSearchControl(root: HTMLElement): HTMLElement | undefined {
+  const formScores = new Map<HTMLElement, number>();
+  let best: HTMLElement | undefined;
+  let bestScore = 2; // a score of 3 is the lowest that means anything
+  for (const el of inDocumentOrder(root.querySelectorAll("input, textarea"))) {
+    const type = lowerAttr(el, "type");
+    if (el.tagName === "INPUT" && !SEARCH_INPUT_TYPES.has(type)) continue;
+    let score = 0;
+    if (type === "search") score += 4;
+    if (SEARCH_PARAM_NAMES.has(lowerAttr(el, "name"))) score += 3;
+    const hay = [el.getAttribute("name"), el.getAttribute("id"), el.getAttribute("placeholder"), el.getAttribute("aria-label"), el.getAttribute("title")]
+      .filter(Boolean)
+      .join(" ");
+    if (SEARCH_RE.test(hay)) score += 3;
+    const form = el.closest("form");
+    if (form) {
+      // In a form at all means submittable; what the form is for counts for more.
+      let formScore = formScores.get(form);
+      if (formScore === undefined) {
+        formScore = searchFormScore(form);
+        formScores.set(form, formScore);
+      }
+      score += 1 + formScore;
+    }
+    if (score > bestScore) {
+      best = el;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+/**
+ * The link that IS the site's search: its own `/search` page, or the search
+ * engine it hands off to (Hacker News → hn.algolia.com). Only links the page
+ * really has — an endpoint we invented would 404.
+ */
+function findSearchLink(anchors: HTMLElement[], links: LinkCollector): string | undefined {
+  let handoff: string | undefined;
+  for (const a of anchors) {
+    const target = links.target(a);
+    if (!target) continue;
+    let url: URL;
+    try {
+      url = new URL(target.href);
+    } catch {
+      continue;
+    }
+    const ownPage = !target.external && SEARCH_PATH_RE.test(url.pathname);
+    const label = clean(a.structuredText) ?? clean(a.getAttribute("aria-label")) ?? clean(a.getAttribute("title"));
+    const named = Boolean(label && label.length <= 24 && SEARCH_LINK_TEXT_RE.test(label));
+    if (!ownPage && !named) continue;
+    const href = `${url.origin}${url.pathname}`;
+    if (ownPage) return href;
+    handoff ??= href;
+  }
+  return handoff;
+}
+
+/** Filters inside the search form (a radio group / a `select`) read as scope buttons. */
+function searchScopes(form: HTMLElement, root: HTMLElement): string[] | undefined {
+  const labels = formLabels(form);
+  const candidates: string[][] = [];
+  for (const select of form.querySelectorAll("select")) {
+    candidates.push(
+      select
+        .querySelectorAll("option")
+        .map((o) => clean(labelText(o) ?? o.text))
+        .filter((t): t is string => Boolean(t)),
+    );
+  }
+  const radios = new Map<string, string[]>();
+  for (const radio of form.querySelectorAll("input[type=radio]")) {
+    const name = clean(radio.getAttribute("name"));
+    if (!name) continue;
+    const label = optionLabel(radio, labels, root) ?? humaniseName(radio.getAttribute("value"));
+    if (!label) continue;
+    radios.set(name, [...(radios.get(name) ?? []), label]);
+  }
+  candidates.push(...radios.values());
+  for (const group of candidates) {
+    const unique = [...new Set(group)];
+    if (unique.length >= 2 && unique.length <= 4 && unique.every((t) => t.length <= SCOPE_MAX_LABEL)) {
+      return unique.slice(0, MAX_SCOPES);
+    }
+  }
+  return undefined;
+}
+
+function searchPlaceholder(control: HTMLElement): string | undefined {
+  const text =
+    clean(control.getAttribute("placeholder")) ?? clean(control.getAttribute("aria-label")) ?? clean(control.getAttribute("title"));
+  return text && text.length <= 40 ? text : undefined;
+}
+
+/**
+ * Everything needed to run the site's search: which field takes the query, where
+ * it goes, how, and what else the form sends along. Returns the owning form too,
+ * so the form collector can leave it alone.
+ */
+function detectSearch(
+  root: HTMLElement,
+  anchors: HTMLElement[],
+  links: LinkCollector,
+  page: URL,
+  base: URL,
+): { search: ExtractedSearch; form?: HTMLElement } | undefined {
+  const control = findSearchControl(root);
+  const form = control?.closest("form") ?? undefined;
+
+  if (control && form) {
+    const param = clean(control.getAttribute("name")) ?? "q";
+    const method = formMethod(form);
+    const search: ExtractedSearch = { method, param };
+    const placeholder = searchPlaceholder(control);
+    if (placeholder) search.placeholder = placeholder;
+    const action = formAction(form, page, base);
+    if (action) search.action = action;
+    const hidden = hiddenInputs(form, param);
+    if (hidden.length) search.hidden = hidden;
+    const scopes = searchScopes(form, root);
+    if (scopes) search.scopes = scopes;
+    return { search, form };
+  }
+
+  // A box with no form of its own can only submit to a search page the site links to.
+  const link = findSearchLink(anchors, links);
+  if (control) {
+    const search: ExtractedSearch = { method: "get", param: clean(control.getAttribute("name")) ?? "q" };
+    const placeholder = searchPlaceholder(control);
+    if (placeholder) search.placeholder = placeholder;
+    if (link) search.action = link;
+    return { search };
+  }
+  // No box at all: the "Search" link in the header is the search.
+  if (link) return { search: { method: "get", param: "q", action: link } };
+  return undefined;
 }

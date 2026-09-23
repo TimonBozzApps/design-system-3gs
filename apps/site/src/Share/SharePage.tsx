@@ -3,6 +3,7 @@ import { Alert, HUD } from "@3gs/ui";
 import type { PreviewErrorCode, PreviewResult, ScreenSpec } from "../../../../api/_lib/spec";
 import { capture } from "../analytics";
 import { PhoneFrame } from "../shell/PhoneFrame";
+import type { NormalizedForm } from "../Preview/forms";
 import { SpecScreen, normalizeSpec } from "../Preview/SpecScreen";
 import { hostOf, siteFromLocation , carrierFor } from "../Preview/shareLink";
 // The `.spec-*` rules SpecScreen renders against still live next to the docs
@@ -62,7 +63,13 @@ export function SharePage() {
   const [tab, setTab] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<PreviewErrorCode | null>(null);
+  /** The in-phone search query; it outlives the screen it was typed on. */
+  const [query, setQuery] = useState("");
+  /** The toast for things the preview can't do (a POST search, a POST form). */
+  const [hud, setHud] = useState<{ title: string; href: string } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  /** Stack depth of a screen reached by searching — Cancel pops back off it. */
+  const searchDepth = useRef<number | null>(null);
 
   const inputHost = useMemo(() => hostOf(site), [site]);
   const spec = stack[stack.length - 1] ?? blankSpec(inputHost);
@@ -130,14 +137,22 @@ export function SharePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /** Any navigation that isn't the search itself leaves the query behind. */
+  const clearSearch = () => {
+    setQuery("");
+    searchDepth.current = null;
+  };
+
   const onBack = () => {
     if (stack.length < 2) return;
     abortRef.current?.abort();
     setLoading(false);
+    clearSearch();
     setStack((s) => s.slice(0, -1));
   };
 
   const onTab = (value: string, again: boolean) => {
+    clearSearch();
     if (again) {
       if (stack.length > 1) setStack((s) => [s[0]]);
       return;
@@ -145,6 +160,41 @@ export function SharePage() {
     setTab(value);
     const target = rootTabs.find((t) => t.value === value);
     if (target?.href) void load(target.href, "replaceRoot");
+  };
+
+  /* ---- the phone's search bar and the page's forms ----------------------- */
+
+  const onSearch = (q: string, searchUrl: string | undefined) => {
+    capture("preview_search", { host, hasAction: searchUrl !== undefined });
+    if (!searchUrl) {
+      setHud({ title: "Search isn't previewable here", href: spec.search?.action || originalHref });
+      return;
+    }
+    setQuery(q);
+    searchDepth.current = stack.length + 1;
+    void load(searchUrl, "push");
+  };
+
+  const onSearchCancel = () => {
+    const onResultScreen = searchDepth.current === stack.length;
+    clearSearch();
+    if (onResultScreen) onBack();
+  };
+
+  const onScope = (href: string, label: string) => {
+    capture("preview_scope_selected", { host, label });
+    clearSearch();
+    void load(href, "replaceRoot");
+  };
+
+  const onFormSubmit = (form: NormalizedForm, formUrl: string | undefined) => {
+    capture("preview_form_submitted", { host, method: form.method });
+    if (!formUrl) {
+      setHud({ title: "This form would post to the site", href: form.action || originalHref });
+      return;
+    }
+    clearSearch();
+    void load(formUrl, "push");
   };
 
   return (
@@ -168,9 +218,33 @@ export function SharePage() {
               onTab={onTab}
               previousTitle={previousTitle}
               onBack={onBack}
-              onNavigate={(href) => void load(href, "push")}
+              onNavigate={(href) => {
+                clearSearch();
+                void load(href, "push");
+              }}
+              query={query}
+              onQueryChange={setQuery}
+              onSearch={onSearch}
+              onSearchCancel={onSearchCancel}
+              onScope={onScope}
+              onFormSubmit={onFormSubmit}
             />
             <HUD contained open={loading} kind="loading" title="Loading…" />
+            <HUD
+              contained
+              open={hud !== null}
+              kind="text"
+              title={hud?.title}
+              message={
+                hud && (
+                  <a className="preview__hud-link" href={hud.href} target="_blank" rel="noopener noreferrer">
+                    Open on {hostOf(hud.href)} ↗
+                  </a>
+                )
+              }
+              duration={1600}
+              onClose={() => setHud(null)}
+            />
             <Alert
               contained
               open={error !== null}

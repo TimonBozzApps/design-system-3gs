@@ -283,3 +283,15 @@
     width: 100%;
   }
 }
+
+/* The "can't preview this" toast offers the real site instead; the HUD box
+   takes pointer events even though its backdrop doesn't, so this is tappable. */
+.preview__hud-link {
+  color: var(--gs-blue-300, #8fb8f5);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.preview__hud-link:hover {
+  text-decoration: underline;
+}

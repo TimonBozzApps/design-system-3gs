@@ -262,3 +262,154 @@
 .spec-feed .gs-list-item__accessory {
   align-self: center;
 }
+
+/* ==========================================================================
+   Forms — the page's own controls as iOS 3 grouped form rows.
+
+   `SpecForms` renders one <List class="spec-form"> per form; every control is
+   a <ListItem class="spec-field spec-field--*">. Two kinds of cell:
+   * "control cells" (text, textarea, picker drum, submit) put the component
+     in the title slot and drop the cell's own padding, so the CELL is the
+     control — the flat iOS 3 form row, not a well inside a box;
+   * ordinary cells (toggle, segmented, the picker's value row) keep the
+     library's look and hang their control in the accessory slot.
+   ========================================================================== */
+
+.spec-form .gs-list__header {
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+/* ---- control cells: the component fills the cell ------------------------ */
+.spec-form .spec-field--text,
+.spec-form .spec-field--textarea,
+.spec-form .spec-field--picker,
+.spec-form .spec-field--submit {
+  padding: 0;
+}
+
+.spec-form .spec-field--text .gs-list-item__title,
+.spec-form .spec-field--textarea .gs-list-item__title,
+.spec-form .spec-field--picker .gs-list-item__title,
+.spec-form .spec-field--submit .gs-list-item__title {
+  display: block;
+  overflow: visible;
+  white-space: normal;
+  font-weight: 400;
+  text-shadow: none;
+}
+
+/* ---- text: bold inline label, value typed next to it -------------------- */
+/* The library's TextField draws its own sunken well; inside a grouped form
+   the cell already is the well, so the rim comes off and only the focus ring
+   stays (drawn inset, since the cell clips at the group's rounded corners). */
+.spec-form .spec-field--text .gs-textfield__field {
+  height: 43px;
+  padding: 0 10px;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.spec-form .spec-field--text .gs-textfield__field:focus-within {
+  box-shadow: inset var(--gs-focus-ring);
+}
+
+/* a fixed label column keeps the values aligned down the group; a label too
+   long for it ellipsises instead of being cut mid-letter */
+.spec-form .spec-field--text .gs-textfield__label {
+  /* block, not the library's flex: `text-overflow` needs a block container.
+     It keeps the full row height (so the etched divider still spans it) and
+     centres its one line with `line-height`. */
+  display: block;
+  line-height: 43px;
+  flex: 0 0 96px;
+  width: 96px;
+  font-size: 15px;
+  text-overflow: ellipsis;
+}
+
+.spec-form .spec-field--text .gs-textfield__input {
+  font-size: 15px;
+}
+
+/* ---- textarea: the same row, opened up over three lines ----------------- */
+.spec-form .spec-field--textarea .spec-field__stack {
+  display: block;
+  padding: 8px 10px 9px;
+}
+
+.spec-form .spec-field--textarea .spec-field__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--gs-text);
+  text-shadow: var(--gs-text-emboss);
+}
+
+.spec-form .spec-field__textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 58px;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  /* no resize grabber — a 2009 cell has no corner grip */
+  resize: none;
+  font-family: var(--gs-font);
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--gs-text);
+  text-shadow: var(--gs-text-emboss);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.spec-form .spec-field__textarea::placeholder {
+  color: var(--gs-text-tertiary);
+}
+
+.spec-form .spec-field__textarea:focus-visible {
+  box-shadow: var(--gs-focus-ring);
+  border-radius: var(--gs-radius-sm);
+}
+
+/* ---- toggle / segmented: a label and its control on the right ----------- */
+/* The segments keep their natural width (three readable words beat three
+   ellipses) and the label gives way — up to a point, so a long label can't
+   push the control off the cell. */
+.spec-form .spec-field--segmented .gs-list-item__accessory {
+  max-width: 72%;
+}
+
+.spec-form .spec-field--segmented .gs-segment__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- picker: the value row, and the drum it reveals underneath ---------- */
+.spec-form .spec-field--picker-row .gs-list-item__detail {
+  max-width: 55%;
+}
+
+.spec-form .spec-field--picker .gs-picker {
+  /* the drum brings its own black chrome — let it sit edge to edge */
+  display: block;
+}
+
+/* ---- submit: the gel button with the group's own margin ----------------- */
+.spec-form .spec-field--submit {
+  background: none;
+  box-shadow: none;
+}
+
+.spec-form .spec-field--submit .gs-list-item__title {
+  padding: 8px;
+}

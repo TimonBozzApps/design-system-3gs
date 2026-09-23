@@ -1,4 +1,5 @@
 import type { ScreenSpec } from "../../../../api/_lib/spec";
+import type { NormalizedField, NormalizedForm, NormalizedSearch } from "./forms";
 import { iconExportName, isKnownIcon } from "./icons";
 import {
   heroGroupCount,
@@ -137,6 +138,166 @@ function blockCells(
   return cells;
 }
 
+
+
+/** The `searchUrl(q)` the generated `<SearchBar onSearch>` calls: the site's own search form as code. */
+function searchUrlHelper(search: NormalizedSearch): string {
+  const hidden = search.hidden
+    .map((field) => `  url.searchParams.set(${JSON.stringify(field.name)}, ${JSON.stringify(field.value)});\n`)
+    .join("");
+  return `\n// The site's own search form: ${search.action}\nconst searchUrl = (q: string) => {\n  const url = new URL(${JSON.stringify(
+    search.action,
+  )});\n${hidden}  url.searchParams.set(${JSON.stringify(search.param)}, q);\n  return url.href;\n};\n`;
+}
+
+/** One form control as the component `<SpecForms>` renders — uncontrolled, so the snippet works as pasted. */
+function fieldCell(field: NormalizedField, indent: string, components: Set<string>): string[] {
+  const cls = (kind: string) => `className="spec-field spec-field--${kind}"`;
+  switch (field.kind) {
+    case "text":
+      components.add("TextField");
+      return [
+        element(
+          "ListItem",
+          [
+            cls("text"),
+            `title={<TextField ${[
+              attr("label", field.label),
+              field.inputType === "text" ? null : `type="${field.inputType}"`,
+              attr("placeholder", field.placeholder),
+              field.value === "" ? null : attr("defaultValue", field.value),
+            ]
+              .filter(Boolean)
+              .join(" ")} />}`,
+          ],
+          undefined,
+          indent,
+        ),
+      ];
+    case "textarea":
+      return [
+        element(
+          "ListItem",
+          [
+            cls("textarea"),
+            `title={
+${indent}  <span className="spec-field__stack">
+${indent}    <span className="spec-field__label">${text(field.label)}</span>
+${indent}    <textarea className="spec-field__textarea" rows={3} ${[
+              attr("aria-label", field.label),
+              attr("placeholder", field.placeholder),
+              field.value === "" ? null : attr("defaultValue", field.value),
+            ]
+              .filter(Boolean)
+              .join(" ")} />
+${indent}  </span>
+${indent}}`,
+          ],
+          undefined,
+          indent,
+        ),
+      ];
+    case "toggle":
+      components.add("Switch");
+      return [
+        element(
+          "ListItem",
+          [
+            cls("toggle"),
+            attr("title", field.label),
+            `accessory={<Switch ${[attr("label", field.label), field.value ? "defaultChecked" : null]
+              .filter(Boolean)
+              .join(" ")} />}`,
+          ],
+          undefined,
+          indent,
+        ),
+      ];
+    case "choice": {
+      const options = field.options;
+      if (field.style === "segmented") {
+        components.add("SegmentedControl").add("Segment");
+        const segments = options
+          .map((o) => `${indent}      <Segment value=${JSON.stringify(o.value)}>${text(o.label)}</Segment>`)
+          .join("\n");
+        return [
+          element(
+            "ListItem",
+            [
+              cls("segmented"),
+              attr("title", field.label),
+              `accessory={
+${indent}    <SegmentedControl size="sm" ${[attr("label", field.label), attr("defaultValue", field.value)].join(" ")}>
+${segments}
+${indent}    </SegmentedControl>
+${indent}  }`,
+            ],
+            undefined,
+            indent,
+          ),
+        ];
+      }
+      components.add("Picker");
+      const selected = options.find((o) => o.value === field.value);
+      const columns = `[{ key: ${JSON.stringify(field.name)}, label: ${JSON.stringify(field.label)}, options: [${options
+        .map((o) => `{ value: ${JSON.stringify(o.value)}, label: ${JSON.stringify(o.label)} }`)
+        .join(", ")}] }]`;
+      return [
+        element(
+          "ListItem",
+          [
+            cls("picker-row"),
+            attr("title", field.label),
+            attr("detail", selected?.label ?? field.value),
+            'accessory="chevron"',
+          ],
+          undefined,
+          indent,
+        ),
+        element(
+          "ListItem",
+          [
+            cls("picker"),
+            `title={<Picker rows={3} ${attr("label", field.label)} columns={${columns}} defaultValue={{ ${JSON.stringify(
+              field.name,
+            )}: ${JSON.stringify(field.value)} }} />}`,
+          ],
+          undefined,
+          indent,
+        ),
+      ];
+    }
+  }
+}
+
+/** A form as a grouped list: its controls, then the gel submit button. */
+function formList(form: NormalizedForm, indent: string, components: Set<string>): string {
+  components.add("List").add("ListItem").add("Button");
+  const cells = form.fields.flatMap((field) => fieldCell(field, `${indent}  `, components));
+  // A GET form really submits: the helper turns the visitor's values into the
+  // URL the site would load. The literal below is what the page came with —
+  // swap it for your own state.
+  const submitted = form.fields
+    .filter((field) => field.kind !== "toggle" || field.value)
+    .map((field) => `${JSON.stringify(field.name)}: ${JSON.stringify(field.kind === "toggle" ? "on" : field.value)}`)
+    .join(", ");
+  const onClick = form.submittable
+    ? ` onClick={() => window.open(formUrl(${JSON.stringify(form.action)}, { ${submitted} }), "_blank")}`
+    : "";
+  cells.push(
+    element(
+      "ListItem",
+      [
+        'className="spec-field spec-field--submit"',
+        `title={<Button block variant="primary"${onClick}>${text(form.submitLabel)}</Button>}`,
+      ],
+      undefined,
+      `${indent}  `,
+    ),
+  );
+  return element("List", ['className="spec-form"', attr("header", form.title)], cells, indent);
+}
+
 /**
  * Turn a spec into the @3gs/ui JSX a developer can paste: the same elements,
  * in the same order and with the same props, as `<SpecScreen>` renders.
@@ -162,13 +323,29 @@ export function specToJsx(spec: ScreenSpec): string {
     ),
   );
 
+  const scopeHrefs = s.search ? s.search.scopes.filter((scope) => scope.href !== undefined) : [];
   if (s.search) {
     components.add("SearchBar");
-    const scopes =
-      s.search.scopes.length > 0
-        ? `scopes={[${s.search.scopes.map((v) => `{ value: ${JSON.stringify(v)}, label: ${JSON.stringify(v)} }`).join(", ")}]}`
-        : null;
-    body.push(element("SearchBar", [attr("placeholder", s.search.placeholder), scopes], undefined, I));
+    const { scopes, submittable } = s.search;
+    body.push(
+      element(
+        "SearchBar",
+        [
+          attr("placeholder", s.search.placeholder),
+          scopes.length > 0
+            ? `scopes={[${scopes
+                .map((scope) => `{ value: ${JSON.stringify(scope.value)}, label: ${JSON.stringify(scope.label)} }`)
+                .join(", ")}]}`
+            : null,
+          scopeHrefs.length > 0
+            ? 'onScopeChange={(scope) => SCOPE_HREFS[scope] && window.open(SCOPE_HREFS[scope], "_blank")}'
+            : null,
+          submittable ? 'onSearch={(q) => window.open(searchUrl(q), "_blank")}' : null,
+        ],
+        undefined,
+        I,
+      ),
+    );
   }
 
   if (s.imageDataUri) {
@@ -265,6 +442,8 @@ export function specToJsx(spec: ScreenSpec): string {
   }
   flushBare();
 
+  s.forms.forEach((form) => body.push(formList(form, I, components)));
+
   s.groups.slice(heroGroups).forEach(group);
 
   for (const action of s.actions) {
@@ -312,6 +491,21 @@ export function specToJsx(spec: ScreenSpec): string {
           .join("\n")}\n};\n`
       : "";
 
+  // Where each scope button leads — the same table, for the search bar.
+  const scopeTable =
+    scopeHrefs.length > 0
+      ? `\n// Where each search scope leads on the real site.\nconst SCOPE_HREFS: Record<string, string | undefined> = {\n${scopeHrefs
+          .map((scope) => `  ${JSON.stringify(scope.value)}: ${JSON.stringify(scope.href)},`)
+          .join("\n")}\n};\n`
+      : "";
+
+  const searchHelper = s.search?.submittable ? searchUrlHelper(s.search) : "";
+
+  // One helper for every GET form on the page: action + values → the URL.
+  const formHelper = s.forms.some((form) => form.submittable)
+    ? `\n// Turn a form's values into the URL the site would load.\nconst formUrl = (action: string, values: Record<string, string>) => {\n  const url = new URL(action);\n  for (const [name, value] of Object.entries(values)) url.searchParams.set(name, value);\n  return url.href;\n};\n`
+    : "";
+
   const imports = [
     `import { ${[...components].sort().join(", ")} } from "@3gs/ui";`,
     icons.size > 0 ? `import { ${[...icons].sort().join(", ")} } from "lucide-react";` : null,
@@ -320,12 +514,14 @@ export function specToJsx(spec: ScreenSpec): string {
     .join("\n");
 
   return `${imports}
-${tabTable}
+${tabTable}${scopeTable}${searchHelper}${formHelper}
 // ${spec.host || "site"} as a 2009 iPhone app — generated by 3GS UI.
 // Layout: nav bar (+ search) pinned on top, hero row, intro copy, one grouped
 // list per section, link groups and buttons in a scrolling pinstripe body, tab
-// bar pinned to the bottom. The \`spec-block--*\` classes on the content cells
-// carry the block styles (see Blocks.css); drop them for plain library cells.
+// bar pinned to the bottom. The \`spec-block--*\` and \`spec-field--*\` classes on
+// the content and form cells carry their styles (see Blocks.css); drop them for
+// plain library cells. Form controls are uncontrolled (\`defaultValue\`) — wire
+// them to your own state to read what the visitor typed.
 export function ${componentName(spec.host || "")}() {
   return (
     <>

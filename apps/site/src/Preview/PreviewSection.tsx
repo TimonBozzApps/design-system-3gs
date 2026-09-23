@@ -5,6 +5,7 @@ import { capture } from "../analytics";
 import { PhoneFrame } from "../shell/PhoneFrame";
 import { downloadPng } from "./exportPng";
 import { FIXTURE } from "./fixture";
+import type { NormalizedForm } from "./forms";
 import { SpecScreen, normalizeSpec, urlKey } from "./SpecScreen";
 import { carrierFor, shareUrlFor } from "./shareLink";
 import { specToJsx } from "./specToJsx";
@@ -85,6 +86,10 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
+  /** The in-phone search query; it outlives the screen it was typed on. */
+  const [query, setQuery] = useState("");
+  /** The toast for things the preview can't do (a POST search, a POST form). */
+  const [hud, setHud] = useState<{ title: string; href: string } | null>(null);
 
   const phoneRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -92,8 +97,11 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
   const copiedTimer = useRef<number | undefined>(undefined);
   /** Pages already fetched for this site, so tabs and Back-and-forth are instant. Reset per site. */
   const cacheRef = useRef(new Map<string, ScreenSpec>([[urlKey(FIXTURE.url), FIXTURE]]));
+  /** Stack depth of a screen reached by searching — Cancel pops back off it. */
+  const searchDepth = useRef<number | null>(null);
 
   const spec = stack[stack.length - 1];
+  const originalHref = /^https?:\/\//i.test(spec.url || "") ? spec.url : `https://${spec.host || home.host || "vercel.com"}/`;
   const previousTitle = stack.length > 1 ? normalizeSpec(stack[stack.length - 2]).title : undefined;
   const rootTabs = useMemo(() => normalizeSpec(home).tabs, [home]);
   const jsx = useMemo(() => specToJsx(spec), [spec]);
@@ -224,16 +232,27 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
 
   /* ---- in-phone navigation ---------------------------------------------- */
 
-  const onNavigate = (href: string) => void load(href, "push");
+  /** Any navigation that isn't the search itself leaves the query behind. */
+  const clearSearch = () => {
+    setQuery("");
+    searchDepth.current = null;
+  };
+
+  const onNavigate = (href: string) => {
+    clearSearch();
+    void load(href, "push");
+  };
 
   const onBack = () => {
     if (stack.length < 2) return;
     cancel();
+    clearSearch();
     setStack((s) => s.slice(0, -1));
     capture("preview_navigated", { host: hostOf(stack[stack.length - 2].url || home.url), mode: "back" });
   };
 
   const onTab = (value: string, again: boolean) => {
+    clearSearch();
     if (again) {
       // Tapping the selected tab pops its stack to the root, like iOS.
       if (stack.length > 1) {
@@ -246,6 +265,52 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
     setTab(value);
     const target = rootTabs.find((t) => t.value === value);
     if (target?.href) void load(target.href, "replaceRoot");
+  };
+
+  /* ---- the phone's search bar and the page's forms ----------------------- */
+
+  const pageHost = () => hostOf(spec.host || spec.url || home.host || home.url);
+
+  /**
+   * Enter in the search field. `searchUrl` is built from the page's own search
+   * form (action + query parameter + hidden fields), so it is the URL the site
+   * itself would have loaded; POST searches have none and only the real site
+   * can run them.
+   */
+  const onSearch = (q: string, searchUrl: string | undefined) => {
+    capture("preview_search", { host: pageHost(), hasAction: searchUrl !== undefined });
+    if (!searchUrl) {
+      setHud({ title: "Search isn't previewable here", href: spec.search?.action || originalHref });
+      return;
+    }
+    setQuery(q);
+    searchDepth.current = stack.length + 1;
+    void load(searchUrl, "push");
+  };
+
+  /** Cancel gives up the query, and the result screen it opened. */
+  const onSearchCancel = () => {
+    const onResultScreen = searchDepth.current === stack.length;
+    clearSearch();
+    if (onResultScreen) onBack();
+  };
+
+  /** A scope button with an href swaps the screen but keeps the tab bar. */
+  const onScope = (href: string, label: string) => {
+    capture("preview_scope_selected", { host: pageHost(), label });
+    clearSearch();
+    void load(href, "replaceRoot");
+  };
+
+  /** A GET form really submits; a POST form is only shown. */
+  const onFormSubmit = (form: NormalizedForm, formUrl: string | undefined) => {
+    capture("preview_form_submitted", { host: pageHost(), method: form.method });
+    if (!formUrl) {
+      setHud({ title: "This form would post to the site", href: form.action || originalHref });
+      return;
+    }
+    clearSearch();
+    void load(formUrl, "push");
   };
 
   /* ---- actions under the phone ------------------------------------------ */
@@ -275,7 +340,6 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
     }
   };
 
-  const originalHref = /^https?:\/\//i.test(spec.url || "") ? spec.url : `https://${spec.host || home.host || "vercel.com"}/`;
   const notes = Array.isArray(spec.notes) ? spec.notes.filter((n) => typeof n === "string" && n.trim()) : [];
 
   return (
@@ -341,8 +405,29 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
               previousTitle={previousTitle}
               onBack={onBack}
               onNavigate={onNavigate}
+              query={query}
+              onQueryChange={setQuery}
+              onSearch={onSearch}
+              onSearchCancel={onSearchCancel}
+              onScope={onScope}
+              onFormSubmit={onFormSubmit}
             />
             <HUD contained open={loading} kind="loading" title="Loading…" />
+            <HUD
+              contained
+              open={hud !== null}
+              kind="text"
+              title={hud?.title}
+              message={
+                hud && (
+                  <a className="preview__hud-link" href={hud.href} target="_blank" rel="noopener noreferrer">
+                    Open on {hostOf(hud.href)} ↗
+                  </a>
+                )
+              }
+              duration={1600}
+              onClose={() => setHud(null)}
+            />
             <Alert
               contained
               open={error !== null}

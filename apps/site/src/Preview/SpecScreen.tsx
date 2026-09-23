@@ -1,4 +1,4 @@
-import { Fragment, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { Check, Link as LinkGlyph } from "lucide-react";
 import {
   BarButton,
@@ -13,7 +13,18 @@ import {
 } from "@3gs/ui";
 import type { ScreenSpec, SpecAction, SpecBlock, SpecRow, SpecSection, SpecTab } from "../../../../api/_lib/spec";
 import { Screen } from "../shell/Screen";
+import {
+  buildSearchUrl,
+  httpUrl,
+  list,
+  normalizeForms,
+  normalizeSearch,
+  str,
+  type NormalizedForm,
+  type NormalizedSearch,
+} from "./forms";
 import { iconFor } from "./icons";
+import { SpecForms } from "./SpecForms";
 import "./Blocks.css";
 
 /* ==========================================================================
@@ -25,7 +36,6 @@ import "./Blocks.css";
 
 export const MAX_TABS = 5;
 export const MAX_ACTIONS = 3;
-export const MAX_SCOPES = 3;
 /** The Back button shows the previous title, cut to this many characters. */
 export const MAX_BACK_LABEL = 10;
 /** A section can only fill so much of a 320 px screen before it stops being a screen. */
@@ -103,29 +113,21 @@ export interface NormalizedSpec {
   title: string;
   iconDataUri?: string;
   imageDataUri?: string;
-  search?: { placeholder: string; scopes: string[] };
+  search?: NormalizedSearch;
   /** Copy before the first heading; rendered as one headerless group. */
   intro: NormalizedBlock[];
   sections: NormalizedSection[];
   groups: NormalizedGroup[];
   actions: NormalizedAction[];
   tabs: NormalizedTab[];
+  /** The page's own forms, in page order. */
+  forms: NormalizedForm[];
 }
-
-const str = (v: unknown): string | undefined =>
-  typeof v === "string" && v.trim() !== "" ? v.trim() : undefined;
-
-const httpUrl = (v: unknown): string | undefined => {
-  const s = str(v);
-  return s && /^https?:\/\//i.test(s) ? s : undefined;
-};
 
 const dataUri = (v: unknown): string | undefined => {
   const s = typeof v === "string" ? v : "";
   return s.startsWith("data:image/") ? s : undefined;
 };
-
-const list = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
 
 /** Code keeps its indentation; only blank lines top and bottom go. */
 const codeText = (v: unknown): string | undefined => {
@@ -270,28 +272,18 @@ export function normalizeSpec(spec: ScreenSpec): NormalizedSpec {
     if (actions.length === MAX_ACTIONS) break;
   }
 
-  const placeholder = str(spec.search?.placeholder);
-  const search = placeholder
-    ? {
-        placeholder,
-        scopes: list<string>(spec.search?.scopes)
-          .map((s) => str(s))
-          .filter((s): s is string => s !== undefined)
-          .slice(0, MAX_SCOPES),
-      }
-    : undefined;
-
   return {
     url,
     title: str(spec.title) ?? str(spec.siteName) ?? str(spec.host) ?? "Untitled",
     iconDataUri: dataUri(spec.iconDataUri),
     imageDataUri: dataUri(spec.imageDataUri),
-    search,
+    search: normalizeSearch(spec.search),
     intro: normalizeBlocks(spec.intro),
     sections,
     groups,
     actions,
     tabs,
+    forms: normalizeForms(spec.forms),
   };
 }
 
@@ -410,6 +402,30 @@ export interface SpecScreenProps {
   onBack: () => void;
   /** An internal link (row, section heading, gel button) was tapped. */
   onNavigate: (href: string) => void;
+
+  /* ---- the interactive chrome: search, scopes, forms -------------------- */
+
+  /**
+   * The search query. It belongs to the owner because it outlives this screen:
+   * the result page is a new `SpecScreen`, and the field still shows what was
+   * searched for. Omit it and the bar keeps its own (per-screen) state.
+   */
+  query?: string;
+  onQueryChange?: (query: string) => void;
+  /**
+   * Enter was pressed. `url` is the page the site's search form would load;
+   * `undefined` when it posts or no form was found — nothing to preview.
+   */
+  onSearch?: (query: string, url: string | undefined) => void;
+  /** Cancel was tapped: the query is cleared and the result screen popped. */
+  onSearchCancel?: () => void;
+  /** A scope button that carries an `href` was selected. */
+  onScope?: (href: string, label: string) => void;
+  /**
+   * A form's submit button. `url` is the page a GET form would load;
+   * `undefined` for a POST form (or one without an action).
+   */
+  onFormSubmit?: (form: NormalizedForm, url: string | undefined) => void;
 }
 
 /**
@@ -419,11 +435,54 @@ export interface SpecScreenProps {
  * the bottom. Links on the same site are navigation (chevron, pushed by the
  * owner); links elsewhere are detail rows that open a new browser tab.
  */
-export function SpecScreen({ spec, siteUrl, tabs, tab, onTab, previousTitle, onBack, onNavigate }: SpecScreenProps) {
-  const s = normalizeSpec(spec);
+export function SpecScreen({
+  spec,
+  siteUrl,
+  tabs,
+  tab,
+  onTab,
+  previousTitle,
+  onBack,
+  onNavigate,
+  query,
+  onQueryChange,
+  onSearch,
+  onSearchCancel,
+  onScope,
+  onFormSubmit,
+}: SpecScreenProps) {
+  // Typing in the search bar re-renders this screen on every keystroke; the
+  // spec itself only changes on navigation.
+  const s = useMemo(() => normalizeSpec(spec), [spec]);
   const heroGroups = heroGroupCount(s);
   const empty =
-    s.sections.length === 0 && s.intro.length === 0 && s.groups.length <= heroGroups && s.actions.length === 0;
+    s.sections.length === 0 &&
+    s.intro.length === 0 &&
+    s.groups.length <= heroGroups &&
+    s.actions.length === 0 &&
+    s.forms.length === 0;
+
+  /**
+   * The selected scope. The page decides it — arriving on `/newest` selects
+   * "new" — and a tap overrides that until the next navigation (this component
+   * is keyed by the screen, so the override dies with the screen).
+   *
+   * Scopes that carry hrefs are *places*: on a page that is none of them
+   * (Hacker News' front page is not "new", "past" or "comments") nothing is
+   * selected, rather than the first one pretending to be where you are.
+   * Scopes without hrefs are filters, and a filter bar always has a selection.
+   */
+  const search = s.search;
+  const pageScope = search?.scopes.find((scope) => scope.href && urlKey(scope.href) === urlKey(s.url))?.value;
+  const places = search?.scopes.some((scope) => scope.href !== undefined) ?? false;
+  const [tappedScope, setTappedScope] = useState<string | undefined>(undefined);
+  const scope = tappedScope ?? pageScope ?? (places ? "" : search?.scopes[0]?.value);
+
+  const selectScope = (value: string) => {
+    setTappedScope(value);
+    const target = search?.scopes.find((sc) => sc.value === value);
+    if (target?.href) onScope?.(target.href, target.label);
+  };
 
   /** Row props for a link: how it looks and what tapping it does. */
   const link = (href: string | undefined, fallback: RowAccessory) => {
@@ -615,10 +674,16 @@ export function SpecScreen({ spec, siteUrl, tabs, tab, onTab, previousTitle, onB
             }
             right={previousTitle === undefined ? <BarButton variant="done">Done</BarButton> : undefined}
           />
-          {s.search && (
+          {search && (
             <SearchBar
-              placeholder={s.search.placeholder}
-              scopes={s.search.scopes.length > 0 ? s.search.scopes.map((v) => ({ value: v, label: v })) : undefined}
+              placeholder={search.placeholder}
+              value={query}
+              onChange={onQueryChange}
+              onSearch={(q) => onSearch?.(q, buildSearchUrl(search, q))}
+              onCancel={onSearchCancel}
+              scopes={search.scopes.length > 0 ? search.scopes : undefined}
+              scope={search.scopes.length > 0 ? scope : undefined}
+              onScopeChange={selectScope}
             />
           )}
         </>
@@ -653,6 +718,14 @@ export function SpecScreen({ spec, siteUrl, tabs, tab, onTab, previousTitle, onB
       )}
 
       {renderSections()}
+
+      {s.forms.length > 0 && (
+        <SpecForms
+          forms={s.forms}
+          pageKey={urlKey(s.url) || spec.host || ""}
+          onSubmit={(form, url) => onFormSubmit?.(form, url)}
+        />
+      )}
 
       {empty && <p className="spec-empty">Nothing else on this page.</p>}
 

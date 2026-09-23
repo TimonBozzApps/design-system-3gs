@@ -38,13 +38,28 @@ const PAGES = [
   "https://example.com",
 ];
 
+/** The interactive set: search targets and real page forms. */
+const FORM_PAGES = [
+  "https://news.ycombinator.com",
+  "https://en.wikipedia.org/wiki/IPhone_3GS",
+  "https://duckduckgo.com",
+  "https://github.com",
+  "https://stackoverflow.com",
+  "https://posthog.com",
+  "https://www.w3schools.com/html/html_forms.asp",
+  "https://httpbin.org/forms/post",
+  "https://news.ycombinator.com/newest",
+  "https://example.com",
+];
+
 /** Rows of the feed group (the page's repeated item list), if the mapper found one. */
 const FEED_ROWS = 5;
 
 const EXCERPT = 70;
 const args = process.argv.slice(2);
-const pages = args.length ? args : PAGES;
+const pages = args.length ? args : process.env.FORMS ? FORM_PAGES : PAGES;
 
+const pad = (s, n) => String(s ?? "").padEnd(n);
 const cut = (s, n = EXCERPT) => {
   const t = String(s ?? "").replace(/\s+/g, " ").trim();
   return t.length > n ? `${t.slice(0, n - 1)}…` : t;
@@ -74,11 +89,53 @@ function line(block) {
   }
 }
 
+/** The search bar as the client will use it: what it says, where it posts, under what name. */
+function printSearch(search) {
+  if (!search) {
+    console.log("  search: (none)");
+    return;
+  }
+  const scopes = search.scopes?.length
+    ? search.scopes.map((s) => `${s.label}${s.href ? "→" : ""}`).join(" | ")
+    : "-";
+  const hidden = search.hidden?.length ? ` hidden=[${search.hidden.map((h) => `${h.name}=${cut(h.value, 24)}`).join(" ")}]` : "";
+  console.log(
+    `  search: ${JSON.stringify(search.placeholder)} | ${search.action ? `${(search.method ?? "get").toUpperCase()} ${cut(search.action, 60)}` : "(no action)"}` +
+      ` | param=${search.param ?? "-"} | scopes=${scopes}${hidden}`,
+  );
+}
+
+/** One line per field: enough to tell whether a visitor could fill this form in. */
+function fieldLine(f) {
+  const bits = [`${pad(f.kind, 8)} ${pad(f.name, 16)} ${JSON.stringify(f.label)}`];
+  if (f.kind === "text") bits.push(`type=${f.inputType}`);
+  if (f.kind === "choice") bits.push(`${f.options.length} options [${cut(f.options.map((o) => o.label).join(", "), 44)}] ${f.style}`);
+  if (f.placeholder) bits.push(`ph=${JSON.stringify(cut(f.placeholder, 24))}`);
+  if (f.value !== undefined) bits.push(`value=${JSON.stringify(cut(String(f.value), 20))}`);
+  if (f.required) bits.push("required");
+  return bits.join("  ");
+}
+
+function printForms(forms) {
+  if (!forms?.length) {
+    console.log("  forms: (none)");
+    return;
+  }
+  console.log(`  forms: ${forms.length}`);
+  forms.forEach((form, i) => {
+    console.log(
+      `    [${i}] ${JSON.stringify(form.title ?? "(untitled)")} — ${form.method.toUpperCase()} ${form.action ? cut(form.action, 60) : "(no action)"}` +
+        ` — "${form.submitLabel ?? "Submit"}" — ${form.fields.length} fields`,
+    );
+    for (const f of form.fields) console.log(`         ${fieldLine(f)}`);
+  });
+}
+
 function report(url, ms, result) {
   console.log(`\n${"═".repeat(96)}\n${url}  (${ms} ms)`);
   if (!result.ok) {
     console.log(`  FAILED ${result.code}: ${result.error}`);
-    return { blocks: 0, sections: 0, feed: 0 };
+    return { blocks: 0, sections: 0, feed: 0, search: "-", forms: 0 };
   }
   const { spec } = result;
   const sections = spec.sections ?? [];
@@ -94,6 +151,8 @@ function report(url, ms, result) {
       `${spec.notes?.length ? ` notes=${JSON.stringify(spec.notes)}` : ""}`,
   );
   console.log(`  groups=[${spec.groups.map((g) => `${g.kind === "feed" ? "feed " : ""}${g.header ?? "-"}(${g.rows.length})`).join(" ")}]`);
+  printSearch(spec.search);
+  printForms(spec.forms);
 
   const feed = spec.groups.find((g) => g.kind === "feed");
   if (feed) {
@@ -116,7 +175,13 @@ function report(url, ms, result) {
   if (process.env.BLOCKS) {
     console.log(JSON.stringify({ intro, sections }, (k, v) => (k === "dataUri" ? `${String(v).slice(0, 32)}…` : v), 2));
   }
-  return { blocks, sections: sections.length, feed: feed ? feed.rows.length : 0 };
+  return {
+    blocks,
+    sections: sections.length,
+    feed: feed ? feed.rows.length : 0,
+    search: spec.search ? (spec.search.action ? "action" : "bar") : "-",
+    forms: (spec.forms ?? []).length,
+  };
 }
 
 const started = performance.now();
@@ -133,7 +198,8 @@ const totals = results.map(({ url, ms, result }) => ({ url, ms, ...report(url, m
 console.log(`\n${"═".repeat(96)}\nSummary (${Math.round(performance.now() - started)} ms wall clock)\n`);
 for (const t of totals) {
   console.log(
-    `  ${String(t.blocks).padStart(3)} blocks  ${String(t.sections).padStart(2)} sections  ${String(t.feed).padStart(2)} feed  ${String(t.ms).padStart(5)} ms  ${t.url}`,
+    `  ${String(t.blocks).padStart(3)} blocks  ${String(t.sections).padStart(2)} sections  ${String(t.feed).padStart(2)} feed  ` +
+      `${pad(`search:${t.search}`, 14)} ${String(t.forms).padStart(2)} forms  ${String(t.ms).padStart(5)} ms  ${t.url}`,
   );
 }
 console.log(`\n  total blocks: ${totals.reduce((n, t) => n + t.blocks, 0)}\n`);
