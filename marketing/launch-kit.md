@@ -234,6 +234,18 @@ Send to: **React Status** and **JavaScript Weekly** (cooperpress.com, "suggest a
 
 ---
 
+## 6b. The "how it's built" comment
+
+Posted on the r/reactjs thread 2026-09-23 to give the post something to chew on. Reusable on any
+thread that goes quiet — it works because it hands over the actual recipe instead of describing it.
+
+The three beats: (1) the gel is four CSS layers with a hard stop at 50 %, quoted verbatim so people can
+paste it; (2) theming is only token redefinition, with the trap called out (don't remap raw tokens or the
+always-black parts flip); (3) the preview's structural feed detection and the SSRF guard. Then the limits,
+stated plainly. Full text in the shell history / the Reddit thread.
+
+---
+
 ## 7. Day-of checklist
 
 - [ ] Reread the README top section — it's the second thing people open
