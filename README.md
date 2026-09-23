@@ -9,6 +9,10 @@ pinstripe grouped tables, the blue ON/OFF switch, the black glass tab bar.
 Icons come from [lucide](https://lucide.dev) and are tinted through an SVG
 gradient so they get the same glass treatment.
 
+**Paste any URL into the showcase** and it re-renders that website as a 2009
+iPhone app — navigable, with the site's own content, search and forms. Share one
+at [`/p/news.ycombinator.com`](https://design-system-3gs.vercel.app/p/news.ycombinator.com).
+
 ```
 packages/ui     @3gs/ui — the component library (React 18/19, TypeScript, plain CSS tokens)
 apps/site       the showcase site (Vite) — every component inside a 320×480 phone frame
