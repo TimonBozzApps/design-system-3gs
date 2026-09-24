@@ -1,53 +1,53 @@
 ---
-title: I rebuilt the iPhone 3GS UI as a React library — here is the CSS recipe
+title: I rebuilt the iPhone 3GS UI as a React library, and here is the CSS recipe
 published: false
-description: The iOS 3 "gel" look is one gradient recipe with a hard highlight split at 50%. Here is how it works, how tokens make it themeable, and how I ended up re-rendering arbitrary websites with it.
+description: The iOS 3 gel look is one gradient recipe with a hard highlight split at 50 percent. How it works, how tokens make it themeable, and how it ended up re-rendering arbitrary websites.
 tags: react, css, webdev, design
 cover_image: https://design-system-3gs.vercel.app/og.png
 ---
 
-Skeuomorphism gets remembered as a pile of drop shadows and leather textures. It wasn't. The iOS 3
-interface was a **system**: one gradient recipe, applied consistently, with tokens for the bits that
-varied. I rebuilt it as a React component library to find out how much of it was method rather than
-taste, and it turned out to be almost all method.
+I wanted to know how much of the old iOS look was actual method and how much was just taste. So I
+rebuilt it: 23 React components in the iPhone 3GS style, from the nav bar down to the on-screen
+keyboard.
 
-Here's the part you can steal in thirty seconds, then the architecture, then the strange place it
-ended up.
+Turns out it is almost entirely method. One gradient recipe explains nearly every control on that
+device. Here it is, then the parts that took me longer than expected.
 
 ## The gel is four layers
 
-Every control on that device — buttons, the nav bar, the ON/OFF switch, the tab bar — is the same
-four things with different colours:
+Buttons, the nav bar, the ON/OFF switch, the tab bar. All the same four things, different colours:
 
 ```css
 .button {
-  /* 1. the shine, as a separate layer so any body colour can wear it */
+  /* 1. the shine, kept as its own layer so any body colour can wear it */
   background:
     linear-gradient(to bottom,
       rgba(255,255,255,.30) 0%,
       rgba(255,255,255,.12) 50%,
-      rgba(255,255,255,0)  50.5%,   /* ← the hard stop. this is the whole trick */
+      rgba(255,255,255,0)  50.5%,   /* the hard stop, this is what matters */
       rgba(255,255,255,0)  100%),
   /* 2. the body, split at the same point */
     linear-gradient(to bottom, #8fb8f5 0%, #4d8ae4 49%, #2a6bd2 50%, #1d55b5 100%);
 
-  /* 3. a hard outline and a light inner rim */
+  /* 3. hard outline plus a light inner rim */
   border: 1px solid rgba(0,0,0,.9);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.22),  /* inner top rim: the lit edge */
-    0 1px 0 rgba(0,0,0,.75);              /* drop edge: it sits on something */
+    inset 0 1px 0 rgba(255,255,255,.22),  /* the lit top edge */
+    0 1px 0 rgba(0,0,0,.75);              /* it sits on something */
 
   /* 4. type stamped into the surface, not floating above it */
   text-shadow: 0 -1px 0 rgba(0,0,0,.7);
 }
 ```
 
-The hard stop at 50% is what your eye reads as *glass*. Make it a smooth gradient and you get 2014
-flat design with a shadow on it; keep the discontinuity and the surface looks wet. The inverted
-text-shadow matters just as much: light comes from above, so text is debossed with a dark shadow
-*upward*, never a dark shadow downward.
+The discontinuity at 50 percent is what your eye reads as glass. Smooth that gradient out and you get
+flat design with a shadow on it. Keep the hard edge and the surface looks wet.
 
-Pressed state is the same recipe minus the shine, plus an inset:
+The text shadow is the other half. Light comes from above, so the label is debossed with a dark
+shadow pointing up, never down. I had this backwards for an hour and could not work out why
+everything looked slightly wrong.
+
+Pressed state is the same thing without the shine, plus an inset:
 
 ```css
 .button:active {
@@ -56,30 +56,26 @@ Pressed state is the same recipe minus the shine, plus an inset:
 }
 ```
 
-That's it. Every screenshot from 2009 you've ever squinted at is that, in different colours.
+## Tokens turn a costume into a system
 
-## Tokens are what make it a system
-
-If each component hard-codes those gradients you have a costume, not a design system. So every value
-lives in a CSS custom property, and components compose them:
+If every component hard-codes those gradients, you have a costume. So each value is a CSS custom
+property and components just compose them:
 
 ```css
 .gs-button {
   --gs-button-gel: var(--gs-gradient-neutral);
-  --gs-button-gel-pressed: var(--gs-gradient-neutral-pressed);
   --gs-button-text: var(--gs-text-on-neutral);
-  --gs-button-text-shadow: var(--gs-text-shadow-on-neutral);
 
   background: var(--gs-gloss), var(--gs-button-gel);
   border: var(--gs-border);
   box-shadow: var(--gs-emboss);
   color: var(--gs-button-text);
-  text-shadow: var(--gs-button-text-shadow);
+  text-shadow: var(--gs-text-shadow-on-neutral);
 }
 ```
 
-The payoff shows up when you add the second theme. iOS 3 had two chromes — the black glass one and
-the original blue-grey — and the light theme here is **one file of token overrides**:
+That pays off with the second theme. iOS 3 had two chromes, the black glass one and the original
+blue-grey, and the light theme here is one file of token overrides:
 
 ```css
 .gs-root[data-theme="light"] {
@@ -87,79 +83,80 @@ the original blue-grey — and the light theme here is **one file of token overr
     #b0bccd 0%, #8a9bb4 49%, #6d84a2 50%, #5b7397 100%);
   --gs-bar-border: #2d3642;
   --gs-bar-rim: rgba(255,255,255,.45);
-  --gs-text-emboss: 0 1px 0 rgba(255,255,255,.75);  /* light theme: shadow flips down */
-  /* …36 more */
+  --gs-text-emboss: 0 1px 0 rgba(255,255,255,.75);  /* shadow flips downward */
+  /* about 36 more */
 }
 ```
 
-### The mistake worth avoiding
+### The mistake
 
-My first attempt remapped the *raw* tokens: in light mode, `--gs-gradient-dark` became a light
-gradient. Everything went pale — including the tab bar, which was black on the real device in both
-appearances, and the app icon tiles, which were always saturated.
+My first attempt remapped the raw tokens. In light mode `--gs-gradient-dark` became a light gradient.
+Everything went pale, including things that were black on the real device in both appearances: the
+tab bar, and the saturated app icon tiles in list rows.
 
-The fix is a **semantic layer**. Raw tokens keep their literal meaning forever (`--gs-gradient-dark`
-is *dark*, in every theme). Components read intent-named tokens instead:
+The fix was a semantic layer. Raw tokens keep their literal meaning in every theme, so
+`--gs-gradient-dark` is always dark. Components read intent instead:
 
-- `--gs-gradient-neutral` — "the default control surface"
-- `--gs-gradient-barbutton` — "a button sitting inside a bar"
-- `--gs-text-on-bar`, `--gs-text-emboss` — "text on that surface"
+* `--gs-gradient-neutral` for a default control surface
+* `--gs-gradient-barbutton` for a button inside a bar
+* `--gs-text-on-bar` and `--gs-text-emboss` for text on those surfaces
 
-Themes redefine the semantic tokens. Anything that must stay constant simply doesn't use them. A
-third theme is now one more file, and components never change.
+Themes only redefine the semantic ones. Anything that has to stay constant simply does not use them.
+Adding a third theme is now one file, and no component changes.
 
 ## The components that were actually hard
 
-**The switch** is not a toggle with a knob. It's a 200%-wide strip holding both halves — blue "ON"
-and grey "OFF" — sliding under a fixed silver knob, with `overflow: hidden` on the track. That's how
-the original works, and it's why the label appears to be *pushed out* rather than faded.
+The switch is not a toggle with a knob on top. It is a strip twice the track width, holding the blue
+ON half and the grey OFF half, sliding underneath a fixed silver knob with `overflow: hidden` on the
+track. That is how the original behaves, and it is why the label looks pushed out of view rather than
+faded out.
 
-**The picker** — the spinning wheel — is `scroll-snap-type: y mandatory` with 44px rows, spacer
-elements top and bottom so the first and last items can reach the centre, and two absolutely
-positioned shading overlays to fake the cylinder. The fiddly part is that selection and scroll
-position drive each other: committing a value scrolls the drum, and scrolling commits a value. That
-needs a guard — a ~150ms window after a programmatic scroll where scroll events are ignored — or you
-get an infinite feedback loop.
+The picker, meaning the spinning wheel, is `scroll-snap-type: y mandatory` with 44px rows, spacer
+elements at both ends so the first and last option can reach the centre, and two absolutely
+positioned shading overlays to fake the cylinder. The annoying part is that selection and scroll
+position drive each other. Committing a value scrolls the drum, and scrolling commits a value. You
+need a guard, in my case a 150ms window after a programmatic scroll where scroll events are ignored,
+or it loops forever.
 
-**The keyboard** has three layers, shift-with-caps-lock, delete auto-repeat, and the enlarged key
-popup. The non-obvious bit: every key must `preventDefault()` on pointerdown, or tapping it blurs
-whatever field you were typing into.
+The keyboard has three layers, shift with caps lock, delete auto-repeat and the enlarged key popup.
+The non-obvious bit: every key has to call `preventDefault()` on pointerdown, otherwise tapping it
+blurs the field you are typing into.
 
-## Where it went sideways: rendering other people's websites
+## Then it got out of hand
 
-A component gallery is a boring way to show a design system. So the docs site got a text field: paste
-a URL, and it rebuilds *that site* as a 2009 iPhone app.
+A component gallery is a dull way to show a design system, so the docs site got a text field. Paste a
+URL and it rebuilds that site as a 2009 iPhone app.
 
-A Vercel function fetches the page and extracts structure — title, icons, nav links, headings, body
-copy, prices, FAQ pairs, forms — then maps it onto a `ScreenSpec` the client renders with the
-components. It's navigable: tabs open real pages, rows push screens with a Back button, search runs
-the site's own search (Hacker News goes through Algolia), and forms are editable.
+A serverless function fetches the page and pulls out structure: title, icons, nav links, headings,
+body copy, prices, FAQ pairs, forms. That gets mapped to a spec object which the client renders with
+the components. The result is navigable rather than a screenshot. Tabs open real pages, rows push
+screens with a back button, search runs the site's own search, and forms are editable.
 
-Two problems were interesting.
+Two things were harder than I expected.
 
-**Feed pages.** Hacker News is a table layout from 2007 with no `<article>` anywhere, and my
-prose-oriented extractor returned nothing. The fix is structural rather than site-specific: group
-every candidate link by a *signature* of its own tag plus three ancestors — ignoring generated class
-names like `css-1x2y3z` — and take the dominant repeated pattern. HN's `A < SPAN.titleline <
-TD.title < TR.athing` and a modern blog's `A < H2 < ARTICLE` both fall out of the same rule, so HN,
-Lobsters, GitHub Trending and changelogs all come out as news apps.
+**Feed pages.** Hacker News is a table layout from 2007 with no `article` element anywhere, and my
+prose-oriented extractor found nothing at all. Special-casing it would have been useless, so the
+detection is structural: group every candidate link by a signature made of its own tag plus three
+ancestors, ignore generated class names like `css-1x2y3z`, then take the dominant repeated pattern.
+HN's `A < SPAN.titleline < TD.title < TR.athing` and a modern blog's `A < H2 < ARTICLE` both fall out
+of the same rule. Lobsters, GitHub Trending and changelogs came along for free.
 
-**"Paste any URL" is an SSRF machine.** The fetcher re-resolves DNS on *every* redirect hop and
-refuses loopback, private, link-local (including `169.254.169.254`, the cloud metadata endpoint),
-CGNAT and IPv4-mapped forms of all of those. Plus a read cap that truncates rather than fails, an
-8-second timeout, and per-IP rate limiting. If you build anything that fetches user-supplied URLs,
-validate after every redirect, not just once — that's the hole most implementations leave open.
+**Accepting arbitrary URLs is an SSRF machine.** The fetcher re-resolves DNS on every redirect hop
+and refuses loopback, private ranges, link-local including `169.254.169.254`, CGNAT, and the
+IPv4-mapped IPv6 versions of all of those. Then a read cap that truncates instead of failing, an
+8 second timeout, and rate limiting per IP. If you ever build something that fetches a user-supplied
+URL, validate after each redirect rather than once at the start. That is the hole most
+implementations leave open.
 
-## Honest limits
+## What it does not do
 
-Client-rendered pages come back thin: there's nothing in the HTML to read. Some hosts block the
-fetcher outright. And the whole thing is a caricature — nobody should ship a SaaS dashboard in 2009
-gel. It's ~22kB of JS and 27kB of CSS gzipped, one dependency (lucide for icons), MIT.
+Client-rendered pages come back thin, because there is nothing in the HTML to read. Some hosts block
+the fetcher. And it is a caricature, not a port, so please do not ship your SaaS dashboard in 2009
+gel.
 
-- Try it on your own site: **[design-system-3gs.vercel.app](https://design-system-3gs.vercel.app)**
-- Hacker News as a 2009 news app: **[/p/news.ycombinator.com](https://design-system-3gs.vercel.app/p/news.ycombinator.com)**
-- Source: **[github.com/TimonBozzApps/design-system-3gs](https://github.com/TimonBozzApps/design-system-3gs)**
-- `npm i @3gs/ui`
+It is about 22kB of JS and 27kB of CSS gzipped, one dependency (lucide, for icons), MIT licensed.
 
-If you take one thing: the hard stop at 50%. Add it to any gradient you have lying around and watch
-it turn into glass.
+* Try it on your own site: [design-system-3gs.vercel.app](https://design-system-3gs.vercel.app)
+* Hacker News as a 2009 news app: [/p/news.ycombinator.com](https://design-system-3gs.vercel.app/p/news.ycombinator.com)
+* Source: [github.com/TimonBozzApps/design-system-3gs](https://github.com/TimonBozzApps/design-system-3gs)
+* `npm i @3gs/ui`
