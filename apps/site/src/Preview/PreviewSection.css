@@ -1,3 +1,21 @@
+/* ---- hero treatment: this section is the top of the page ---------------- */
+.preview {
+  padding-top: 8px !important;
+  border-top: 0;
+}
+
+.preview .demo__text > h2 {
+  margin-bottom: 8px;
+}
+
+.preview .demo__text > h2 {
+  font-size: clamp(26px, 3vw, 34px);
+}
+
+.preview .demo__text > h2 + p {
+  font-size: 17px;
+}
+
 /* ==========================================================================
    "Try it on your site" — site chrome for the preview generator.
    Inherits the .demo two-column grid; the generated-code panel spans both.

@@ -87,6 +87,9 @@ export function App() {
               <a href="#try-it">Try it on your site</a>
             </li>
             <li>
+              <a href="#library">Built from the library</a>
+            </li>
+            <li>
               <a href="#tokens">Tokens</a>
             </li>
             {demos.map(({ meta }) => (
@@ -103,32 +106,37 @@ export function App() {
 
       <main className="site__main" id="top">
         <header className="hero">
-          <div className="hero__text">
-            <p className="hero__eyebrow">Design system</p>
-            <h1>
-              The 2009 glass, <br />
-              back in <em>dark mode</em>.
-            </h1>
-            <p className="hero__lede">
-              A React component library that reproduces the iPhone 3GS / iOS 3
-              look: gel gradients with the hard 50&nbsp;% highlight, 1&nbsp;px
-              black outlines with an inner light rim, embossed type — recast on
-              black glass. Icons are lucide, tinted through an SVG gradient.
+          <p className="hero__eyebrow">Design system</p>
+          <h1>
+            The 2009 glass, <br />
+            back in <em>dark mode</em>.
+          </h1>
+          <p className="hero__lede">
+            A React component library that reproduces the iPhone 3GS / iOS 3 look — gel gradients with
+            the hard 50&nbsp;% highlight, 1&nbsp;px black outlines, embossed type. Paste any URL below
+            and it rebuilds that website with it.
+          </p>
+          <pre className="hero__install"><code>npm i @3gs/ui</code></pre>
+        </header>
+
+        <PreviewSection theme={theme} dir={dir} />
+
+        <section className="demo" id="library">
+          <div className="demo__text">
+            <h2>Built from the library</h2>
+            <p>
+              The App Store “Categories” screen from 2009, rebuilt with the components on this page —
+              navigation bar, grouped table with glossy icon tiles, and the black glass tab bar. Tap a row.
             </p>
-            <pre className="hero__install"><code>pnpm add @3gs/ui{"\n"}import "@3gs/ui/styles.css";</code></pre>
-            <p className="hero__note">
-              The phone on the right is the App Store “Categories” screen rebuilt
-              from the library — tap a row.
-            </p>
+            <pre className="demo__usage"><code>{`import "@3gs/ui/styles.css";
+import { NavigationBar, BarButton, List, ListItem, TabBar, TabBarItem } from "@3gs/ui";`}</code></pre>
           </div>
-          <div className="hero__phone">
+          <div className="demo__phone">
             <PhoneFrame theme={theme} dir={dir}>
               <AppStoreScreen />
             </PhoneFrame>
           </div>
-        </header>
-
-        <PreviewSection theme={theme} dir={dir} />
+        </section>
 
         <TokensSection theme={theme} />
 

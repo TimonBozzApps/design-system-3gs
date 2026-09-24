@@ -112,18 +112,27 @@ a { color: inherit; text-decoration: none; }
 
 /* ---- main ------------------------------------------------------------- */
 .site__main {
-  padding: 48px 56px 96px;
+  padding: 36px 56px 96px;
   max-width: 1180px;
 }
 
+/* Text-only hero: the interactive demo directly below it is the real hero. */
 .hero {
-  display: grid;
-  grid-template-columns: minmax(280px, 1fr) auto;
-  gap: 48px;
-  align-items: center;
-  padding-bottom: 48px;
-  border-bottom: 1px solid var(--site-border);
-  margin-bottom: 24px;
+  max-width: 760px;
+  padding-bottom: 20px;
+  margin-bottom: 0;
+}
+
+.hero__lede {
+  margin-bottom: 16px !important;
+}
+
+.hero__install {
+  padding: 10px 14px;
+}
+
+.hero h1 {
+  font-size: clamp(32px, 4.4vw, 52px) !important;
 }
 
 .hero__note {
@@ -284,7 +293,6 @@ a { color: inherit; text-decoration: none; }
 
 .site__nav ul { flex-direction: row; flex-wrap: wrap; }
   .site__main { padding: 32px 20px 64px; }
-  .hero, .demo { grid-template-columns: 1fr; gap: 28px; }
-  .hero__phone { display: flex; justify-content: center; }
+  .demo { grid-template-columns: 1fr; gap: 28px; }
   .demo__phone { position: static; display: flex; justify-content: center; }
 }
