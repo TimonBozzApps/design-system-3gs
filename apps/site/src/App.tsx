@@ -132,7 +132,7 @@ export function App() {
 import { NavigationBar, BarButton, List, ListItem, TabBar, TabBarItem } from "@3gs/ui";`}</code></pre>
           </div>
           <div className="demo__phone">
-            <PhoneFrame theme={theme} dir={dir}>
+            <PhoneFrame theme={theme} dir={dir} hints>
               <AppStoreScreen />
             </PhoneFrame>
           </div>
@@ -149,7 +149,7 @@ import { NavigationBar, BarButton, List, ListItem, TabBar, TabBarItem } from "@3
               <PropsTable propTypes={meta.propTypes} notes={meta.props} />
             </div>
             <div className="demo__phone">
-              <PhoneFrame theme={theme} dir={dir}>
+              <PhoneFrame theme={theme} dir={dir} hints>
                 <Demo />
               </PhoneFrame>
             </div>

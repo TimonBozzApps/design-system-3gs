@@ -83,6 +83,8 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<PreviewErrorCode | null>(null);
+  /** The server's own explanation ("the site blocks automated requests"), when it beats the generic text. */
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
@@ -135,6 +137,7 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
       const host = hostOf(input);
       cancel();
       setError(null);
+      setErrorDetail(null);
       setActionError(null);
 
       const key = urlKey(input);
@@ -186,7 +189,11 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
       } else {
         const code: PreviewErrorCode = result && !result.ok && isErrorCode(result.code) ? result.code : "fetch_failed";
         setError(code);
-        capture("preview_failed", { code, host, mode });
+        const detail = result && !result.ok && typeof result.error === "string" ? result.error.trim() : "";
+        // Server messages like "HTTP 403 (the site blocks automated requests)" tell the visitor it is
+        // the site refusing us, not the tool being broken. Anything vaguer stays on the generic text.
+        setErrorDetail(detail && detail.length <= 120 && /\d{3}|block|refus|timed out|too large|not an HTML/i.test(detail) ? detail : null);
+        capture("preview_failed", { code, host, mode, detail: detail.slice(0, 80) || undefined });
       }
     },
     [cancel, show],
@@ -432,9 +439,12 @@ export function PreviewSection({ theme, dir }: PreviewSectionProps) {
               contained
               open={error !== null}
               title="Couldn't fetch that"
-              message={error ? ERROR_MESSAGES[error] : undefined}
+              message={error ? errorDetail ?? ERROR_MESSAGES[error] : undefined}
               actions={[{ label: "OK", variant: "primary" }]}
-              onClose={() => setError(null)}
+              onClose={() => {
+                setError(null);
+                setErrorDetail(null);
+              }}
             />
           </PhoneFrame>
         </div>
